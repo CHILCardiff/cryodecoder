@@ -1,0 +1,31 @@
+﻿Offset,Length,Name,Flag,Description
+0,2,Identifier,,ASCII packet identifier ('W1')
+2,4,Timestamp,[Receiver],Receiver timestamp
+6,4,Logger Temperature,[Receiver],Temperature at receiver
+10,4,Logger Pressure,[Receiver],Barometric pressure at receiver
+14,4,Logger Voltage,[Receiver],Solar panel/battery voltage at receiver
+18,1,Channel Number,[Receiver],Receiver channel number
+19,1,Length,[Receiver],Number of bytes in packet (TODO: clarify length)
+20,1,C field,[MBus],Control field
+21,2,M ID,[MBus],Manufacturer ID
+23,4,U ID,[MBus],User ID (i.e. CE230001)
+27,1,Version,[MBus],Version number
+28,1,Device,[MBus],Device ID
+29,1,CI field,[MBus],CI field
+30,2,Temperature,[Data],Temperature from TMP117 sensor
+32,2,Magnetometer (X),[Data],Magnetic field strength from TDK 20948 IMU
+34,2,Magnetometer (Y),[Data],Magnetic field strength from TDK 20948 IMU
+36,2,Magnetometer (Z),[Data],Magnetic field strength from TDK 20948 IMU
+38,2,"Accelerometer (IMU, X)",[Data],Acceleration from TDK 20948 IMU
+40,2,"Accelerometer (IMU, Y)",[Data],Acceleration from TDK 20948 IMU
+42,2,"Accelerometer (IMU, Z)",[Data],Acceleration from TDK 20948 IMU
+44,2,"Accelerometer (TILT, X)",[Data],Acceleration from TILT-05 sensor
+46,2,"Accelerometer (TILT, Y)",[Data],Acceleration from TILT-05 sensor
+48,2,"Accelerometer (TILT, Z)",[Data],Acceleration from TILT-05 sensor
+50,2,Pitch (X),[Data],Pitch from TILT-05 sensor
+52,2,Roll (Y),[Data],Roll from TILT-05 sensor
+54,2,Conductivity,[Data],Raw ADC value from electrical conductivity sensor
+56,2,Pressure,[Data],Raw value from Keller pressure sensor
+58,2,Battery,[Data],Battery voltage in millivolts
+60,1,Sequence number,[Data],Radio packet sequence number from 0 to 255
+61,1,RSSI,[Mbus],Received signal strength (dBm)

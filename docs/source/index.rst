@@ -6,9 +6,22 @@
 cryodecoder documentation
 =====================
 
-Project documentation for cryodecoder, for decoding raw CHIL instrument data packets.
+.. note::
+
+   This project is under active development.
+
+
+The cryodecoder package provides a range of functionality for decoding raw CHIL instrument data packets.
+
+- Central definition of CHIL instrument packet formats
+- Backend API for converting binary data into Python class representations
+- Command line utility 
+- more...
+
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :caption: Contents
+   :titlesonly:
+
+   packet_types
 

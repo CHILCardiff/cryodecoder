@@ -1,0 +1,21 @@
+Offset,Length,Name,Flag,Description
+0,2,Identifier,,ASCII packet identifier ('C1')
+2,4,Timestamp,[Receiver],Receiver timestamp
+6,4,Logger Temperature,[Receiver],Temperature at receiver
+10,4,Logger Pressure,[Receiver],Barometric pressure at receiver
+14,2,Logger Voltage,[Receiver],Solar panel/battery voltage at receiver
+16,1,Channel Number,[Receiver],Receiver channel number
+17,1,Length,,Number of bytes in packet (TODO: clarify length)
+18,1,C field,[MBus],Control field
+19,2,M ID,[MBus],Manufacturer ID
+21,4,U ID,[MBus],User ID (i.e. CE230001)
+25,1,Version,[MBus],Version number
+26,1,Device,[MBus],Device ID
+27,1,CI field,[MBus],CI field
+28,2,Conductivity,[Data],Raw conductivity ADC value
+30,2,Temperature (PT1000),[Data],Raw value from PT1000 temperature sensor
+32,2,Pressure (Keller),[Data],Raw pressure from Keller pressure sensor
+34,2,Temperature (Keller),[Data],Raw temperature from Keller pressure sensor
+36,2,Battery voltage,[Data],Battery voltage in millivolts
+38,1,Sequence number,[Data],Radio packet sequence number from 0 to 255
+39,1,RSSI,[MBus],Received signal strength (dBm)

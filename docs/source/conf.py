@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'cryodb'
+project = 'cryodecoder'
 copyright = '2024 - CHIL, Cardiff University'
 author = 'Lisa Craw, Jonathan Hawkins, Mike Prior-Jones'
 release = '0.1'

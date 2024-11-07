@@ -1,0 +1,14 @@
+Offset,Length,Name,Flag,Description
+0,2,Identifier,,ASCII packet identifier ('C0')
+2,4,Timestamp,[Receiver],Receiver timestamp
+6,1,C field,[MBus],Control field
+7,2,M ID,[MBus],Manufacturer ID
+9,4,U ID,[MBus],User ID (i.e. CE190001)
+13,1,Version,[MBus],Version [number
+14,1,Device,[MBus],Device ID
+15,1,CI field,[MBus],CI field
+16,2,Conductivity,[Data],Raw conductivity ADC value
+18,2,Temperature (PT1000),[Data],Raw value from PT1000 temperature sensor
+20,2,Pressure (Keller),[Data],Raw pressure from Keller pressure sensor
+22,2,Temperature (Keller),[Data],Raw temperature from Keller pressure sensor
+24,1,RSSI,[MBus],Received signal strength (dBm)foramt
