@@ -1,4 +1,5 @@
-# cryodb
-creating and mantaining MariabDB database for output from cryo* instruments
+# cryodecoder
+
+decoding raw data as received from cryo- instruments.
 
 Under construction...
