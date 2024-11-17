@@ -1,8 +1,22 @@
-def bytes_to_packets():
+import toml
+
+#load in info from packets.toml
+with open('packets.toml', 'r') as f:
+    packets= toml.load(f)
+
+packet_types = list(packets['InstrumentType'].keys())
+packet_lengths = list(packets['InstrumentType'].items())
+
+def bytes_to_packets(byte_array):
     """
     returns a list of SDPackets from a byte array
     """
-    pass
+    sd_packets = []
+    for i in range(len(byte_array)):
+        for j in range(len(packet_types)):
+            if byte_array[i:i+2]==packet_types[j]:
+                sd_packets.append(byte_array[i:i+packet_lengths][j])
+    return sd_packets    
 
 class LingoMOPacket:
 
