@@ -1,8 +1,12 @@
 [InstrumentType] 
     [InstrumentType.C1]
     length = 41 
+    instrument_packet_start = 10 
+    instrument_packet_length = 10
     [InstrumentType.W2]
     length = 62 
+    instrument_packet_start = 10 
+    instrument_packet_length = 32 
 
 [SDSatellitePacket]
     [SDSatellitePacket.header]
