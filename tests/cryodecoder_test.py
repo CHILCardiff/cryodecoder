@@ -1,21 +1,21 @@
 # tests to run on sample data to check all is running smoothly!
-
-from __init__ import *
+from cryodecoder import *
+import datetime
 import toml
 import os
 
-# region load info from packets.toml
-with open('packets.toml', 'r') as f:
-    packets= toml.load(f)
+# # region load info from packets.toml
+# with open('packets.toml', 'r') as f:
+#     packets= toml.load(f)
 
-packet_types_string = list(packets['InstrumentType'].keys())
-packet_types_bytes = [bytes(item, encoding='utf-8') for item in packet_types_string]
-#endregion
+# packet_types_string = list(packets['InstrumentType'].keys())
+# packet_types_bytes = [bytes(item, encoding='utf-8') for item in packet_types_string]
+# #endregion
 
 #region import test data
 working_directory = os.path.dirname(os.path.abspath(__file__)) 
-test_egg_sd_file = working_directory+'/../../test_data/CRYOEGG_test.log'
-test_wurst_sd_file = working_directory+'/../../test_data/CWURST_test.log'
+test_egg_sd_file = working_directory+'/data/CRYOEGG_test.log'
+test_wurst_sd_file = working_directory+'/data/CWURST_test.log'
 
 with  open(test_egg_sd_file, 'rb') as test_file:
     test_egg_data = test_file.read()
