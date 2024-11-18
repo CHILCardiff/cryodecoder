@@ -41,8 +41,18 @@ def test_sd_import():
 packet = SDPacket(single_egg_sd)
 def test_sdpacket_identifier():
     assert packet.packet_type in packet_types_bytes
-    
 
-
+#check out receiver data from some test packets    
+egg_packet = SDPacket(single_egg_sd)
+egg_packet.get_receiver_packet()
+assert type(egg_packet.header)==str
+assert type(egg_packet.time_int)==int
+assert type(egg_packet.time_formatted)==datetime.datetime
+assert type(egg_packet.sequence_number)==int
             
-    
+wurst_packet = SDPacket(single_wurst_sd)
+wurst_packet.get_receiver_packet()
+assert type(wurst_packet.header)==str
+assert type(wurst_packet.time_int)==int
+assert type(wurst_packet.time_formatted)==datetime.datetime
+assert type(wurst_packet.sequence_number)==int
