@@ -1,9 +1,24 @@
 import toml
 import datetime
+import importlib.resources
 
 #load in info from packets.toml
-with open('packets.toml', 'r') as f:
-    packets= toml.load(f)
+
+# JH: can't rely on "packets.toml" being on the executable path, 
+#     so we need to use importlib.resources to load the TOML config
+
+# Create empty packets object
+packets = None
+
+# Import packets definition
+source = importlib.resources.files(__package__).joinpath("packets.toml") 
+with importlib.resources.as_file(source) as packet_config_path:
+    with open(packet_config_path, "r") as fh:
+        packets = toml.load(fh)
+    
+# And finally check that we've actually imported something
+if packets == None:
+    raise ValueError("Could not load packets.toml")
 
 packet_types_string = list(packets['InstrumentType'].keys())
 packet_types_bytes = [bytes(item, encoding='utf-8') for item in packet_types_string]
