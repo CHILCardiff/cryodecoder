@@ -69,13 +69,22 @@ class SDPacket(DataPacket):
         #work in progress
         receiver_packet_end = packets['InstrumentType'][self.packet_type.decode('utf-8')]['instrument_packet_start']
         instrument_packet_end = packets['InstrumentType'][self.packet_type.decode('utf-8')]['instrument_packet_length']+receiver_packet_end
-        receiver_packet=self.raw_data[0:receiver_packet_end]+self.raw_data[instrument_packet_end:-1]
-        self.header = receiver_packet[0:2].decode('utf-8')
-        self.time_int = int.from_bytes(receiver_packet[2:6], byteorder='little')
+        # Get raw bytes for receiver packet
+        receiver_packet_raw=self.raw_data[0:receiver_packet_end]+self.raw_data[instrument_packet_end:-1]
+        # create receiver packet
+        receiver_packet = ReceiverPacket(
+            timestamp = int.from_bytes(receiver_packet_raw[2:6], byteorder='little'), #TODO: convert from Unix timestamp to datetime
+            voltage = int.from_bytes(receiver_packet_raw[14:16], byteorder='little'),
+            temperature = 0, #TODO: assign temperature
+            pressure = 0, #TODO: assign pressure
+            channel = 0, #TODO: assign channel 
+        )
+        self.header = receiver_packet_raw[0:2].decode('utf-8')
         self.time_formatted = datetime.datetime.fromtimestamp(self.time_int)
-#        self.logger_temp = int.from_bytes(receiver_packet[6:10], byteorder='little')
-        self.solar_voltage = int.from_bytes(receiver_packet[14:16], byteorder='little')
-        self.sequence_number = int.from_bytes(receiver_packet[-2:-1], byteorder='little')
+#        self.logger_temp = int.from_bytes(receiver_packet_raw[6:10], byteorder='little')
+        # Sequence number goes to the instrument packet 
+        # self.sequence_number = int.from_bytes(receiver_packet_raw[-2:-1], byteorder='little')
+        return receiver_packet
 
     def get_raw(self):
         """returns raw data of complete SDPacket
