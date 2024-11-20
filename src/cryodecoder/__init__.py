@@ -1,3 +1,5 @@
+from abc import abstractmethod
+from dataclasses import dataclass
 import toml
 import datetime
 import importlib.resources
@@ -37,9 +39,14 @@ def bytes_to_packets(byte_array):
 
 class DataPacket:
     """abstract/interface class for packet methods"""
-    def get_receiver_packet():
+    @abstractmethod
+    def get_receiver_packet(self):
         pass
-    def get_instrument_packet():
+    @abstractmethod
+    def get_instrument_packet(self):
+        pass
+    @abstractmethod
+    def get_raw(self):
         pass
 
 class SDPacket(DataPacket):
@@ -70,6 +77,12 @@ class SDPacket(DataPacket):
         self.solar_voltage = int.from_bytes(receiver_packet[14:16], byteorder='little')
         self.sequence_number = int.from_bytes(receiver_packet[-2:-1], byteorder='little')
 
+    def get_raw(self):
+        """returns raw data of complete SDPacket
+        """
+        return self.raw_data
+
+
 class LingoMOPacket:
 
     def get_lingomo_id():
@@ -91,11 +104,14 @@ class LocalPacket(DataPacket):
 
 # Instrument packets
 class InstrumentPacket:
-    def get_identifier():
+    @abstractmethod
+    def get_identifier(self) -> str:
         """returns packet type identifier (i.e. C1/W2/etc.)"""
         pass
 
+@dataclass
 class CryoeggPacket(InstrumentPacket):
+
     """
     to match cryoegg_raw_table
 
@@ -107,15 +123,80 @@ class CryoeggPacket(InstrumentPacket):
         print(packet.rssi)
 
     """
-    pass
+    instrument_id           : int
+    conductivity_raw        : int
+    temperature_pt1000_raw  : int
+    pressure_raw            : int
+    temperature_raw         : int
+    battery_voltage         : int
+    sequence_number         : int
+    rssi                    : float
+    packet_version          : str
+    # Database-only: generated when retrieving from cryodb
+    cryoegg_raw_id      : int = None,
+    receiver_data_id    : int = None
+    ingest_id           : int = None
+    
+    # Implement get_identifier from packet_version
+    def get_identifier(self):
+        return self.packet_version
 
+@dataclass
 class CryowurstPacket(InstrumentPacket):
     """
     to match cryowurst_raw_table
     """
-    pass
+    # ([\w\d_]+)\s+INTEGER,
+    instrument_id           : int
+    temperature_tmp117_raw  : int
+    mag_x_raw               : int
+    mag_y_raw               : int
+    mag_z_raw               : int
+    accel_imu_x_raw         : int
+    accel_imu_y_raw         : int
+    accel_imu_z_raw         : int
+    accel_tilt_x_raw        : int
+    accel_tilt_y_raw        : int
+    accel_tilt_z_raw        : int
+    pitch_raw               : int
+    roll_raw                : int
+    conductivity_raw        : int
+    pressure_raw            : int
+    temperature_keller_raw  : int
+    battery_voltage         : int
+    sequence_number         : int
+    rssi                    : float
+    packet_version          : str 
+    # Database-only: generated when retrieving from cryodb
+    receiver_data_id    : int
+    ingest_id           : int
 
+    def get_identifier(self) -> str:
+        return self.packet_version
+
+@dataclass
 class ReceiverPacket:
     """implements datalogger/receiver data class
-    to match receiver_data_table"""
-    pass
+    to match receiver_data_table
+    
+    example usage:
+    .. code::
+
+        packet = ReceiverPacket(
+            timestamp = datetime.datetime.now(),
+            channel = 2,
+            temperature = -5.2,
+            pressure = 968.0,
+            voltage = 12.3
+        )
+
+    """
+    timestamp   : datetime.datetime
+    channel     : int
+    temperature : float
+    pressure    : float
+    voltage     : float
+    # Database-only: generated when retrieving from cryodb
+    receiver_data_id : int = None
+    receiver_id      : int = None
+    ingest_id        : int = None
