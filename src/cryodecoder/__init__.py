@@ -34,82 +34,8 @@ def bytes_to_packets(byte_array):
         for j in range(len(packet_types_bytes)):
             if byte_array[i:i+2]==packet_types_bytes[j]:
                 sd_packets.append(byte_array[i:i+(packets['InstrumentType'][packet_types_string[j]]['length'])])
-    return sd_packets    
+    return sd_packets  
 
-
-class DataPacket:
-    """abstract/interface class for packet methods"""
-    @abstractmethod
-    def get_receiver_packet(self):
-        pass
-    @abstractmethod
-    def get_instrument_packet(self):
-        pass
-    @abstractmethod
-    def get_raw(self):
-        pass
-
-class SDPacket(DataPacket):
-    def __init__(self, raw_data):
-        self.raw_data = raw_data
-        if self.raw_data[0:2] in packet_types_bytes:
-            self.packet_type = self.raw_data[0:2]
-        else:
-            print('This isn\'t a packet type I recognise...')
-    def get_instrument_packet(self):
-        """implements instrument packet for SD packet"""
-        #work in progress
-        packet_start = packets['InstrumentType'][self.packet_type.decode('utf-8')]['instrument_packet_start']
-        packet_end = packets['InstrumentType'][self.packet_type.decode('utf-8')]['instrument_packet_length']+start
-        instrument_packet = self.raw_data[packet_start:packet_end]
-        #should do something clever with the packet types dictionary here
-#        if self.packet_type==b'C1':
-    def get_receiver_packet(self):
-        """implements receiver packet for SD packet"""
-        #work in progress
-        receiver_packet_end = packets['InstrumentType'][self.packet_type.decode('utf-8')]['instrument_packet_start']
-        instrument_packet_end = packets['InstrumentType'][self.packet_type.decode('utf-8')]['instrument_packet_length']+receiver_packet_end
-        # Get raw bytes for receiver packet
-        receiver_packet_raw=self.raw_data[0:receiver_packet_end]+self.raw_data[instrument_packet_end:-1]
-        # create receiver packet
-        receiver_packet = ReceiverPacket(
-            timestamp = int.from_bytes(receiver_packet_raw[2:6], byteorder='little'), #TODO: convert from Unix timestamp to datetime
-            voltage = int.from_bytes(receiver_packet_raw[14:16], byteorder='little'),
-            temperature = 0, #TODO: assign temperature
-            pressure = 0, #TODO: assign pressure
-            channel = 0, #TODO: assign channel 
-        )
-        self.header = receiver_packet_raw[0:2].decode('utf-8')
-        self.time_formatted = datetime.datetime.fromtimestamp(self.time_int)
-#        self.logger_temp = int.from_bytes(receiver_packet_raw[6:10], byteorder='little')
-        # Sequence number goes to the instrument packet 
-        # self.sequence_number = int.from_bytes(receiver_packet_raw[-2:-1], byteorder='little')
-        return receiver_packet
-
-    def get_raw(self):
-        """returns raw data of complete SDPacket
-        """
-        return self.raw_data
-
-
-class LingoMOPacket:
-
-    def get_lingomo_id():
-        pass
-    def get_timestamp():
-        pass
-
-    def get_sd_packets():
-        """calls bytes_to_packets on payload/message"""
-        pass
-
-class LocalPacket(DataPacket):
-    def get_receiver_packet():
-        """implements receiver packet for local packet"""
-        pass
-    def get_instrument_packet():
-        """implements instrument packet for local packet"""
-        pass
 
 # Instrument packets
 class InstrumentPacket:
@@ -208,4 +134,82 @@ class ReceiverPacket:
     # Database-only: generated when retrieving from cryodb
     receiver_data_id : int = None
     receiver_id      : int = None
-    ingest_id        : int = None
+    ingest_id        : int = None  
+
+class DataPacket:
+    """abstract/interface class for packet methods"""
+    @abstractmethod
+    def get_receiver_packet(self) -> ReceiverPacket:
+        pass
+    @abstractmethod
+    def get_instrument_packet(self) -> InstrumentPacket:
+        pass
+    @abstractmethod
+    def get_raw(self) -> bytes:
+        pass
+
+class SDPacket(DataPacket):
+    def __init__(self, raw_data):
+        self.raw_data = raw_data
+        if self.raw_data[0:2] in packet_types_bytes:
+            self.packet_type = self.raw_data[0:2]
+        else:
+            print('This isn\'t a packet type I recognise...')
+    def get_instrument_packet(self) -> InstrumentPacket:
+        """implements instrument packet for SD packet"""
+        #work in progress
+        packet_start = packets['InstrumentType'][self.packet_type.decode('utf-8')]['instrument_packet_start']
+        packet_end = packets['InstrumentType'][self.packet_type.decode('utf-8')]['instrument_packet_length']+start
+        instrument_packet = self.raw_data[packet_start:packet_end]
+        #should do something clever with the packet types dictionary here
+#        if self.packet_type==b'C1':
+        # return CryoeggPacket(...)
+        # elif packet_type == b'W1'
+        # return CryowurstPacket(...) etc.?
+
+    def get_receiver_packet(self) -> ReceiverPacket:
+        """implements receiver packet for SD packet"""
+        #work in progress
+        receiver_packet_end = packets['InstrumentType'][self.packet_type.decode('utf-8')]['instrument_packet_start']
+        instrument_packet_end = packets['InstrumentType'][self.packet_type.decode('utf-8')]['instrument_packet_length']+receiver_packet_end
+        # Get raw bytes for receiver packet
+        receiver_packet_raw=self.raw_data[0:receiver_packet_end]+self.raw_data[instrument_packet_end:-1]
+        # create receiver packet
+        receiver_packet = ReceiverPacket(
+            timestamp = int.from_bytes(receiver_packet_raw[2:6], byteorder='little'), #TODO: convert from Unix timestamp to datetime
+            voltage = int.from_bytes(receiver_packet_raw[14:16], byteorder='little'),
+            temperature = 0, #TODO: assign temperature
+            pressure = 0, #TODO: assign pressure
+            channel = 0, #TODO: assign channel 
+        )
+        self.header = receiver_packet_raw[0:2].decode('utf-8')
+        self.time_formatted = datetime.datetime.fromtimestamp(self.time_int)
+#        self.logger_temp = int.from_bytes(receiver_packet_raw[6:10], byteorder='little')
+        # Sequence number goes to the instrument packet 
+        # self.sequence_number = int.from_bytes(receiver_packet_raw[-2:-1], byteorder='little')
+        return receiver_packet
+
+    def get_raw(self):
+        """returns raw data of complete SDPacket
+        """
+        return self.raw_data
+
+
+class LingoMOPacket:
+
+    def get_lingomo_id():
+        pass
+    def get_timestamp():
+        pass
+
+    def get_sd_packets():
+        """calls bytes_to_packets on payload/message"""
+        pass
+
+class LocalPacket(DataPacket):
+    def get_receiver_packet():
+        """implements receiver packet for local packet"""
+        pass
+    def get_instrument_packet():
+        """implements instrument packet for local packet"""
+        pass
