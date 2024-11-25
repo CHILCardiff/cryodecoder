@@ -8,239 +8,145 @@
     instrument_packet_start = 10 
     instrument_packet_length = 32 
 
-[SDSatellitePacket]
-    [SDSatellitePacket.header]
-    offset = 0
-    length = 2
-    output_type = "str"
-    parser = "parse_header"
-    [SDSatellitePacket.timestamp]
-    offset = 2
-    length = 4
-    output_type = "bytes"
-    parser = "parse_timestamp"
-    [SDSatellitePacket.temperature_logger]
-    offset = 6
-    length = 4
-    output_type = "float"
-    parser = "parse_temperature_logger"
-    [SDSatellitePacket.pressure_logger]
-    offset = 10
-    length = 4
-    output_type = "float"
-    parser = "parse_pressure_logger"
-    [SDSatellitePacket.solar_voltage]
-    offset = 14
-    length = 2
-    output_type = "int"
-    parser = "parse_solar_voltage"
-    [SDSatellitePacket.channel]
-    offset = 16
-    length = 1
-    output_type = "int"
-    parser = "parse_channel"
-    [SDSatellitePacket.length]
-    offset = 17
-    length = 1
-    output_type = "int"
-    parser = "parse_length"
-    [SDSatellitePacket.mbus_packet]
-    offset = [18, -1]
-    output_type = "bytes"
-    parser = "parse_mbus_packet"
-
-
-
-
-
+[ReceiverPacket]
+    [ReceiverPacket.header]
+    start_index=0
+    end_index=1
+    output_type="str"
+    [ReceiverPacket.timestamp]
+    start_index=2
+    end_index=5
+    output_type="bytes"
+    [ReceiverPacket.logger_temp]
+    start_index=6
+    end_index=9
+    output_type="float"
+    [ReceiverPacket.logger_pressure]
+    start_index=10
+    end_index=13
+    output_type="float"
+    [ReceiverPacket.logger_voltage]
+    start_index=14
+    end_index=15
+    output_type="int"
+    [ReceiverPacket.channel_number]
+    start_index=16
+    end_index=16
+    output_type="int"
+    [ReceiverPacket.length_byte]
+    start_index=17
+    end_index=17
+    output_type="int"
+    [ReceiverPacket.c_field]
+    start_index=18
+    end_index=18
+    output_type="int"
+    [ReceiverPacket.manufacturer_id]
+    start_index=19
+    end_index=20
+    output_type="int"
+    [ReceiverPacket.user_id]
+    start_index=21
+    end_index=24
+    output_type="int"
+    [ReceiverPacket.version_number]
+    start_index=25
+    end_index=25
+    output_type="int"
+    [ReceiverPacket.dev]
+    start_index=26
+    end_index=26
+    output_type="int"
+    [ReceiverPacket.ci_field]
+    start_index=27
+    end_index=27
+    output_type="int"
+    [ReceiverPacket.rssi]
+    output_type="int"
 
 [CryoeggPacket]
     [CryoeggPacket.conductivity]
-        offset = 0
+        start_index = 0
+        end_index = 1
         output_type = "float"
-        parser = "parse_conductivity"
     [CryoeggPacket.temperature_pt1000]
-        offset = 2
+        start_index = 2
+        end_index = 3
         output_type = "float"
-        parser = "parse_temperature_pt1000" 
     [CryoeggPacket.pressure]
-        offset = 4
+        start_index = 4
+        end_index = 5
         output_type = "int"
         parser = "parse_pressure_keller" 
     [CryoeggPacket.temperature]
-        offset = 6
+        start_index = 6
+        end_index = 7
         output_type = "int"
-        parser = "parse_temperature_keller" 
     [CryoeggPacket.battery_voltage]
-        offset = 8
+        start_index = 8
+        end_index = 9
         output_type = "float"
-        parser = "parse_battery_voltage"
     [CryoeggPacket.sequence_number]
-        offset = 10
-        length = 1
+        start_index = 10
+        end_index = 10
         output_type = "int"
-        parser = "parse_sequence_number"
 
-[MBusPacket] 
-
-    endianness = "little"
-    
-    [MBusPacket.c_field]
-        offset = 0
-        length = 1
-        output_type = "int"
-        parser = "parse_cfield"
-    [MBusPacket.manufacturer_id]
-        offset = 1
-        length = 2
-        output_type = "int"
-        parser = "parse_m_id"
-    [MBusPacket.user_id]
-        offset = 3
-        length = 4
-        output_type = "int"
-        parser = "parse_user_id"
-    [MBusPacket.version]
-        offset = 7
-        length = 1
-        output_type = "int"
-        parser = "parse_version"
-    [MBusPacket.dev]
-        offset = 8
-        length = 1
-        output_type = "int"
-        parser = "parse_dev"
-    [MBusPacket.control_field]
-        offset = 9
-        length = 1
-        output_type = "int"
-        parser = "parse_control_field"
-    [MBusPacket.rssi]
-        # Allow negative offsets to reference from end of packet
-        offset = -1
-        length = 1
-        output_type = "int"
-        signed = true
-        parser = "parse_rssi"
-    [MBusPacket.payload]
-        # Refers to APPL_DATA field (i.e. user data containing Cryo* packet)
-        offset = [10, -2] # in absense of length variable, provide two offsets
-        output_type = "bytes"
-        parser = "parse_payload"
 
 [CryowurstPacket]
-
-    endianness = "big"
-    length = 2
-    signed = true
-
     [CryowurstPacket.temperature]
-        offset = 0
-        output_type = "float"
-        parser = "parse_temperature_tmp117"
+        start_index = 0 
+        end_index=1
+        output_type="float"
     [CryowurstPacket.magnetometer_x]
-        offset = 2
-        output_type = "float"
-        parser = "parse_magnetometer_x"
+        start_index = 2
+        end_index=3
+        output_type="float"
     [CryowurstPacket.magnetometer_y]
-        offset = 4
+        start_index = 4
+        end_index= 5
         output_type = "float"
-        parser = "parse_magnetometer_y"
     [CryowurstPacket.magnetometer_z]
-        offset = 6
+        start_index = 6
+        end_index= 7
         output_type = "float"
-        parser = "parse_magnetometer_z"
     [CryowurstPacket.accelerometer_x]
-        offset = 8
+        start_index = 14
+        end_index= 15
         output_type = "float"
-        parser = "parse_accelerometer_x"
     [CryowurstPacket.accelerometer_y]
-        offset = 10
+        start_index = 16
+        end_index= 17
         output_type = "float"
-        parser = "parse_accelerometer_y"
     [CryowurstPacket.accelerometer_z]
-        offset = 12
+        start_index = 18
+        end_index= 19
         output_type = "float"
         parser = "parse_accelerometer_z"
     [CryowurstPacket.pitch_x]
-        offset = 14
+        start_index = 20 
+        end_index= 21
         output_type = "float"
-        parser = "parse_pitch_x"
     [CryowurstPacket.roll_y]
-        offset = 16
+        start_index =  22
+        end_index= 23
         output_type = "float"
-        parser = "parse_roll_y"
     [CryowurstPacket.conductivity]
-        offset = 18
+        start_index =  24
+        end_index= 25
         output_type = "float"
-        parser = "parse_conductivity"
-        signed = false
     [CryowurstPacket.pressure]
-        offset = 20
+        start_index =  26
+        end_index= 27
         output_type = "float"
-        parser = "parse_pressure_keller"
-        signed = false
+    [CryowurstPacket.keller_temperature]
+        start_index =  28 
+        end_index= 29
+        output_type = "float"
     [CryowurstPacket.battery_voltage]
-        offset = 22
+        start_index =  30 
+        end_index= 31 
         output_type = "float"
-        signed = false
-        parser = "parse_battery_voltage"
     [CryowurstPacket.sequence_number]
-        offset = 24
-        length = 1
+        start_index =  32
+        end_index= 32
         output_type = "int"
-        signed = false
-        parser = "parse_sequence_number"
-
-[HydrobeanPacket]
-
-    length = 2
-
-    [HydrobeanPacket.conductivity]
-        offset = 0
-        output_type = "int"
-        parser = "parse_conductivity"
-    [HydrobeanPacket.pressure]
-        offset = 2
-        output_type = "int"
-        parser = "parse_pressure_keller"
-    [HydrobeanPacket.temperature]
-        offset = 4
-        output_type = "int"
-        parser = "parse_temperature_keller"
-    [HydrobeanPacket.battery_voltage]
-        offset = 6
-        output_type = "int"
-        parser = "parse_battery_voltage"
-    [HydrobeanPacket.sequence_number]
-        offset = 8
-        output_type = "int"
-        parser = "parse_sequence_number"
-
-[CryoReceiverPacket]
-
-    [CryoReceiverPacket.mbus_packet]
-        # Contains the repeated MBusPacket from the Radiocrafts module
-        offset = [0, -7]
-        output_type = "bytes"
-        parser = "parse_mbus_packet"
-    [CryoReceiverPacket.channel]
-        offset = -6
-        length = 1
-        output_type = "int"
-        parser = "parse_channel"
-    [CryoReceiverPacket.temperature_logger]
-        offset = -5
-        length = 1
-        output_type = "int"
-        parser = "parse_temperature_logger"
-    [CryoReceiverPacket.pressure_logger]
-        offset = [-4, -3]
-        output_type = "int"
-        parser = "parse_pressure_logger"
-    [CryoReceiverPacket.solar_voltage]
-        offset = [-2, -1]
-        output_type = "int"
-        parser = "parse_solar_voltage"
-    
-    
