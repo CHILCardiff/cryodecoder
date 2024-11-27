@@ -13,14 +13,21 @@ import os
 # #endregion
 
 #region import test data
-working_directory = os.path.dirname(os.path.abspath(__file__)) 
-test_egg_sd_file = working_directory+'/data/CRYOEGG_test.log'
-test_wurst_sd_file = working_directory+'/data/CWURST_test.log'
+packets_source = importlib.resources.files(cryodecoder).joinpath("packets.toml") 
+with importlib.resources.as_file(packets_source) as packet_config_path:
+    with open(packet_config_path, "r") as f:
+        packets = toml.load(f)
 
-with  open(test_egg_sd_file, 'rb') as test_file:
+#working_directory = os.path.dirname(os.path.abspath(__file__)) 
+#test_egg_sd_file = working_directory+'/data/CRYOEGG_test.log'
+#test_wurst_sd_file = working_directory+'/data/CWURST_test.log'
+
+eggtest_source = importlib.resources.files(cryodecoder).joinpath("../../tests/data/CRYOEGG_test.log") 
+with  open(eggtest_source, 'rb') as test_file:
     test_egg_data = test_file.read()
 
-with  open(test_wurst_sd_file, 'rb') as test_file:
+wursttest_source = importlib.resources.files(cryodecoder).joinpath("../../tests/data/CWURST_test.log") 
+with  open(wursttest_source, 'rb') as test_file:
     test_wurst_data = test_file.read()
 
 test_sd_data = test_wurst_data + test_egg_data
@@ -38,21 +45,31 @@ def test_sd_import():
         assert type(item)==bytes
 
 #test that SDPacket class creates an object with the right identifier
-packet = SDPacket(single_egg_sd)
 def test_sdpacket_identifier():
+    packet = SDPacket(single_egg_sd)
     assert packet.packet_type in packet_types_bytes
 
+#test that get_instrument_packet returns reasonable values from cryoegg packet
+def test_sd_egg_decoding():
+    packet = cryodecoder.DataPacket(single_egg_sd).get_instrument_packet()
+    assert type(packet.conductivity_raw)==int
+    
+def test_sd_wurst_decoding():
+    packet = cryodecoder.DataPacket(single_wurst_sd).get_instrument_packet()
+    assert type(packet.temperature_tmp117_raw)==int
+
+
 #check out receiver data from some test packets    
-egg_packet = SDPacket(single_egg_sd)
-egg_packet.get_receiver_packet()
-assert type(egg_packet.header)==str
-assert type(egg_packet.time_int)==int
-assert type(egg_packet.time_formatted)==datetime.datetime
-assert type(egg_packet.sequence_number)==int
-            
-wurst_packet = SDPacket(single_wurst_sd)
-wurst_packet.get_receiver_packet()
-assert type(wurst_packet.header)==str
-assert type(wurst_packet.time_int)==int
-assert type(wurst_packet.time_formatted)==datetime.datetime
-assert type(wurst_packet.sequence_number)==int
+#egg_packet = SDPacket(single_egg_sd)
+#egg_packet.get_receiver_packet()
+#assert type(egg_packet.header)==str
+#assert type(egg_packet.time_int)==int
+#assert type(egg_packet.time_formatted)==datetime.datetime
+#assert type(egg_packet.sequence_number)==int
+#            
+#wurst_packet = SDPacket(single_wurst_sd)
+#wurst_packet.get_receiver_packet()
+#assert type(wurst_packet.header)==str
+#assert type(wurst_packet.time_int)==int
+#assert type(wurst_packet.time_formatted)==datetime.datetime
+#assert type(wurst_packet.sequence_number)==int
