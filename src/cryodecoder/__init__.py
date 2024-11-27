@@ -4,6 +4,7 @@ import toml
 import datetime
 import importlib.resources
 import os
+import cryodecoder
 
 #load in info from packets.toml
 
@@ -14,18 +15,11 @@ import os
 packets = None
 
 # Import packets definition
-local_testing=False
-
-if local_testing==True:
-    tomlpath = '/home/sgllc3/cryorepos/cryodecoder/src/cryodecoder/packets.toml'
-    os.path.isfile(tomlpath)
-    with open(tomlpath, 'r') as f:
-        packets= toml.load(f)
-if local_testing==False:
-    source = importlib.resources.files(__package__).joinpath("packets.toml") 
-    with importlib.resources.as_file(source) as packet_config_path:
-        with open(packet_config_path, "r") as fh:
-            packets = toml.load(fh)
+#source = importlib.resources.files(__package__).joinpath("packets.toml") 
+source = importlib.resources.files(cryodecoder).joinpath("packets.toml") 
+with importlib.resources.as_file(source) as packet_config_path:
+    with open(packet_config_path, "r") as fh:
+        packets = toml.load(fh)
     
 # And finally check that we've actually imported something
 if packets == None:
@@ -75,7 +69,7 @@ class CryoeggPacket(InstrumentPacket):
     battery_voltage         : int
     sequence_number         : int
     rssi                    : float
-    packet_version          : str
+#    packet_version          : str
     # Database-only: generated when retrieving from cryodb
     cryoegg_raw_id      : int = None,
     receiver_data_id    : int = None
@@ -111,10 +105,10 @@ class CryowurstPacket(InstrumentPacket):
     battery_voltage         : int
     sequence_number         : int
     rssi                    : float
-    packet_version          : str 
+#    packet_version          : str 
     # Database-only: generated when retrieving from cryodb
-    receiver_data_id    : int
-    ingest_id           : int
+    receiver_data_id    : int = None
+    ingest_id           : int = None
 
     def get_identifier(self) -> str:
         return self.packet_version
@@ -163,14 +157,75 @@ class DataPacket:
         """implements instrument packet for SD packet"""
         #work in progress
         packet_start = packets['InstrumentType'][self.packet_type.decode('utf-8')]['instrument_packet_start']
-        packet_end = packets['InstrumentType'][self.packet_type.decode('utf-8')]['instrument_packet_length']+start
+        packet_end = packets['InstrumentType'][self.packet_type.decode('utf-8')]['instrument_packet_length']+packet_start
         instrument_packet = self.raw_data[packet_start:packet_end]
-        return instrument_packet
         #should do something clever with the packet types dictionary here
-#        if self.packet_type==b'C1':
-        # return CryoeggPacket(...)
-        # elif packet_type == b'W1'
-        # return CryowurstPacket(...) etc.?
+        if self.packet_type==b'C1':
+            packet_info = packets['CryoeggPacket']
+            instrument_id=0
+            conductivity_raw=int.from_bytes(instrument_packet[packet_info['conductivity']['start_index']:packet_info['conductivity']['end_index']],
+                                        byteorder = 'little', signed=False)
+            #TODO obvs will come back and fill these in
+            temperature_pt1000_raw = 0
+            pressure_raw=0
+            temperature_raw=0
+            battery_voltage=0
+            sequence_number=0
+            rssi=0
+            packet_version=0
+            return CryoeggPacket(instrument_id=instrument_id,
+                                 conductivity_raw=conductivity_raw,
+                                 temperature_pt1000_raw=temperature_pt1000_raw,
+                                 pressure_raw=pressure_raw,
+                                 temperature_raw=temperature_raw, 
+                                 battery_voltage=battery_voltage,
+                                 sequence_number=sequence_number,
+                                 rssi=rssi
+#                                 packet_version=packet_version
+                                 )
+        elif self.packet_type == b'W2':
+            packet_info = packets['CryowurstPacket']
+            instrument_id=0
+            temperature_tmp117_raw=int.from_bytes(instrument_packet[packet_info['temperature']['start_index']:packet_info['temperature']['end_index']],
+                                         byteorder = 'little', signed=True)
+            mag_x_raw=0
+            mag_y_raw=0
+            mag_z_raw=0
+            accel_imu_x_raw=0
+            accel_imu_y_raw=0
+            accel_imu_z_raw=0
+            accel_tilt_x_raw=0
+            accel_tilt_y_raw=0
+            accel_tilt_z_raw=0
+            pitch_raw=0
+            roll_raw=0
+            conductivity_raw=0
+            pressure_raw=0
+            temperature_keller_raw=0
+            battery_voltage=0
+            sequence_number=0
+            rssi=0
+            return CryowurstPacket(instrument_id=instrument_id,
+                                    temperature_tmp117_raw=temperature_tmp117_raw,
+                                    mag_x_raw=mag_x_raw,
+                                    mag_y_raw=mag_y_raw,
+                                    mag_z_raw=mag_z_raw,
+                                    accel_imu_x_raw=accel_imu_x_raw,
+                                    accel_imu_y_raw=accel_imu_y_raw,
+                                    accel_imu_z_raw=accel_imu_z_raw,
+                                    accel_tilt_x_raw=accel_tilt_x_raw,
+                                    accel_tilt_y_raw=accel_tilt_y_raw,
+                                    accel_tilt_z_raw=accel_tilt_z_raw,
+                                    pitch_raw=pitch_raw,
+                                    roll_raw=roll_raw,
+                                    conductivity_raw=conductivity_raw,
+                                    pressure_raw=pressure_raw,
+                                    temperature_keller_raw=temperature_keller_raw,
+                                    battery_voltage=battery_voltage,
+                                    sequence_number=sequence_number,
+                                    rssi=rssi
+                                    )
+
     @abstractmethod
     def get_receiver_packet(self) -> ReceiverPacket:
         """implements receiver packet for SD packet"""
