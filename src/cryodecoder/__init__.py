@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import toml
 import datetime
 import importlib.resources
+import os
 
 #load in info from packets.toml
 
@@ -13,10 +14,18 @@ import importlib.resources
 packets = None
 
 # Import packets definition
-source = importlib.resources.files(__package__).joinpath("packets.toml") 
-with importlib.resources.as_file(source) as packet_config_path:
-    with open(packet_config_path, "r") as fh:
-        packets = toml.load(fh)
+local_testing=False
+
+if local_testing==True:
+    tomlpath = '/home/sgllc3/cryorepos/cryodecoder/src/cryodecoder/packets.toml'
+    os.path.isfile(tomlpath)
+    with open(tomlpath, 'r') as f:
+        packets= toml.load(f)
+if local_testing==False:
+    source = importlib.resources.files(__package__).joinpath("packets.toml") 
+    with importlib.resources.as_file(source) as packet_config_path:
+        with open(packet_config_path, "r") as fh:
+            packets = toml.load(fh)
     
 # And finally check that we've actually imported something
 if packets == None:
@@ -75,6 +84,7 @@ class CryoeggPacket(InstrumentPacket):
     # Implement get_identifier from packet_version
     def get_identifier(self):
         return self.packet_version
+        
 
 @dataclass
 class CryowurstPacket(InstrumentPacket):
@@ -108,6 +118,10 @@ class CryowurstPacket(InstrumentPacket):
 
     def get_identifier(self) -> str:
         return self.packet_version
+    def decode(self):
+#        self.temperature_tmp117_raw=int.from_bytes(self.raw_data[])
+        pass
+        
 
 @dataclass
 class ReceiverPacket:
@@ -138,35 +152,26 @@ class ReceiverPacket:
 
 class DataPacket:
     """abstract/interface class for packet methods"""
-    @abstractmethod
-    def get_receiver_packet(self) -> ReceiverPacket:
-        pass
-    @abstractmethod
-    def get_instrument_packet(self) -> InstrumentPacket:
-        pass
-    @abstractmethod
-    def get_raw(self) -> bytes:
-        pass
-
-class SDPacket(DataPacket):
     def __init__(self, raw_data):
         self.raw_data = raw_data
         if self.raw_data[0:2] in packet_types_bytes:
             self.packet_type = self.raw_data[0:2]
         else:
             print('This isn\'t a packet type I recognise...')
+    @abstractmethod
     def get_instrument_packet(self) -> InstrumentPacket:
         """implements instrument packet for SD packet"""
         #work in progress
         packet_start = packets['InstrumentType'][self.packet_type.decode('utf-8')]['instrument_packet_start']
         packet_end = packets['InstrumentType'][self.packet_type.decode('utf-8')]['instrument_packet_length']+start
         instrument_packet = self.raw_data[packet_start:packet_end]
+        return instrument_packet
         #should do something clever with the packet types dictionary here
 #        if self.packet_type==b'C1':
         # return CryoeggPacket(...)
         # elif packet_type == b'W1'
         # return CryowurstPacket(...) etc.?
-
+    @abstractmethod
     def get_receiver_packet(self) -> ReceiverPacket:
         """implements receiver packet for SD packet"""
         #work in progress
@@ -183,11 +188,16 @@ class SDPacket(DataPacket):
             channel = 0, #TODO: assign channel 
         )
         self.header = receiver_packet_raw[0:2].decode('utf-8')
-        self.time_formatted = datetime.datetime.fromtimestamp(self.time_int)
+        #self.time_formatted = datetime.datetime.fromtimestamp(self.time_int)
 #        self.logger_temp = int.from_bytes(receiver_packet_raw[6:10], byteorder='little')
         # Sequence number goes to the instrument packet 
         # self.sequence_number = int.from_bytes(receiver_packet_raw[-2:-1], byteorder='little')
         return receiver_packet
+    def get_raw(self) -> bytes:
+        pass
+
+class SDPacket(DataPacket):
+
 
     def get_raw(self):
         """returns raw data of complete SDPacket
