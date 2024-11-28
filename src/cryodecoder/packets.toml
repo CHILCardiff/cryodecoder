@@ -9,7 +9,7 @@
     instrument_packet_length = 32 
 
 [ReceiverPacket]
-    [ReceiverPacket.header]
+    [ReceiverPacket.packet_version]
     start_index=0
     end_index=1
     output_type="str"
@@ -122,31 +122,44 @@
         end_index= 19
         output_type = "float"
         parser = "parse_accelerometer_z"
-    [CryowurstPacket.pitch_x]
+    [CryowurstPacket.tilt_x]
         start_index = 20 
         end_index= 21
         output_type = "float"
-    [CryowurstPacket.roll_y]
-        start_index =  22
+    [CryowurstPacket.tilt_y]
+        start_index = 22 
         end_index= 23
         output_type = "float"
-    [CryowurstPacket.conductivity]
-        start_index =  24
+    [CryowurstPacket.tilt_z]
+        start_index = 24 
         end_index= 25
         output_type = "float"
-    [CryowurstPacket.pressure]
+        parser = "parse_accelerometer_z"
+    [CryowurstPacket.pitch_x]
         start_index =  26
-        end_index= 27
+        end_index= 27 
         output_type = "float"
-    [CryowurstPacket.keller_temperature]
-        start_index =  28 
+    [CryowurstPacket.roll_y]
+        start_index =  28
         end_index= 29
         output_type = "float"
+    [CryowurstPacket.conductivity]
+        start_index =  30
+        end_index= 31
+        output_type = "float"
+    [CryowurstPacket.pressure]
+        start_index = 32 
+        end_index= 33
+        output_type = "float"
+    [CryowurstPacket.keller_temperature]
+        start_index =  34
+        end_index= 35
+        output_type = "float"
     [CryowurstPacket.battery_voltage]
-        start_index =  30 
-        end_index= 31 
+        start_index =  36
+        end_index= 37 
         output_type = "float"
     [CryowurstPacket.sequence_number]
-        start_index =  32
-        end_index= 32
+        start_index =  38
+        end_index= 39
         output_type = "int"
