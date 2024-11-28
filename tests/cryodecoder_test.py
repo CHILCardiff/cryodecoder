@@ -51,25 +51,14 @@ def test_sdpacket_identifier():
 
 #test that get_instrument_packet returns reasonable values from cryoegg packet
 def test_sd_egg_decoding():
-    packet = cryodecoder.DataPacket(single_egg_sd).get_instrument_packet()
+    packet = cryodecoder.SDPacket(single_egg_sd).get_instrument_packet()
     assert type(packet.conductivity_raw)==int
+
+def test_sd_egg_receiver_decoding():
+    receiver_packet = cryodecoder.SDPacket(single_egg_sd).get_receiver_packet()
+    assert type(receiver_packet.voltage)==int
     
 def test_sd_wurst_decoding():
-    packet = cryodecoder.DataPacket(single_wurst_sd).get_instrument_packet()
+    packet = cryodecoder.SDPacket(single_wurst_sd).get_instrument_packet()
     assert type(packet.temperature_tmp117_raw)==int
 
-
-#check out receiver data from some test packets    
-#egg_packet = SDPacket(single_egg_sd)
-#egg_packet.get_receiver_packet()
-#assert type(egg_packet.header)==str
-#assert type(egg_packet.time_int)==int
-#assert type(egg_packet.time_formatted)==datetime.datetime
-#assert type(egg_packet.sequence_number)==int
-#            
-#wurst_packet = SDPacket(single_wurst_sd)
-#wurst_packet.get_receiver_packet()
-#assert type(wurst_packet.header)==str
-#assert type(wurst_packet.time_int)==int
-#assert type(wurst_packet.time_formatted)==datetime.datetime
-#assert type(wurst_packet.sequence_number)==int
