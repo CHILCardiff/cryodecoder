@@ -66,7 +66,7 @@ class CryoeggPacket(InstrumentPacket):
     temperature_raw         : int
     battery_voltage         : int
     sequence_number         : int
-#    rssi                    : float
+    rssi                    : float
     packet_type          : str
     # Database-only: generated when retrieving from cryodb
     cryoegg_raw_id      : int = None,
@@ -102,7 +102,7 @@ class CryowurstPacket(InstrumentPacket):
     temperature_keller_raw  : int
     battery_voltage         : int
     sequence_number         : int
-#    rssi                    : float
+    rssi                    : float
     packet_type: str 
     # Database-only: generated when retrieving from cryodb
     receiver_data_id    : int = None
@@ -147,10 +147,6 @@ class DataPacket:
             self.packet_type = self.raw_data[0:2]
         else:
             print('This isn\'t a packet type I recognise...')
-    @abstractmethod
-    @abstractmethod
-    def get_raw(self) -> bytes:
-        pass
 
 class SDPacket(DataPacket):
     def get_raw(self):
@@ -159,15 +155,14 @@ class SDPacket(DataPacket):
         return self.raw_data
     def get_receiver_packet(self) -> ReceiverPacket:
         """extracts and decodes receiver packet for SD packet"""
-        #work in progress
+        receiver_packet_start = 2  #skips the packet type
         receiver_packet_end = packets['InstrumentType'][self.packet_type.decode('utf-8')]['instrument_packet_start']
-        instrument_packet_end = packets['InstrumentType'][self.packet_type.decode('utf-8')]['instrument_packet_length']+receiver_packet_end
         # Get raw bytes for receiver packet
-        receiver_packet_raw=self.raw_data[0:receiver_packet_end]+self.raw_data[instrument_packet_end:-1]
+        receiver_packet_raw=self.raw_data[receiver_packet_start:receiver_packet_end]
         # create receiver packet
         packet_info=packets['ReceiverPacket']
         timestamp_unix = int.from_bytes(receiver_packet_raw[packet_info['timestamp']['start_index']:packet_info['timestamp']['end_index']+1], 
-                                    byteorder='little') #TODO: convert from Unix timestamp to datetime
+                                    byteorder='little')
         timestamp=datetime.datetime.fromtimestamp(timestamp_unix)
         voltage = int.from_bytes(receiver_packet_raw[packet_info['logger_voltage']['start_index']:packet_info['logger_voltage']['end_index']+1],
                                    byteorder='little')
@@ -183,12 +178,8 @@ class SDPacket(DataPacket):
                                          pressure=pressure,
                                          channel=channel
         )
-        self.instrument_type= receiver_packet_raw[0:2].decode('utf-8')
-        #self.time_formatted = datetime.datetime.fromtimestamp(self.time_int)
-#        self.logger_temp = int.from_bytes(receiver_packet_raw[6:10], byteorder='little')
-        # Sequence number goes to the instrument packet 
-        # self.sequence_number = int.from_bytes(receiver_packet_raw[-2:-1], byteorder='little')
         return receiver_packet
+
     def get_instrument_packet(self) -> InstrumentPacket:
         """implements instrument packet for SD packet"""
         #work in progress
@@ -198,7 +189,8 @@ class SDPacket(DataPacket):
         #check which packet type we have, and then decode accordingly 
         if self.packet_type==b'C1':
             packet_info = packets['CryoeggPacket']
-            instrument_id=0
+            instrument_id=int.from_bytes(instrument_packet[packet_info['user_id']['start_index']:packet_info['user_id']['end_index']],
+                                        byteorder = 'little', signed=False)
             conductivity_raw=int.from_bytes(instrument_packet[packet_info['conductivity']['start_index']:packet_info['conductivity']['end_index']],
                                         byteorder = 'little', signed=False)
             temperature_pt1000_raw = int.from_bytes(instrument_packet[packet_info['temperature_pt1000']['start_index']:packet_info['temperature_pt1000']['end_index']+1],
@@ -209,8 +201,9 @@ class SDPacket(DataPacket):
                                         byteorder = 'little', signed=True)
             battery_voltage = int.from_bytes(instrument_packet[packet_info['battery_voltage']['start_index']:packet_info['battery_voltage']['end_index']+1], byteorder = 'little', signed=True)
             sequence_number = int.from_bytes(instrument_packet[packet_info['sequence_number']['start_index']:packet_info['sequence_number']['end_index']+1],
-                                        byteorder = 'little', signed=True)
-         #   rssi=0
+                                        byteorder = 'little', signed=False)
+            rssi = int.from_bytes(instrument_packet[packet_info['rssi']['start_index']:packet_info['rssi']['end_index']+1],
+                                        byteorder = 'little', signed=False)
             packet_type=self.packet_type
             return CryoeggPacket(instrument_id=instrument_id,
                                  conductivity_raw=conductivity_raw,
@@ -219,7 +212,7 @@ class SDPacket(DataPacket):
                                  temperature_raw=temperature_raw, 
                                  battery_voltage=battery_voltage,
                                  sequence_number=sequence_number,
-                                 #rssi=rssi,
+                                 rssi=rssi,
                                  packet_type=packet_type
                                  )
         elif self.packet_type == b'W2':
@@ -259,6 +252,7 @@ class SDPacket(DataPacket):
             battery_voltage = int.from_bytes(instrument_packet[packet_info['battery_voltage']['start_index']:packet_info['battery_voltage']['end_index']+1], byteorder = 'little', signed=True)
             sequence_number = int.from_bytes(instrument_packet[packet_info['sequence_number']['start_index']:packet_info['sequence_number']['end_index']+1],
                                         byteorder = 'little', signed=True)
+            rssi=0
             packet_type=self.packet_type
             return CryowurstPacket(instrument_id=instrument_id,
                                     temperature_tmp117_raw=temperature_tmp117_raw,
@@ -278,7 +272,7 @@ class SDPacket(DataPacket):
                                     temperature_keller_raw=temperature_keller_raw,
                                     battery_voltage=battery_voltage,
                                     sequence_number=sequence_number,
-                                    #rssi=rssi,
+                                    rssi=rssi,
                                     packet_type=packet_type
                                     )
 
