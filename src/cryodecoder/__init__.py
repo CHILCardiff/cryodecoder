@@ -252,7 +252,8 @@ class SDPacket(DataPacket):
             battery_voltage = int.from_bytes(instrument_packet[packet_info['battery_voltage']['start_index']:packet_info['battery_voltage']['end_index']+1], byteorder = 'little', signed=True)
             sequence_number = int.from_bytes(instrument_packet[packet_info['sequence_number']['start_index']:packet_info['sequence_number']['end_index']+1],
                                         byteorder = 'little', signed=True)
-            rssi=0
+            rssi = int.from_bytes(instrument_packet[packet_info['rssi']['start_index']:packet_info['rssi']['end_index']+1],
+                                        byteorder = 'little', signed=False)
             packet_type=self.packet_type
             return CryowurstPacket(instrument_id=instrument_id,
                                     temperature_tmp117_raw=temperature_tmp117_raw,
