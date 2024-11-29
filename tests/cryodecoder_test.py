@@ -4,14 +4,6 @@ import datetime
 import toml
 import os
 
-# # region load info from packets.toml
-# with open('packets.toml', 'r') as f:
-#     packets= toml.load(f)
-
-# packet_types_string = list(packets['InstrumentType'].keys())
-# packet_types_bytes = [bytes(item, encoding='utf-8') for item in packet_types_string]
-# #endregion
-
 #region import test data
 packets_source = importlib.resources.files(cryodecoder).joinpath("packets.toml") 
 with importlib.resources.as_file(packets_source) as packet_config_path:
@@ -81,9 +73,8 @@ def test_receiver_sd_data():
         errors.append("channel number doesn't seem right")
     if not -50 <= receiver_packet.temperature<= 50:
         errors.append("temperature value doesn't seem right")
-        #comment this for now because not all instruments have pressure/the ranges are different
-#    if not -50 <= convert_keller_pressure(receiver_packet.pressure, 0, 30) <= 50:
-#        errors.append("pressure value doesn't seem right")
+    if not -50 <= convert_keller_pressure(receiver_packet.pressure, 0, 30) <= 50:
+        errors.append("pressure value doesn't seem right")
     if not 0 <= receiver_packet.voltage <= 10000:
         errors.append("voltage value doesn't seem right")
 
@@ -133,5 +124,3 @@ def test_wurst_decoding():
 
     # check for errors and report back
     assert not errors, "errors occured:\n{}".format("\n".join(errors))
-
-    raw_tmp_temp = int.from_bytes(packet.raw_data[28:30], byteorder = 'little', signed=True)
