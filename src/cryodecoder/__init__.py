@@ -194,7 +194,7 @@ class SDPacket(DataPacket):
             conductivity_raw=int.from_bytes(instrument_packet[packet_info['conductivity']['start_index']:packet_info['conductivity']['end_index']],
                                         byteorder = 'little', signed=False)
             temperature_pt1000_raw = int.from_bytes(instrument_packet[packet_info['temperature_pt1000']['start_index']:packet_info['temperature_pt1000']['end_index']+1],
-                                        byteorder = 'little', signed=False)
+                                        byteorder = 'little', signed=True)
             pressure_raw = int.from_bytes(instrument_packet[packet_info['pressure']['start_index']:packet_info['pressure']['end_index']+1],
                                         byteorder = 'little', signed=False)
             temperature_raw = int.from_bytes(instrument_packet[packet_info['temperature']['start_index']:packet_info['temperature']['end_index']+1],
@@ -217,8 +217,8 @@ class SDPacket(DataPacket):
                                  )
         elif self.packet_type == b'W2':
             packet_info = packets['CryowurstPacket']
-            #TODO instrument id
-            instrument_id=0
+            instrument_id=int.from_bytes(instrument_packet[packet_info['user_id']['start_index']:packet_info['user_id']['end_index']],
+                                        byteorder = 'little', signed=False)
             temperature_tmp117_raw=int.from_bytes(instrument_packet[packet_info['temperature']['start_index']:packet_info['temperature']['end_index']+1],
                                          byteorder = 'little', signed=True)
             mag_x_raw=int.from_bytes(instrument_packet[packet_info['magnetometer_x']['start_index']:packet_info['magnetometer_x']['end_index']+1],
