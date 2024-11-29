@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Stored data packets &#8212; cryodecoder 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=2bf1fcf8" />
+    
+    <script src="../_static/documentation_options.js?v=2709fde1"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Satellite packets" href="satellite_packets.html" />
+    <link rel="prev" title="CHIL instrument packet types" href="../packet_types.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="satellite_packets.html" title="Satellite packets"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../packet_types.html" title="CHIL instrument packet types"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">cryodecoder 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../packet_types.html" accesskey="U">CHIL instrument packet types</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Stored data packets</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="stored-data-packets">
+<span id="id1"></span><h1>Stored data packets<a class="headerlink" href="#stored-data-packets" title="Link to this heading">¶</a></h1>
+<p>All packets transmitted by satellite link or stored by the receiver are formatted in a binary format.  The type of packet can be established from a two character ASCII identifier which make up the first two bytes of a data packet. Valid values for these identifiers are tabulated below:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Identifier</p></th>
+<th class="head"><p>Packet Type</p></th>
+<th class="head"><p>Notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>C0</p></td>
+<td><p>Cryoegg 2019</p></td>
+<td><p>Original 2019 packet format, no longer
+in use.</p></td>
+</tr>
+<tr class="row-odd"><td><p>C1</p></td>
+<td><p>Cryoegg 2022</p></td>
+<td><p>Curently in use. Cryoegg data is
+unchanged from C1. Contains additional
+data from receiver (pressure,
+temperature, battery voltage)</p></td>
+</tr>
+<tr class="row-even"><td><p>W1</p></td>
+<td><p>Cryowurst 2023</p></td>
+<td><p>Original Cryowurst packet format, no
+longer in use</p></td>
+</tr>
+<tr class="row-odd"><td><p>W2</p></td>
+<td><p>Cryowurst 2024</p></td>
+<td><p>Currently in use, includes additional
+accelerometer data from IMU.</p></td>
+</tr>
+</tbody>
+</table>
+<section id="cryoegg">
+<h2>Cryoegg<a class="headerlink" href="#cryoegg" title="Link to this heading">¶</a></h2>
+<p>All Cryoegg packets begin with <strong>C</strong> and carry temperature, conductivity and pressure data.</p>
+<section id="c0-packets">
+<h3>C0 Packets<a class="headerlink" href="#c0-packets" title="Link to this heading">¶</a></h3>
+<p>The format of data within a <strong>C0</strong> packet is given below.  All multi-byte fields are <strong>little endian</strong> unless otherwise specified.  Each C0 packet is a total of <strong>25 bytes</strong> in length.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Offset</p></th>
+<th class="head"><p>Length</p></th>
+<th class="head"><p>Name</p></th>
+<th class="head"><p>Flag</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>2</p></td>
+<td><p>Identifier</p></td>
+<td></td>
+<td><p>ASCII packet identifier (‘C0’)</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>4</p></td>
+<td><p>Timestamp</p></td>
+<td><p>[Receiver]</p></td>
+<td><p>Receiver timestamp</p></td>
+</tr>
+<tr class="row-even"><td><p>6</p></td>
+<td><p>1</p></td>
+<td><p>C field</p></td>
+<td><p>[MBus]</p></td>
+<td><p>Control field</p></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>2</p></td>
+<td><p>M ID</p></td>
+<td><p>[MBus]</p></td>
+<td><p>Manufacturer ID</p></td>
+</tr>
+<tr class="row-even"><td><p>9</p></td>
+<td><p>4</p></td>
+<td><p>U ID</p></td>
+<td><p>[MBus]</p></td>
+<td><p>User ID (i.e. CE190001)</p></td>
+</tr>
+<tr class="row-odd"><td><p>13</p></td>
+<td><p>1</p></td>
+<td><p>Version</p></td>
+<td><p>[MBus]</p></td>
+<td><p>Version [number</p></td>
+</tr>
+<tr class="row-even"><td><p>14</p></td>
+<td><p>1</p></td>
+<td><p>Device</p></td>
+<td><p>[MBus]</p></td>
+<td><p>Device ID</p></td>
+</tr>
+<tr class="row-odd"><td><p>15</p></td>
+<td><p>1</p></td>
+<td><p>CI field</p></td>
+<td><p>[MBus]</p></td>
+<td><p>CI field</p></td>
+</tr>
+<tr class="row-even"><td><p>16</p></td>
+<td><p>2</p></td>
+<td><p>Conductivity</p></td>
+<td><p>[Data]</p></td>
+<td><p>Raw conductivity ADC value</p></td>
+</tr>
+<tr class="row-odd"><td><p>18</p></td>
+<td><p>2</p></td>
+<td><p>Temperature (PT1000)</p></td>
+<td><p>[Data]</p></td>
+<td><p>Raw value from PT1000 temperature sensor</p></td>
+</tr>
+<tr class="row-even"><td><p>20</p></td>
+<td><p>2</p></td>
+<td><p>Pressure (Keller)</p></td>
+<td><p>[Data]</p></td>
+<td><p>Raw pressure from Keller pressure sensor</p></td>
+</tr>
+<tr class="row-odd"><td><p>22</p></td>
+<td><p>2</p></td>
+<td><p>Temperature (Keller)</p></td>
+<td><p>[Data]</p></td>
+<td><p>Raw temperature from Keller pressure sensor</p></td>
+</tr>
+<tr class="row-even"><td><p>24</p></td>
+<td><p>1</p></td>
+<td><p>RSSI</p></td>
+<td><p>[MBus]</p></td>
+<td><p>Received signal strength (dBm)foramt</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="c1-packets">
+<h3>C1 Packets<a class="headerlink" href="#c1-packets" title="Link to this heading">¶</a></h3>
+<p>The format of data within a <strong>C1</strong> packet is given below.  All multi-byte fields are <strong>little endian</strong> unless otherwise specified.  Each C1 packet is a total of <strong>40 bytes</strong> in length.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Offset</p></th>
+<th class="head"><p>Length</p></th>
+<th class="head"><p>Name</p></th>
+<th class="head"><p>Flag</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>2</p></td>
+<td><p>Identifier</p></td>
+<td></td>
+<td><p>ASCII packet identifier (‘C1’)</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>4</p></td>
+<td><p>Timestamp</p></td>
+<td><p>[Receiver]</p></td>
+<td><p>Receiver timestamp</p></td>
+</tr>
+<tr class="row-even"><td><p>6</p></td>
+<td><p>4</p></td>
+<td><p>Logger Temperature</p></td>
+<td><p>[Receiver]</p></td>
+<td><p>Temperature at receiver</p></td>
+</tr>
+<tr class="row-odd"><td><p>10</p></td>
+<td><p>4</p></td>
+<td><p>Logger Pressure</p></td>
+<td><p>[Receiver]</p></td>
+<td><p>Barometric pressure at receiver</p></td>
+</tr>
+<tr class="row-even"><td><p>14</p></td>
+<td><p>2</p></td>
+<td><p>Logger Voltage</p></td>
+<td><p>[Receiver]</p></td>
+<td><p>Solar panel/battery voltage at receiver</p></td>
+</tr>
+<tr class="row-odd"><td><p>16</p></td>
+<td><p>1</p></td>
+<td><p>Channel Number</p></td>
+<td><p>[Receiver]</p></td>
+<td><p>Receiver channel number</p></td>
+</tr>
+<tr class="row-even"><td><p>17</p></td>
+<td><p>1</p></td>
+<td><p>Length</p></td>
+<td></td>
+<td><p>Number of bytes in packet (TODO: clarify length)</p></td>
+</tr>
+<tr class="row-odd"><td><p>18</p></td>
+<td><p>1</p></td>
+<td><p>C field</p></td>
+<td><p>[MBus]</p></td>
+<td><p>Control field</p></td>
+</tr>
+<tr class="row-even"><td><p>19</p></td>
+<td><p>2</p></td>
+<td><p>M ID</p></td>
+<td><p>[MBus]</p></td>
+<td><p>Manufacturer ID</p></td>
+</tr>
+<tr class="row-odd"><td><p>21</p></td>
+<td><p>4</p></td>
+<td><p>U ID</p></td>
+<td><p>[MBus]</p></td>
+<td><p>User ID (i.e. CE230001)</p></td>
+</tr>
+<tr class="row-even"><td><p>25</p></td>
+<td><p>1</p></td>
+<td><p>Version</p></td>
+<td><p>[MBus]</p></td>
+<td><p>Version number</p></td>
+</tr>
+<tr class="row-odd"><td><p>26</p></td>
+<td><p>1</p></td>
+<td><p>Device</p></td>
+<td><p>[MBus]</p></td>
+<td><p>Device ID</p></td>
+</tr>
+<tr class="row-even"><td><p>27</p></td>
+<td><p>1</p></td>
+<td><p>CI field</p></td>
+<td><p>[MBus]</p></td>
+<td><p>CI field</p></td>
+</tr>
+<tr class="row-odd"><td><p>28</p></td>
+<td><p>2</p></td>
+<td><p>Conductivity</p></td>
+<td><p>[Data]</p></td>
+<td><p>Raw conductivity ADC value</p></td>
+</tr>
+<tr class="row-even"><td><p>30</p></td>
+<td><p>2</p></td>
+<td><p>Temperature (PT1000)</p></td>
+<td><p>[Data]</p></td>
+<td><p>Raw value from PT1000 temperature sensor</p></td>
+</tr>
+<tr class="row-odd"><td><p>32</p></td>
+<td><p>2</p></td>
+<td><p>Pressure (Keller)</p></td>
+<td><p>[Data]</p></td>
+<td><p>Raw pressure from Keller pressure sensor</p></td>
+</tr>
+<tr class="row-even"><td><p>34</p></td>
+<td><p>2</p></td>
+<td><p>Temperature (Keller)</p></td>
+<td><p>[Data]</p></td>
+<td><p>Raw temperature from Keller pressure sensor</p></td>
+</tr>
+<tr class="row-odd"><td><p>36</p></td>
+<td><p>2</p></td>
+<td><p>Battery voltage</p></td>
+<td><p>[Data]</p></td>
+<td><p>Battery voltage in millivolts</p></td>
+</tr>
+<tr class="row-even"><td><p>38</p></td>
+<td><p>1</p></td>
+<td><p>Sequence number</p></td>
+<td><p>[Data]</p></td>
+<td><p>Radio packet sequence number from 0 to 255</p></td>
+</tr>
+<tr class="row-odd"><td><p>39</p></td>
+<td><p>1</p></td>
+<td><p>RSSI</p></td>
+<td><p>[MBus]</p></td>
+<td><p>Received signal strength (dBm)</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="cryowurst">
+<h2>Cryowurst<a class="headerlink" href="#cryowurst" title="Link to this heading">¶</a></h2>
+<p>All Cryowurst packets begin with <strong>W</strong> and carry temperature, conductivity, pressure and orientation data.</p>
+<section id="w1-packets">
+<h3>W1 Packets<a class="headerlink" href="#w1-packets" title="Link to this heading">¶</a></h3>
+<p>The format of data within a <strong>W1</strong> packet is given below.  All multi-byte fields are <strong>big endian</strong> unless otherwise specified.  Each W1 packet is a total of <strong>56 bytes</strong> in length.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Offset</p></th>
+<th class="head"><p>Length</p></th>
+<th class="head"><p>Name</p></th>
+<th class="head"><p>Flag</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>2</p></td>
+<td><p>Identifier</p></td>
+<td></td>
+<td><p>ASCII packet identifier (‘W1’)</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>4</p></td>
+<td><p>Timestamp</p></td>
+<td><p>[Receiver]</p></td>
+<td><p>Receiver timestamp</p></td>
+</tr>
+<tr class="row-even"><td><p>6</p></td>
+<td><p>4</p></td>
+<td><p>Logger Temperature</p></td>
+<td><p>[Receiver]</p></td>
+<td><p>Temperature at receiver</p></td>
+</tr>
+<tr class="row-odd"><td><p>10</p></td>
+<td><p>4</p></td>
+<td><p>Logger Pressure</p></td>
+<td><p>[Receiver]</p></td>
+<td><p>Barometric pressure at receiver</p></td>
+</tr>
+<tr class="row-even"><td><p>14</p></td>
+<td><p>4</p></td>
+<td><p>Logger Voltage</p></td>
+<td><p>[Receiver]</p></td>
+<td><p>Solar panel/battery voltage at receiver</p></td>
+</tr>
+<tr class="row-odd"><td><p>18</p></td>
+<td><p>1</p></td>
+<td><p>Channel Number</p></td>
+<td><p>[Receiver]</p></td>
+<td><p>Receiver channel number</p></td>
+</tr>
+<tr class="row-even"><td><p>19</p></td>
+<td><p>1</p></td>
+<td><p>Length</p></td>
+<td><p>[Receiver]</p></td>
+<td><p>Number of bytes in packet (TODO: clarify length)</p></td>
+</tr>
+<tr class="row-odd"><td><p>20</p></td>
+<td><p>1</p></td>
+<td><p>C field</p></td>
+<td><p>[MBus]</p></td>
+<td><p>Control field</p></td>
+</tr>
+<tr class="row-even"><td><p>21</p></td>
+<td><p>2</p></td>
+<td><p>M ID</p></td>
+<td><p>[MBus]</p></td>
+<td><p>Manufacturer ID</p></td>
+</tr>
+<tr class="row-odd"><td><p>23</p></td>
+<td><p>4</p></td>
+<td><p>U ID</p></td>
+<td><p>[MBus]</p></td>
+<td><p>User ID (i.e. CE230001)</p></td>
+</tr>
+<tr class="row-even"><td><p>27</p></td>
+<td><p>1</p></td>
+<td><p>Version</p></td>
+<td><p>[MBus]</p></td>
+<td><p>Version number</p></td>
+</tr>
+<tr class="row-odd"><td><p>28</p></td>
+<td><p>1</p></td>
+<td><p>Device</p></td>
+<td><p>[MBus]</p></td>
+<td><p>Device ID</p></td>
+</tr>
+<tr class="row-even"><td><p>29</p></td>
+<td><p>1</p></td>
+<td><p>CI field</p></td>
+<td><p>[MBus]</p></td>
+<td><p>CI field</p></td>
+</tr>
+<tr class="row-odd"><td><p>30</p></td>
+<td><p>2</p></td>
+<td><p>Temperature</p></td>
+<td><p>[Data]</p></td>
+<td><p>Temperature from TMP117 sensor</p></td>
+</tr>
+<tr class="row-even"><td><p>32</p></td>
+<td><p>2</p></td>
+<td><p>Magnetometer (X)</p></td>
+<td><p>[Data]</p></td>
+<td><p>Magnetic field strength from TDK 20948 IMU</p></td>
+</tr>
+<tr class="row-odd"><td><p>34</p></td>
+<td><p>2</p></td>
+<td><p>Magnetometer (Y)</p></td>
+<td><p>[Data]</p></td>
+<td><p>Magnetic field strength from TDK 20948 IMU</p></td>
+</tr>
+<tr class="row-even"><td><p>36</p></td>
+<td><p>2</p></td>
+<td><p>Magnetometer (Z)</p></td>
+<td><p>[Data]</p></td>
+<td><p>Magnetic field strength from TDK 20948 IMU</p></td>
+</tr>
+<tr class="row-odd"><td><p>38</p></td>
+<td><p>2</p></td>
+<td><p>Accelerometer (TILT, X)</p></td>
+<td><p>[Data]</p></td>
+<td><p>Acceleration from TILT-05 sensor</p></td>
+</tr>
+<tr class="row-even"><td><p>40</p></td>
+<td><p>2</p></td>
+<td><p>Accelerometer (TILT, Y)</p></td>
+<td><p>[Data]</p></td>
+<td><p>Acceleration from TILT-05 sensor</p></td>
+</tr>
+<tr class="row-odd"><td><p>42</p></td>
+<td><p>2</p></td>
+<td><p>Accelerometer (TILT, Z)</p></td>
+<td><p>[Data]</p></td>
+<td><p>Acceleration from TILT-05 sensor</p></td>
+</tr>
+<tr class="row-even"><td><p>44</p></td>
+<td><p>2</p></td>
+<td><p>Pitch (X)</p></td>
+<td><p>[Data]</p></td>
+<td><p>Pitch from TILT-05 sensor</p></td>
+</tr>
+<tr class="row-odd"><td><p>46</p></td>
+<td><p>2</p></td>
+<td><p>Roll (Y)</p></td>
+<td><p>[Data]</p></td>
+<td><p>Roll from TILT-05 sensor</p></td>
+</tr>
+<tr class="row-even"><td><p>48</p></td>
+<td><p>2</p></td>
+<td><p>Conductivity</p></td>
+<td><p>[Data]</p></td>
+<td><p>Raw ADC value from electrical conductivity sensor</p></td>
+</tr>
+<tr class="row-odd"><td><p>50</p></td>
+<td><p>2</p></td>
+<td><p>Pressure</p></td>
+<td><p>[Data]</p></td>
+<td><p>Raw value from Keller pressure sensor</p></td>
+</tr>
+<tr class="row-even"><td><p>52</p></td>
+<td><p>2</p></td>
+<td><p>Battery</p></td>
+<td><p>[Data]</p></td>
+<td><p>Battery voltage in millivolts</p></td>
+</tr>
+<tr class="row-odd"><td><p>54</p></td>
+<td><p>1</p></td>
+<td><p>Sequence number</p></td>
+<td><p>[Data]</p></td>
+<td><p>Radio packet sequence number from 0 to 255</p></td>
+</tr>
+<tr class="row-even"><td><p>55</p></td>
+<td><p>1</p></td>
+<td><p>RSSI</p></td>
+<td><p>[MBus]</p></td>
+<td><p>Received signal strength (dBm)</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="w2-packets">
+<h3>W2 Packets<a class="headerlink" href="#w2-packets" title="Link to this heading">¶</a></h3>
+<p>The format of data within a <strong>W2</strong> packet is given below.  All multi-byte fields are <strong>big endian</strong> unless otherwise specified.  Each W2 packet is a total of <strong>62 bytes</strong> in length.  The W2 packet was introduced in August 2024 to allow for comparison between the TDK ICM 20948 and TILT-05 the accelerometer data.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Offset</p></th>
+<th class="head"><p>Length</p></th>
+<th class="head"><p>Name</p></th>
+<th class="head"><p>Flag</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>2</p></td>
+<td><p>Identifier</p></td>
+<td></td>
+<td><p>ASCII packet identifier (‘W1’)</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>4</p></td>
+<td><p>Timestamp</p></td>
+<td><p>[Receiver]</p></td>
+<td><p>Receiver timestamp</p></td>
+</tr>
+<tr class="row-even"><td><p>6</p></td>
+<td><p>4</p></td>
+<td><p>Logger Temperature</p></td>
+<td><p>[Receiver]</p></td>
+<td><p>Temperature at receiver</p></td>
+</tr>
+<tr class="row-odd"><td><p>10</p></td>
+<td><p>4</p></td>
+<td><p>Logger Pressure</p></td>
+<td><p>[Receiver]</p></td>
+<td><p>Barometric pressure at receiver</p></td>
+</tr>
+<tr class="row-even"><td><p>14</p></td>
+<td><p>2</p></td>
+<td><p>Logger Voltage</p></td>
+<td><p>[Receiver]</p></td>
+<td><p>Solar panel/battery voltage at receiver</p></td>
+</tr>
+<tr class="row-odd"><td><p>16</p></td>
+<td><p>1</p></td>
+<td><p>Channel Number</p></td>
+<td><p>[Receiver]</p></td>
+<td><p>Receiver channel number</p></td>
+</tr>
+<tr class="row-even"><td><p>17</p></td>
+<td><p>1</p></td>
+<td><p>Length</p></td>
+<td><p>[Receiver]</p></td>
+<td><p>Number of bytes in packet (TODO: clarify length)</p></td>
+</tr>
+<tr class="row-odd"><td><p>18</p></td>
+<td><p>1</p></td>
+<td><p>C field</p></td>
+<td><p>[MBus]</p></td>
+<td><p>Control field</p></td>
+</tr>
+<tr class="row-even"><td><p>19</p></td>
+<td><p>2</p></td>
+<td><p>M ID</p></td>
+<td><p>[MBus]</p></td>
+<td><p>Manufacturer ID</p></td>
+</tr>
+<tr class="row-odd"><td><p>21</p></td>
+<td><p>4</p></td>
+<td><p>U ID</p></td>
+<td><p>[MBus]</p></td>
+<td><p>User ID (i.e. CE230001)</p></td>
+</tr>
+<tr class="row-even"><td><p>25</p></td>
+<td><p>1</p></td>
+<td><p>Version</p></td>
+<td><p>[MBus]</p></td>
+<td><p>Version number</p></td>
+</tr>
+<tr class="row-odd"><td><p>26</p></td>
+<td><p>1</p></td>
+<td><p>Device</p></td>
+<td><p>[MBus]</p></td>
+<td><p>Device ID</p></td>
+</tr>
+<tr class="row-even"><td><p>27</p></td>
+<td><p>1</p></td>
+<td><p>CI field</p></td>
+<td><p>[MBus]</p></td>
+<td><p>CI field</p></td>
+</tr>
+<tr class="row-odd"><td><p>28</p></td>
+<td><p>2</p></td>
+<td><p>Temperature</p></td>
+<td><p>[Data]</p></td>
+<td><p>Temperature from TMP117 sensor</p></td>
+</tr>
+<tr class="row-even"><td><p>30</p></td>
+<td><p>2</p></td>
+<td><p>Magnetometer (X)</p></td>
+<td><p>[Data]</p></td>
+<td><p>Magnetic field strength from TDK 20948 IMU</p></td>
+</tr>
+<tr class="row-odd"><td><p>32</p></td>
+<td><p>2</p></td>
+<td><p>Magnetometer (Y)</p></td>
+<td><p>[Data]</p></td>
+<td><p>Magnetic field strength from TDK 20948 IMU</p></td>
+</tr>
+<tr class="row-even"><td><p>34</p></td>
+<td><p>2</p></td>
+<td><p>Magnetometer (Z)</p></td>
+<td><p>[Data]</p></td>
+<td><p>Magnetic field strength from TDK 20948 IMU</p></td>
+</tr>
+<tr class="row-odd"><td><p>36</p></td>
+<td><p>2</p></td>
+<td><p>Accelerometer (IMU, X)</p></td>
+<td><p>[Data]</p></td>
+<td><p>Acceleration from TDK 20948 IMU</p></td>
+</tr>
+<tr class="row-even"><td><p>38</p></td>
+<td><p>2</p></td>
+<td><p>Accelerometer (IMU, Y)</p></td>
+<td><p>[Data]</p></td>
+<td><p>Acceleration from TDK 20948 IMU</p></td>
+</tr>
+<tr class="row-odd"><td><p>40</p></td>
+<td><p>2</p></td>
+<td><p>Accelerometer (IMU, Z)</p></td>
+<td><p>[Data]</p></td>
+<td><p>Acceleration from TDK 20948 IMU</p></td>
+</tr>
+<tr class="row-even"><td><p>42</p></td>
+<td><p>2</p></td>
+<td><p>Accelerometer (TILT, X)</p></td>
+<td><p>[Data]</p></td>
+<td><p>Acceleration from TILT-05 sensor</p></td>
+</tr>
+<tr class="row-odd"><td><p>44</p></td>
+<td><p>2</p></td>
+<td><p>Accelerometer (TILT, Y)</p></td>
+<td><p>[Data]</p></td>
+<td><p>Acceleration from TILT-05 sensor</p></td>
+</tr>
+<tr class="row-even"><td><p>46</p></td>
+<td><p>2</p></td>
+<td><p>Accelerometer (TILT, Z)</p></td>
+<td><p>[Data]</p></td>
+<td><p>Acceleration from TILT-05 sensor</p></td>
+</tr>
+<tr class="row-odd"><td><p>48</p></td>
+<td><p>2</p></td>
+<td><p>Pitch (X)</p></td>
+<td><p>[Data]</p></td>
+<td><p>Pitch from TILT-05 sensor</p></td>
+</tr>
+<tr class="row-even"><td><p>50</p></td>
+<td><p>2</p></td>
+<td><p>Roll (Y)</p></td>
+<td><p>[Data]</p></td>
+<td><p>Roll from TILT-05 sensor</p></td>
+</tr>
+<tr class="row-odd"><td><p>52</p></td>
+<td><p>2</p></td>
+<td><p>Conductivity</p></td>
+<td><p>[Data]</p></td>
+<td><p>Raw ADC value from electrical conductivity sensor</p></td>
+</tr>
+<tr class="row-even"><td><p>54</p></td>
+<td><p>2</p></td>
+<td><p>Pressure</p></td>
+<td><p>[Data]</p></td>
+<td><p>Raw value from Keller pressure sensor</p></td>
+</tr>
+<tr class="row-odd"><td><p>56</p></td>
+<td><p>2</p></td>
+<td><p>Battery</p></td>
+<td><p>[Data]</p></td>
+<td><p>Battery voltage in millivolts</p></td>
+</tr>
+<tr class="row-even"><td><p>58</p></td>
+<td><p>1</p></td>
+<td><p>Sequence number</p></td>
+<td><p>[Data]</p></td>
+<td><p>Radio packet sequence number from 0 to 255</p></td>
+</tr>
+<tr class="row-odd"><td><p>59</p></td>
+<td><p>1</p></td>
+<td><p>RSSI</p></td>
+<td><p>[Mbus]</p></td>
+<td><p>Received signal strength (dBm)</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="hydrobean">
+<h2>Hydrobean<a class="headerlink" href="#hydrobean" title="Link to this heading">¶</a></h2>
+<p>Hydrobean packets are not yet supported.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Stored data packets</a><ul>
+<li><a class="reference internal" href="#cryoegg">Cryoegg</a><ul>
+<li><a class="reference internal" href="#c0-packets">C0 Packets</a></li>
+<li><a class="reference internal" href="#c1-packets">C1 Packets</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#cryowurst">Cryowurst</a><ul>
+<li><a class="reference internal" href="#w1-packets">W1 Packets</a></li>
+<li><a class="reference internal" href="#w2-packets">W2 Packets</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#hydrobean">Hydrobean</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../packet_types.html"
+                          title="previous chapter">CHIL instrument packet types</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="satellite_packets.html"
+                          title="next chapter">Satellite packets</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/packet_types/sd_packets.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="satellite_packets.html" title="Satellite packets"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../packet_types.html" title="CHIL instrument packet types"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">cryodecoder 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../packet_types.html" >CHIL instrument packet types</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Stored data packets</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2024 - CHIL, Cardiff University.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>
