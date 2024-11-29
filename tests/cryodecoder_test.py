@@ -27,9 +27,9 @@ wursttest_source = importlib.resources.files(cryodecoder).joinpath("../../tests/
 with  open(wursttest_source, 'rb') as test_file:
     test_wurst_data = test_file.read()
 
-test_sd_data = test_wurst_data + test_egg_data
-single_wurst_sd = bytes_to_packets(test_wurst_data)[0]
+test_sd_data = test_egg_data + test_wurst_data
 single_egg_sd = bytes_to_packets(test_egg_data)[0]
+single_wurst_sd = bytes_to_packets(test_wurst_data)[0]
 
 #random invalid byte string for testing
 invalid_sd = b'\x8d\xad\xd3\xe4\x0f\x9d\x3e\x67\x71\x2d\x24\x96\x34\xf2\x52\xad\x59\xdb\xf0\xed\x82\x59\xe2\x16\xfd\x6a\xd8\xb5\xbb\xce\xb0\x84\x8e\x2d\x98\x9f\x1a\xe3\x8d\x7b\xb7\x8b\x1f\x17\xe6\xae\x1c\xf0\x91\xf6\x60\x74\x26\x09\xdb\xe5\x9f\x8b\x01\xe6\x13\xfb\x3b\xea\xfc\x6f\x57\x56\x27\x64\x8c\xbb\x57\x8f\x5c\x51\x7e\xb9\x73\xea\x18\xf5\xd7\xce\x1a\x94\xb9\x7e\xb9\x72\x34\x96\x56\x15\xb8\xd6\xa9\xe9\x6b\xf2\xfb\x87\xa7\xae\xed\xdb\x43\x5d\x66\xac'
@@ -66,19 +66,9 @@ def test_sd_import():
 
 #test that SDPacket class creates an object with the right identifier
 def test_sdpacket_identifier():
-    packet = SDPacket(single_egg_sd)
+    packet = SDPacket(single_wurst_sd)
     assert packet.packet_type in packet_types_bytes
 
-#test that get_instrument_packet returns reasonable values from cryoegg packet
-def test_sd_egg_decoding():
-    packet = cryodecoder.SDPacket(single_egg_sd).get_instrument_packet()
-    assert type(packet.conductivity_raw)==int, 'conductivity value is not int'
-
-def test_sd_egg_receiver_decoding():
-    receiver_packet = cryodecoder.SDPacket(single_egg_sd).get_receiver_packet()
-    assert type(receiver_packet.voltage)==int
-    assert type(receiver_packet.voltage)==int
-    
 #test if data decoded from receiver packet are reasonable values
 def test_receiver_sd_data():
     packet=cryodecoder.SDPacket(single_egg_sd)
@@ -120,3 +110,28 @@ def test_egg_decoding():
 
     # check for errors and report back
     assert not errors, "errors occured:\n{}".format("\n".join(errors))
+
+def test_wurst_decoding():
+    packet=cryodecoder.SDPacket(single_wurst_sd)
+    wurst_packet = packet.get_instrument_packet()
+    errors = []
+
+    if not '{0:x}'.format(wurst_packet.instrument_id)[0:2]=='cf':
+        errors.append("instrument id doesn't seem right")
+    if not -50 <= wurst_packet.temperature_tmp117_raw*0.0078125 <= 50:
+        errors.append("tmp temperature value doesn't seem right")
+    if not -50 <= convert_keller_temperature(wurst_packet.temperature_keller_raw) <= 50:
+        errors.append("temperature value doesn't seem right")
+    if not 0 <= wurst_packet.conductivity_raw<= 3000:
+        errors.append("conductivity doesn't seem right")
+    if not 3000 <= wurst_packet.battery_voltage<= 4000:
+        errors.append("voltage doesn't seem right")
+    if not 0 <= wurst_packet.sequence_number<= 256:
+        errors.append("sequence number doesn't seem right")
+    if not 0 <= wurst_packet.rssi<= 1000:
+        errors.append("rssi doesn't seem right")
+
+    # check for errors and report back
+    assert not errors, "errors occured:\n{}".format("\n".join(errors))
+
+    raw_tmp_temp = int.from_bytes(packet.raw_data[28:30], byteorder = 'little', signed=True)
