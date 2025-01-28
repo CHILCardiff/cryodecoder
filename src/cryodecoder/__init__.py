@@ -69,7 +69,7 @@ class CryoeggPacket(InstrumentPacket):
     rssi                    : float
     packet_type          : str
     # Database-only: generated when retrieving from cryodb
-    cryoegg_raw_id      : int = None,
+    cryoegg_raw_id      : int = None
     receiver_data_id    : int = None
     ingest_id           : int = None
     
