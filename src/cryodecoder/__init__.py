@@ -1,11 +1,17 @@
 from abc import abstractmethod
 from dataclasses import dataclass
-import toml
 import datetime
-import importlib.resources
 import os
 import cryodecoder
 import struct
+import sys
+
+if sys.version_info[1] > 11:
+    import tomllib as toml
+    import importlib.resources as importlib_resources
+else:
+    import toml
+    import importlib_resources as importlib_resources
 
 #region load in info from packets.toml
 
@@ -14,8 +20,8 @@ packets = None
 
 # Import packets definition
 #source = importlib.resources.files(__package__).joinpath("packets.toml") 
-source = importlib.resources.files(cryodecoder).joinpath("packets.toml") 
-with importlib.resources.as_file(source) as packet_config_path:
+source = importlib_resources.files(cryodecoder).joinpath("packets.toml") 
+with importlib_resources.as_file(source) as packet_config_path:
     with open(packet_config_path, "r") as fh:
         packets = toml.load(fh)
     
@@ -69,7 +75,7 @@ class CryoeggPacket(InstrumentPacket):
     rssi                    : float
     packet_type          : str
     # Database-only: generated when retrieving from cryodb
-    cryoegg_raw_id      : int = None,
+    cryoegg_raw_id      : int = None
     receiver_data_id    : int = None
     ingest_id           : int = None
     
