@@ -22,7 +22,7 @@ packets = None
 #source = importlib.resources.files(__package__).joinpath("packets.toml") 
 source = importlib_resources.files(cryodecoder).joinpath("packets.toml") 
 with importlib_resources.as_file(source) as packet_config_path:
-    with open(packet_config_path, "r") as fh:
+    with open(packet_config_path, "rb") as fh:
         packets = toml.load(fh)
     
 # And finally check that we've actually imported something
@@ -172,10 +172,9 @@ class SDPacket(DataPacket):
         timestamp=datetime.datetime.fromtimestamp(timestamp_unix)
         voltage = int.from_bytes(receiver_packet_raw[packet_info['logger_voltage']['start_index']:packet_info['logger_voltage']['end_index']+1],
                                    byteorder='little')
-        [temperature] = struct.unpack('f',receiver_packet_raw[packet_info['logger_temp']['start_index']:packet_info['logger_temp']['end_index']+1]) 
+        [temperature] = struct.unpack('<f',receiver_packet_raw[packet_info['logger_temp']['start_index']:packet_info['logger_temp']['end_index']+1]) 
 #            pressure= struct.unpack('f',receiver_packet_raw[packet_info['logger_pressure']['start_index']:packet_info['logger_pressure']['end_index']+1]) 
-        pressure= int.from_bytes(receiver_packet_raw[packet_info['logger_pressure']['start_index']:packet_info['logger_pressure']['end_index']+1], 
-                                    byteorder = 'little', signed=True)
+        [pressure]= struct.unpack('<f',receiver_packet_raw[packet_info['logger_pressure']['start_index']:packet_info['logger_pressure']['end_index']+1])
         channel= int.from_bytes(receiver_packet_raw[packet_info['channel_number']['start_index']:packet_info['channel_number']['end_index']+1], 
                                     byteorder = 'little', signed=False)
         receiver_packet = ReceiverPacket(timestamp=timestamp,

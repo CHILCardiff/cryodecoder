@@ -4,19 +4,26 @@ import datetime
 import toml
 import os
 
+if sys.version_info[1] > 11:
+    import tomllib as toml
+    import importlib.resources as importlib_resources
+else:
+    import toml
+    import importlib_resources as importlib_resources
+
 #region import test data
-packets_source = importlib.resources.files(cryodecoder).joinpath("packets.toml") 
-with importlib.resources.as_file(packets_source) as packet_config_path:
-    with open(packet_config_path, "r") as f:
+packets_source = importlib_resources.files(cryodecoder).joinpath("packets.toml") 
+with importlib_resources.as_file(packets_source) as packet_config_path:
+    with open(packet_config_path, "rb") as f:
         packets = toml.load(f)
 
 
-eggtest_source = importlib.resources.files(cryodecoder).joinpath("../../tests/data/CRYOEGG_test.log") 
-with  open(eggtest_source, 'rb') as test_file:
+eggtest_source = importlib_resources.files(cryodecoder).joinpath("../../tests/data/CRYOEGG_test.log") 
+with open(eggtest_source, 'rb') as test_file:
     test_egg_data = test_file.read()
 
-wursttest_source = importlib.resources.files(cryodecoder).joinpath("../../tests/data/CWURST_test.log") 
-with  open(wursttest_source, 'rb') as test_file:
+wursttest_source = importlib_resources.files(cryodecoder).joinpath("../../tests/data/CWURST_test.log") 
+with open(wursttest_source, 'rb') as test_file:
     test_wurst_data = test_file.read()
 
 test_sd_data = test_egg_data + test_wurst_data
@@ -65,39 +72,29 @@ def test_sdpacket_identifier():
 def test_receiver_sd_data():
     packet=cryodecoder.SDPacket(single_egg_sd)
     receiver_packet = packet.get_receiver_packet()
-    errors = []
 
-    if not datetime.datetime(2017, 1, 1, 0, 0, 0) <= receiver_packet.timestamp <= datetime.datetime(2027, 1, 1, 0, 0, 0):
-        errors.append("timestamp doesn't seem right")
-    if not receiver_packet.channel in [1,2]:
-        errors.append("channel number doesn't seem right")
-    if not -50 <= receiver_packet.temperature<= 50:
-        errors.append("temperature value doesn't seem right")
-    if not -50 <= convert_keller_pressure(receiver_packet.pressure, 0, 30) <= 50:
-        errors.append("pressure value doesn't seem right")
-    if not 0 <= receiver_packet.voltage <= 10000:
-        errors.append("voltage value doesn't seem right")
+    # Test timestamp
+    assert datetime.datetime(2017, 1, 1, 0, 0, 0) <= receiver_packet.timestamp <= datetime.datetime(2027, 1, 1, 0, 0, 0), "timestamp doesn't seem right"
+    # Test receiver channel
+    assert receiver_packet.channel in [1,2], "channel number doesn't seem right"
+    # Test temperature
+    assert -50 <= receiver_packet.temperature<= 50, "temperature value doesn't seem right"
+    # Test keller pressure value
+    assert -50 <= convert_keller_pressure(receiver_packet.pressure, 0, 30) <= 50, "pressure value doesn't seem right"
 
-    # check for errors and report back
-    assert not errors, "errors occured:\n{}".format("\n".join(errors))
+    assert 0 <= receiver_packet.voltage <= 10000, "voltage value doesn't seem right"
 
 def test_egg_decoding():
     packet=cryodecoder.SDPacket(single_egg_sd)
     egg_packet = packet.get_instrument_packet()
     errors = []
 
-    if not '{0:x}'.format(egg_packet.instrument_id)[0:2]=='ce':
-        errors.append("instrument id doesn't seem right")
-    if not 0 <= egg_packet.conductivity_raw<= 5000:
-        errors.append("conductivity doesn't seem right")
-    if not -50 <= convert_keller_temperature(egg_packet.temperature_pt1000_raw)<= 50:
-        errors.append("temperature value doesn't seem right")
-    if not 3000 <= egg_packet.battery_voltage<= 5000:
-        errors.append("voltage doesn't seem right")
-    if not 0 <= egg_packet.sequence_number<= 256:
-        errors.append("sequence number doesn't seem right")
-    if not 0 <= egg_packet.rssi<= 1000:
-        errors.append("rssi doesn't seem right")
+    assert '{0:x}'.format(egg_packet.instrument_id)[0:2]=='ce', "instrument id doesn't seem right"
+    assert 0 <= egg_packet.conductivity_raw<= 5000, "conductivity doesn't seem right"
+    assert -50 <= convert_keller_temperature(egg_packet.temperature_pt1000_raw)<= 50, "temperature value doesn't seem right"
+    assert 3000 <= egg_packet.battery_voltage<= 5000, "voltage doesn't seem right"
+    assert 0 <= egg_packet.sequence_number<= 256, "sequence number doesn't seem right"
+    assert 0 <= egg_packet.rssi<= 1000, "rssi doesn't seem right"
 
     # check for errors and report back
     assert not errors, "errors occured:\n{}".format("\n".join(errors))
@@ -107,20 +104,13 @@ def test_wurst_decoding():
     wurst_packet = packet.get_instrument_packet()
     errors = []
 
-    if not '{0:x}'.format(wurst_packet.instrument_id)[0:2]=='cf':
-        errors.append("instrument id doesn't seem right")
-    if not -50 <= wurst_packet.temperature_tmp117_raw*0.0078125 <= 50:
-        errors.append("tmp temperature value doesn't seem right")
-    if not -50 <= convert_keller_temperature(wurst_packet.temperature_keller_raw) <= 50:
-        errors.append("temperature value doesn't seem right")
-    if not 0 <= wurst_packet.conductivity_raw<= 3000:
-        errors.append("conductivity doesn't seem right")
-    if not 3000 <= wurst_packet.battery_voltage<= 4000:
-        errors.append("voltage doesn't seem right")
-    if not 0 <= wurst_packet.sequence_number<= 256:
-        errors.append("sequence number doesn't seem right")
-    if not 0 <= wurst_packet.rssi<= 1000:
-        errors.append("rssi doesn't seem right")
+    assert wurst_packet.instrument_id >> 24 == 0xCF, "instrument id doesn't seem right"
+    assert -50 <= wurst_packet.temperature_tmp117_raw*0.0078125 <= 50, "tmp temperature value doesn't seem right"
+    assert -50 <= convert_keller_temperature(wurst_packet.temperature_keller_raw) <= 50, "temperature value doesn't seem right"
+    assert 0 <= wurst_packet.conductivity_raw<= 3000, "conductivity doesn't seem right"
+    assert 3000 <= wurst_packet.battery_voltage<= 4000, "voltage doesn't seem right"
+    assert 0 <= wurst_packet.sequence_number<= 256, "sequence number doesn't seem right"
+    assert 0 <= wurst_packet.rssi<= 1000, "rssi doesn't seem right"
 
     # check for errors and report back
     assert not errors, "errors occured:\n{}".format("\n".join(errors))
