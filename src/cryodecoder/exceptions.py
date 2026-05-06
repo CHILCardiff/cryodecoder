@@ -1,2 +1,0 @@
-class InvalidPacket(Exception):
-    pass
