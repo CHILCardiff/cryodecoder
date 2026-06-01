@@ -54,3 +54,15 @@ def test_create_L1_block():
 
     assert l1_block_semiraw.sequence_number.raw    == b'\x13'
     assert l1_block_semiraw.temperature_tmp117.raw == b'\x22\x33'
+
+    # Create block with empty initialisiation
+
+    l1_block_empty = cryodecoder.blocks.Block_C_CHIL()
+
+    assert l1_block_empty.to_bytes() == (b'C\x07' + b'\00' * 7)
+
+    def test_concat_blocks():
+
+        c_block = cryodecoder.blocks.Block_C_CHIL(
+
+        )

@@ -9,11 +9,11 @@ from types import NoneType
 
 class Field(ABC, Generic[ValueType]):
 
-    def __init__(self, field_order, byte_width = 0):
+    def __init__(self, field_order, byte_width = 0, value_default = None):
         self.field_order = field_order
         self.byte_width = byte_width
-        self._raw : bytes = b''
-        self._value : Union[ValueType, NoneType] = None
+        self._raw : bytes = b'\x00' * byte_width
+        self._value : Union[ValueType, NoneType] = value_default
 
     def __set_name__(self, owner, name):
         self.field_name = name
@@ -48,7 +48,7 @@ class Field(ABC, Generic[ValueType]):
 class UnsignedIntField(Field[int]):
 
     def __init__(self, field_order, byte_width):
-        super().__init__(field_order, byte_width=byte_width)
+        super().__init__(field_order, byte_width=byte_width, value_default=0)
 
     def to_bytes(self, value):
         return int.to_bytes(value, self.byte_width, "little")
@@ -58,7 +58,7 @@ class UnsignedIntField(Field[int]):
 class SignedIntField(Field[int]):
 
     def __init__(self, field_order, byte_width):
-        super().__init__(field_order, byte_width=byte_width)
+        super().__init__(field_order, byte_width=byte_width, value_default=0)
 
     def to_bytes(self, value):
         return int.to_bytes(value, self.byte_width, "little", signed=True)
@@ -68,7 +68,7 @@ class SignedIntField(Field[int]):
 class IEEE754Float(Field[int]):
 
     def __init__(self, field_order):
-        super().__init__(field_order, byte_width=4)
+        super().__init__(field_order, byte_width=4, value_default=0)
 
     def to_bytes(self, value):
         return struct.pack("<f4", value)
@@ -81,13 +81,12 @@ class BlockHeader(ABC):
         ...
 
 class BlockHeaderL1(BlockHeader):
-    identifier = b'\x00'
     length_byte_width = 1
     def to_bytes(self, block) -> bytes:
         # Calculate length
         length = block.count_field_bytes()
         # Return header
-        return self.identifier + \
+        return block.identifier + \
             int.to_bytes(length, self.length_byte_width, byteorder="little")
 
 class Block:
@@ -127,7 +126,7 @@ class Block:
                     getattr(self, field.field_name).value = kwargs[field.field_name]
 
         # Initiailise header
-        self.header = self.header_class
+        self.header = self.header_class()
 
     def to_bytes(self):
         field_bytes = b''
