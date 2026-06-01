@@ -75,24 +75,25 @@ class IEEE754Float(Field[int]):
     def from_bytes(self, value):
         return struct.unpack("<f4", value)
 
-class BlockHeader:
+class BlockHeader(ABC):
+    @abstractmethod
+    def to_bytes(self):
+        ...
+
+class BlockHeaderL1(BlockHeader):
     identifier = b'\x00'
     length_byte_width = 1
-    def to_bytes(self):
+    def to_bytes(self, block) -> bytes:
         # Calculate length
-        length = 0
-        for attr in dir(self):
-            attr_class = getattr(self, attr).__class__
-            if issubclass(attr_class, Field):
-                length += getattr(self, attr).byte_width
+        length = block.count_field_bytes()
         # Return header
         return self.identifier + \
             int.to_bytes(length, self.length_byte_width, byteorder="little")
 
-class BlockHeaderExtended:
-    length_byte_width = 2
+class Block:
 
-class Block(BlockHeader):
+    # Use an abstract class as the default header to ensure override
+    header_class = BlockHeader
 
     def __init__(self, **kwargs):
         """
@@ -125,17 +126,73 @@ class Block(BlockHeader):
                 else:
                     getattr(self, field.field_name).value = kwargs[field.field_name]
 
+        # Initiailise header
+        self.header = self.header_class
+
     def to_bytes(self):
         field_bytes = b''
         for field in self.fields:
             field_bytes += field.raw
-        return BlockHeader.to_bytes(self) + field_bytes
+        return self.header.to_bytes(self) + field_bytes
         
-class Block_C_CHIL(Block, BlockHeader):
+    def count_field_bytes(self):
+        length = 0
+        for field in self.fields:
+            length += field.byte_width
+        return length
+
+###############################################################################
+# BLOCK DEFINITIONS
+###############################################################################
+class Block_A_LSM303(Block):
+    identifer = b'A'
+    header_class = BlockHeaderL1
+    mag_x = SignedIntField(field_order=0, byte_width=2)
+    mag_y = SignedIntField(field_order=1, byte_width=2)
+    mag_z = SignedIntField(field_order=2, byte_width=2)
+    acc_x = SignedIntField(field_order=3, byte_width=2)
+    acc_y = SignedIntField(field_order=4, byte_width=2)
+    acc_z = SignedIntField(field_order=5, byte_width=2)
+
+class Block_B_BMA400(Block):
+    identifier = b'B'
+    header_class = BlockHeaderL1
+    acc_x = SignedIntField(field_order=0, byte_width=2)
+    acc_y = SignedIntField(field_order=1, byte_width=2)
+    acc_z = SignedIntField(field_order=2, byte_width=2)
+    
+class Block_C_CHIL(Block):
     identifier         = b'C'
+    header_class       = BlockHeaderL1
     sequence_number    = UnsignedIntField(field_order=0, byte_width=1)
     voltage_battery    = UnsignedIntField(field_order=1, byte_width=2)
     conductivity       = UnsignedIntField(field_order=2, byte_width=2)
     temperature_tmp117 = UnsignedIntField(field_order=3, byte_width=2)
 
+class Block_E_Environmental(Block):
+    identifier = b'E'
+    header_class = BlockHeaderL1
+    pressure_ms5607    = IEEE754Float(field_order=0)
+    temperature_ms5607 = IEEE754Float(field_order=1)
+    temperature_sht30  = UnsignedIntField(field_order=2, byte_width=2)
+    humidity_sht30     = UnsignedIntField(field_order=3, byte_width=2)
 
+class Block_K_Keller(Block):
+    identifier = b'K'
+    header_class = BlockHeaderL1
+    pressure = UnsignedIntField(field_order=0, byte_width=2)
+    temperature = UnsignedIntField(field_order=1, byte_width=2)
+    date_code = UnsignedIntField(field_order=2, byte_width=1)
+    pressure_min = IEEE754Float(field_order=3)
+    pressure_max = IEEE754Float(field_order=4)
+
+class Block_V_Voltage(Block):
+    identifier = b'V'
+    header_class = BlockHeaderL1
+    voltage_battery   = UnsignedIntField(field_order=0, byte_width=2)
+    voltage_shunt_ch1 = UnsignedIntField(field_order=1, byte_width=2)
+    voltage_bus_ch1   = UnsignedIntField(field_order=2, byte_width=2)
+    voltage_shunt_ch2 = UnsignedIntField(field_order=3, byte_width=2)
+    voltage_bus_ch2   = UnsignedIntField(field_order=4, byte_width=2)
+    voltage_shunt_ch3 = UnsignedIntField(field_order=5, byte_width=2)
+    voltage_bus_ch3   = UnsignedIntField(field_order=6, byte_width=2)
