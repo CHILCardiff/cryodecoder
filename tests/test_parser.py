@@ -4,6 +4,7 @@ import cryodecoder.parser
 
 def test_read_file():
 
+    print("Running test")
     with open("data/childata_cryoeggonly.log", "rb") as fh_cryoegg:
 
         parser = cryodecoder.read_file(fh_cryoegg)
