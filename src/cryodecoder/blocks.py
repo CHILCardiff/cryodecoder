@@ -1,706 +1,141 @@
+import cryodecoder
+
+import copy
 from abc import ABC, abstractmethod
-import logging
 import struct
-from typing import Union, Type, Iterable
+from typing import Generic, TypeVar, Union
+ValueType = TypeVar('ValueType')
 from types import NoneType
 
-import cryodecoder
-import cryodecoder.exceptions
+class Field(ABC, Generic[ValueType]):
 
-BLOCK_IDENTIFIER_TYPE = Union[
-    bytes, bytearray, int, str
-]
+    def __init__(self, field_order, byte_width = 0):
+        self.field_order = field_order
+        self.byte_width = byte_width
+        self._raw : bytes = b''
+        self._value : Union[ValueType, NoneType] = None
 
-def get_block_level_from_class(block_class : Type):
-    # Use the block class to determine which level we are on
-    if issubclass(block_class, L1DataBlock):
-        return 1
-    elif issubclass(block_class, L2OriginBlock):
-        return 2
-    elif issubclass(block_class, L3ContextBlock):
-        return 3
-    return 0
+    def __set_name__(self, owner, name):
+        self.field_name = name
 
-def get_block_class_from_identifier(identifier : BLOCK_IDENTIFIER_TYPE) -> Type:
-    # Check through each block type
-    for block_type in cryodecoder.identifier_register:
-        # See if we have the identifier in the register 
-        s_identifier = sanitise_identifier(identifier)
-        if not s_identifier in cryodecoder.identifier_register[block_type]:
-            # if not, skip through and check next
-            continue
-        else:
-            # otherwise, return true
-            return cryodecoder.identifier_register[block_type][s_identifier]
-    # By now, we've not found anything so can return False
-    return None
-
-def sanitise_identifier(identifier : BLOCK_IDENTIFIER_TYPE) -> bytes:
-    # Identifier should be a single byte 
-    if isinstance(identifier, int) and identifier >= 0 and identifier < 256:
-        return identifier.to_bytes()
-    elif isinstance(identifier, (bytes, bytearray)) and len(identifier) == 1:
-        return identifier[0:1] 
-        # need to index this way to keep it as a bytes object
-    elif isinstance(identifier, str):
-        if len(bytes(identifier, "utf-8")) == 1:
-            return bytes(identifier, "utf-8")
-    raise cryodecoder.exceptions.InvalidIdentifierError(identifier)
-
-
-def calculate_field_length(block_type):
-    length = 0
-    for field in block_type.fields:
-        if field is not PayloadField:
-            length += field.byte_width
-    return length
-
-# Now we've created the register record, assign the existing/default
-# blocks to it. To do this, we expose the register_identifier method
-def register_identifier(identifier, block_class):
-
-    # Validate identifier
-    identifier = sanitise_identifier(identifier)
-
-    if issubclass(block_class, L3ContextBlock) and \
-        identifier in (b'W', b'C'):
-        # Treat 'W' and 'C' as reserved identifiers
-        raise cryodecoder.exceptions.IdentifierAlreadyRegisteredError(identifier)
-
-    # Iterate over each class type
-    for class_type in cryodecoder.identifier_register:
-        # If we are an instance of this class, then see if the identifier is 
-        # already registered and if not - register it!
-        if issubclass(block_class, class_type): 
-            if not identifier in cryodecoder.identifier_register[class_type]:
-
-                # Calculate field length
-                field_length = calculate_field_length(block_class)
-                block_class._field_length = field_length
-
-                cryodecoder.identifier_register[class_type][identifier] = block_class
-                cryodecoder.logger.log(logging.DEBUG, f"Registered block identifier {identifier} to {block_class}")
-                return
-            else:
-                # otherwise, raise an error to deal with it
-                raise cryodecoder.exceptions.IdentifierAlreadyRegisteredError(identifier)
-    
-    # If we reach this point, we've exhausted the class_types
-    raise ValueError(f"Class {block_class} should be a subclass of one of L1DataBlock, L2OriginBlock or L3ContextBlock")
-
-class BlockHeader(ABC):
-
-    def __init__(self, length_bytes, raw=None, identifier=None, length : Union[int, NoneType]=None):
-        # Assign identifier (character)
-        self.identifier    = identifier
-        self.byte_width    = length_bytes
-
-        if raw is not None:
-            self.from_bytes(raw)
-        else:
-            self.identifier = identifier
-            self.length     = length
-
-    @abstractmethod
-    def from_bytes(self, raw : Union[bytes, bytearray]):
-        ...
-
-    def length_bytes(self):
-        return self.byte_width
-
-class BlockHeaderL3(BlockHeader):
-
-    byte_width = 3
-
-    def __init__(self, raw=None, identifier=None, length=None):
-        super().__init__(length_bytes=3, identifier=identifier, length=length)
-        if raw is not None and identifier is None and length is None:
-            self.from_bytes(raw)
-
-    def from_bytes(self, raw : Union[bytes, bytearray]):
-        self.identifier  = sanitise_identifier(raw[0:1].decode("ascii"))
-        self.block_class = get_block_class_from_identifier(self.identifier)        
-        
-        if not issubclass(self.block_class, L3ContextBlock):
-            raise cryodecoder.exceptions.InvalidIdentifierError("Attempting to assign L3 header to non-L3 identifier.")
-        
-        self.length      = int.from_bytes(raw[1:3], byteorder="little")
-
-class BlockHeaderL1L2(BlockHeader):
-
-    byte_width = 2
-
-    def __init__(self, raw=None, identifier=None, length=None):
-        super().__init__(length_bytes=2, identifier=identifier, length=length)
-        if raw is not None and identifier is None and length is None:
-            self.from_bytes(raw)
-
-    def from_bytes(self, raw : Union[bytes, bytearray]):
-        self.identifier  = sanitise_identifier(raw[0:1].decode("ascii"))
-        self.block_class = get_block_class_from_identifier(self.identifier)
-
-        if not issubclass(self.block_class, L1DataBlock) and not issubclass(self.block_class, L2OriginBlock):
-            raise cryodecoder.exceptions.InvalidIdentifierError("Attempting to assign L1/L2 header to non-L1/L2 identifier.") 
-
-        self.length      = int.from_bytes(raw[1:2], byteorder="little")
-
-class Block:
-
-    _field_length = 0
-    fields = () 
-
-    def __init__(self, header : BlockHeader, **kwargs):
-        self.header = header
-
-    def total_length(self) -> int:
-        """return the total number of bytes, including the header, encompassed 
-        by this block
-        """
-        return 0
-    
-    def block_length(self) -> int:
-        """return the total number of bytes, exluding the payload
-        """
-        return self.header.byte_width + self._field_length
-
-    def field_length(self) -> int:
-        """return the number of bytes represented by parameters
-        """
-        return self._field_length
-    
-    def from_bytes(self, raw_fields): 
-        # Iterate over fields in order
-        offset = 0
-        for idx, field in enumerate(self.fields):
-            raw_value = raw_fields[offset:offset + field.byte_width]
-            self.fields[idx].raw = raw_value
-            self.fields[idx].value = field.from_bytes(raw_value)
-            offset += field.byte_width
-    
-class Unit:
-    def __init__(self, name : str, si_unit : Union[str, NoneType] = None):
-        self.name = name
-        self.si_unit = si_unit
-    def __eq__(self, comparison):
-        if isinstance(comparison, self.__class__) or issubclass(comparison, self.__class__):
-            return self.name == comparison.name
-        else:
-            return False
-        
-class Unitless(Unit):
-    def __init__(self):
-        super().__init__(name = "unitless", si_unit = None)
-
-class Field(ABC):
-    def __init__(self, name : str, width : int, value = None, raw = None, unit : Union[str, Unit] = Unitless()): 
-        self.name = name
-        self.raw = raw
-        self.value = value
-        self.byte_width = width
-        self.unit = unit
-    
-    @abstractmethod
-    def to_bytes(self):
-        ...
     @abstractmethod
     def from_bytes(self, raw):
         ...
+    @abstractmethod
+    def to_bytes(self, value):
+        ...
 
-class UnsignedIntField(Field):
+    @property
+    def raw(self):
+        return self._raw
+    @raw.setter
+    def raw(self, value : bytes):
+        if not isinstance(value, bytes):
+            raise TypeError("raw should be of type bytes")
+        if len(value) > self.byte_width:
+            raise ValueError(f"len(raw) should be <= {self.byte_width}")
+        self._raw = value
+        self._value = self.from_bytes(value)
 
-    def to_bytes(self):
-        if self.value != None:
-            return int.to_bytes(self.value, self.byte_width, "little", signed=False)
-        else:
-            raise ValueError("Trying to convert NoneType value")
-        
-    def from_bytes(self, raw):
-        if raw != None:
-            return int.from_bytes(raw, "little", signed=False)
-        else:
-            raise ValueError("Trying to convert NoneType value")
+    @property
+    def value(self):
+        return self._value
+    @value.setter
+    def value(self, value : ValueType):
+        self._value = value
+        self._raw = self.to_bytes(value) or b''
 
-class SignedIntField(Field):
+class UnsignedIntField(Field[int]):
 
-    def to_bytes(self):
-        if self.value != None:
-            return int.to_bytes(self.value, self.byte_width, "little", signed=True)
-        else:
-            raise ValueError("Trying to convert NoneType value")
-        
-    def from_bytes(self, raw):
-        if raw != None:
-            return int.from_bytes(raw, "little", signed=True)
-        else:
-            raise ValueError("Trying to convert NoneType value")
-        
-class IEEE754FloatField(Field):
+    def __init__(self, field_order, byte_width):
+        super().__init__(field_order, byte_width=byte_width)
 
-    def __init__(self, name : str, value = None, unit : Union[str, Unit] = Unitless()):
-        super().__init__(name, 4, value, unit)
-
-    def to_bytes(self):
-        if self.value != None:
-            return struct.pack("<f4", self.value)
-        else:
-            raise ValueError("Trying to convert NoneType")
-
-    def from_bytes(self, raw):
-        if raw != None:
-            return struct.unpack("<f4", raw)
-        else:
-            raise ValueError("Trying to convert NoneType")
-
-class PayloadField(Field):
-    """Dummy field class used to indicate that bytes are padded around
-    blocks
-    """
-    def __init__(self):
-        super().__init__("", 0, None, Unitless())
-    def to_bytes(self):
-        return b''
-    def from_bytes(self):
-        return None
-
-class L1DataBlock(Block):
-    pass
-
-class L2OriginBlock(Block):
-    pass
-
-class L3ContextBlock(Block):
-    pass
-
-# Define L3 block types
-class DataContextBlock(L3ContextBlock):
-    identifier = 'D'
-    header = BlockHeaderL3
-    fields = (
-        UnsignedIntField("receiver_id", 4),
-        UnsignedIntField("timestamp", 4),
-        UnsignedIntField("sequence_number", 1)
-    )
-    def __init__(self, header : BlockHeader, raw_fields : Union[bytes, bytearray]):
-        super().__init__(header)
-        if raw_fields is not None:
-            self.from_bytes(raw_fields)
-
-class HousekeepingContextBlock(L3ContextBlock):
-    identifier = 'H'
-    header = BlockHeaderL3
-    fields = (
-        UnsignedIntField("receiver_id", 4),
-        UnsignedIntField("timestamp", 4),
-        UnsignedIntField("sequence_number", 1)
-    )
-
-# Define L2 block types
-class MBusOriginBlock(L2OriginBlock):
-    identifier = 'M'
-    header = BlockHeaderL1L2
-    fields = (
-        UnsignedIntField("channel_number", 1),
-        UnsignedIntField("c_field", 1),
-        UnsignedIntField("m_field", 2),
-        UnsignedIntField("user_id", 4),
-        UnsignedIntField("version", 1),
-        UnsignedIntField("device", 1),
-        UnsignedIntField("ci_field", 1),
-        PayloadField(),
-        UnsignedIntField("rssi", 1)
-    )
-
-class ReceiverOriginBlock(L2OriginBlock):
-    identifier = 'R'
-    header = BlockHeaderL1L2
-    fields = (
-        # No fields associated with 'R'
-    )
-
-# Define L1 block types
-class LSM303AGRBlock(L1DataBlock):
-    identifier = 'A'
-    header = BlockHeaderL1L2
-    fields = (
-        SignedIntField("mag_x", 2),
-        SignedIntField("mag_y", 2),
-        SignedIntField("mag_z", 2),
-        SignedIntField("acc_x", 2),
-        SignedIntField("acc_y", 2),
-        SignedIntField("acc_z", 2),
-    )
-
-class BMA400Block(L1DataBlock):
-    identifier = 'B'
-    header = BlockHeaderL1L2
-    fields = (
-        SignedIntField("acc_x", 2),
-        SignedIntField("acc_y", 2),
-        SignedIntField("acc_z", 2),
-    )
-
-
-class CryoBlock(L1DataBlock):
-    """
-    The CryoBlock ('C') describes electrical conductivity, tmeperature, battery voltage and sequence information associated with a CHIL instrument. 
-    """
-    identifier = 'C'
-    header = BlockHeaderL1L2
-    fields = (
-        UnsignedIntField("sequence_number", 1),
-        UnsignedIntField("battery_voltage", 2),
-        UnsignedIntField("conductivity", 2),
-        SignedIntField("temperature_tmp117", 2),
-    )
-
-class EnvironmentalBlock(L1DataBlock):
-    identifier = 'E'
-    header = BlockHeaderL1L2
-    fields = (
-        IEEE754FloatField("pressure_ms5607", "bar"),
-        IEEE754FloatField("temperature_ms5607", unit=Unit("degrees_C", "C")),
-        UnsignedIntField("pressure_sht30", 2),
-        UnsignedIntField("humidity_sht30", 2)
-    )
-
-class KellerPressureBlock(L1DataBlock):
-    identifier = 'K'
-    header = BlockHeaderL1L2
-    fields = (
-        UnsignedIntField("pressure", 2),
-        UnsignedIntField("temperature", 2),
-        UnsignedIntField("date_code", 1),
-        IEEE754FloatField("pressure_min", unit=Unit("bar", "* 100 kPa")),
-        IEEE754FloatField("pressure_max", unit=Unit("bar", "* 100 kPa"))
-    )
-
-class CTiTiltBlock(L1DataBlock):
-    identifier = 'T'
-    header = BlockHeaderL1L2
-    fields = (
-        SignedIntField("acc_x", 2),
-        SignedIntField("acc_y", 2),
-        SignedIntField("acc_z", 2),
-        SignedIntField("pitch", 2),
-        SignedIntField("roll", 2),
-    )
-
-class PowerStatusBlock(L1DataBlock):
-    identifier = 'V'
-    header = BlockHeaderL1L2
-    fields = (
-        UnsignedIntField("voltage_battery", 2),
-        SignedIntField("voltage_shunt_ch1", 2),
-        SignedIntField("voltage_bus_ch1", 2),
-        SignedIntField("voltage_shunt_ch2", 2),
-        SignedIntField("voltage_bus_ch2", 2),
-        SignedIntField("voltage_shunt_ch3", 2),
-        SignedIntField("voltage_bus_ch3", 2)
-    )
-
-# import cryodecoder.exceptions
-
-# from abc import ABC, abstractmethod
-# from enum import Enum
-
-# from io import BufferedReader
-
-# from typing import Union, Type
-# from types import NoneType
-# from numpy import signedinteger, unsignedinteger
-# from .exceptions import InvalidIdentifierError
-
-# BLOCK_IDENTIFIER_TYPE = Union[
-#     bytes, bytearray, int, str
-# ]
-
-
-# def sanitise_identifier(identifier : BLOCK_IDENTIFIER_TYPE) -> bytes:
-#     # Identifier should be a single byte 
-#     if isinstance(identifier, int) and identifier >= 0 and identifier < 256:
-#         return identifier.to_bytes()
-#     elif isinstance(identifier, (bytes, bytearray)) and len(identifier) == 1:
-#         return identifier[0:1] 
-#         # need to index this way to keep it as a bytes object
-#     elif isinstance(identifier, str):
-#         if len(bytes(identifier, "utf-8")) == 1:
-#             return bytes(identifier, "utf-8")
-#     raise InvalidIdentifierError(identifier)
-
-# def is_valid_identifier(identifier : BLOCK_IDENTIFIER_TYPE) -> bool:
-#     # Check through each block type
-#     for block_type in cryodecoder.identifier_register:
-#         # See if we have the identifier in the register 
-#         if not sanitise_identifier in cryodecoder.identifier_register[block_type]:
-#             # if not, skip through and check next
-#             continue
-#         else:
-#             # otherwise, return true
-#             return True
-#     # By now, we've not found anything so can return False
-#     return False
-
-# def get_block_level_from_class(block_class : Type):
-#     # Use the block class to determine which level we are on
-#     if issubclass(block_class, L1DataBlock):
-#         return 1
-#     elif issubclass(block_class, L2OriginBlock):
-#         return 2
-#     elif issubclass(block_class, L3ContextBlock):
-#         return 3
-#     return 0
-
-# def get_block_class_from_identifier(identifier : BLOCK_IDENTIFIER_TYPE) -> Type:
-#     # Check through each block type
-#     for block_type in cryodecoder.identifier_register:
-#         # See if we have the identifier in the register 
-#         s_identifier = sanitise_identifier(identifier)
-#         if not s_identifier in cryodecoder.identifier_register[block_type]:
-#             # if not, skip through and check next
-#             continue
-#         else:
-#             # otherwise, return true
-#             return cryodecoder.identifier_register[block_type][s_identifier]
-#     # By now, we've not found anything so can return False
-#     return None
-
-# def validate_int8(val):
-#     if isinstance(val, bytes):
-#         return int.from_bytes(val, byteorder="little", signed=True)
-#     if not isinstance(val, (int, signedinteger)):
-#         raise TypeError(f"Value {val} must be int or numpy signed integer")
-#     if val < -128 or val > 127:
-#         raise ValueError(f"Value {val} must be within -128 to 127 (inclusive).")
-#     return val
-
-# def validate_uint8(val):
-#     if isinstance(val, bytes):
-#         return int.from_bytes(val, byteorder="little", signed=False)
-#     if not isinstance(val, (int, unsignedinteger)):
-#         raise TypeError("Value must be int or numpy unsigned integer")
-#     if val < 0 or val > 255:
-#         raise ValueError("Value must be within 0 to 255 (inclusive)")
-#     return val
-
-# def validate_int16(val):
-#     if isinstance(val, bytes):
-#         return int.from_bytes(val, byteorder="little", signed=True)
-#     if not isinstance(val, (int, signedinteger)):
-#         raise TypeError(f"Value {val} must be int or numpy signed integer")
-#     if val < -32768 or val > 32767:
-#         raise ValueError(f"Value {val} must be within -32,768 to 32,767 (inclusive).")
-#     return val
-
-# def validate_uint16(val):
-#     if isinstance(val, bytes):
-#         return int.from_bytes(val, byteorder="little", signed=False)
-#     if not isinstance(val, (int, unsignedinteger)):
-#         raise TypeError("Value must be int or numpy unsigned integer")
-#     if val < 0 or val > 65535:
-#         raise ValueError("Value must be within 0 to 65,535 (inclusive).")
-#     return val
-
-# def validate_ieee754(val):
-#     raise ValueError()
-
-# class Unit:
-#     def __init__(self, name : str, si_unit : Union[str, NoneType] = None):
-#         self.name = name
-#         self.si_unit = si_unit
-#     def __eq__(self, comparison):
-#         if isinstance(comparison, self.__class__) or issubclass(comparison, self.__class__):
-#             return self.name == comparison.name
-#         else:
-#             return False
-        
-# class Unitless(Unit):
-#     def __init__(self):
-#         super().__init__(name = "unitless", si_unit = None)
-
-# class Field(ABC):
-#     def __init__(self, name : str, width : Union[int, NoneType] = None, value = None, unit : Union[str, Unit] = Unitless()): 
-#         self.name = name
-#         self.value = value
-#         self.byte_width = width
-#         self.unit = unit
+    def to_bytes(self, value):
+        return int.to_bytes(value, self.byte_width, "little")
+    def from_bytes(self, value):
+        return int.from_bytes(value, "little")
     
-#     @abstractmethod
-#     def to_bytes(self):
-#         ...
-#     @abstractmethod
-#     def from_bytes(self):
-#         ...
+class SignedIntField(Field[int]):
 
-# class AbstractBlock(ABC):
+    def __init__(self, field_order, byte_width):
+        super().__init__(field_order, byte_width=byte_width)
 
-#     identifier = None
-
-#     def __init__(self, identifier):
-#         self.identifier = sanitise_identifier(identifier)
-#         self.length = 0
-
-#         # Assign fields
-#         for attribute in dir(self):
-#             if isinstance(getattr(self, attribute), Field):
-#                 setattr(self, attr) = 
-
-#     @abstractmethod
-#     def to_bytes(self):
-#         """
-#         return a byte representation of the block
-#         """
-#         ...
+    def to_bytes(self, value):
+        return int.to_bytes(value, self.byte_width, "little", signed=True)
+    def from_bytes(self, value):
+        return int.from_bytes(value, "little", signed=True)
     
-#     @staticmethod
-#     @abstractmethod
-#     def validate_length(length):
-#         """
-#         return True if the length parameter is valid for the Block type, 
-#         otherwise return False
-#         """
-#         ...
+class IEEE754Float(Field[int]):
 
-# class L1DataBlock(AbstractBlock):
-#     pass
+    def __init__(self, field_order):
+        super().__init__(field_order, byte_width=4)
 
-# class L2OriginBlock(AbstractBlock):
-#     pass
+    def to_bytes(self, value):
+        return struct.pack("<f4", value)
+    def from_bytes(self, value):
+        return struct.unpack("<f4", value)
 
-# class Uint32Field(Field):
+class BlockHeader:
+    identifier = b'\x00'
+    length_byte_width = 1
+    def to_bytes(self):
+        # Calculate length
+        length = 0
+        for attr in dir(self):
+            attr_class = getattr(self, attr).__class__
+            if issubclass(attr_class, Field):
+                length += getattr(self, attr).byte_width
+        # Return header
+        return self.identifier + \
+            int.to_bytes(length, self.length_byte_width, byteorder="little")
 
-#     def to_bytes(self):
-#         if self.value != None:
-#             return int.to_bytes(self.value, 4, "little")
-#         else:
-#             raise ValueError("Trying to convert NoneType value")
+class BlockHeaderExtended:
+    length_byte_width = 2
+
+class Block(BlockHeader):
+
+    def __init__(self, **kwargs):
+        """
+        When we initialise a block, check for the all the attributes
+        which derive from Field and convert these into instance variables
+        """
+        # Create array to store fields temporarily
+        fields = []
+        field_orders = []
+        # Iterate through the class fields and create local copies
+        for attr in dir(self):
+            attr_class = getattr(self, attr).__class__
+            if issubclass(attr_class, Field):
+                field = getattr(self, attr)
+                if field.field_order in field_orders:
+                    raise ValueError(f"Invalid field_order in {__class__}")
+                new_field = copy.deepcopy(field)
+                setattr(self, attr, new_field)
+                fields.append(new_field)
+                field_orders.append(new_field.field_order)
+        # Sort the fields by field order
+        fields.sort(key=lambda x : x.field_order)
+        self.fields = tuple(fields)
+
+        # We've assigned our fields, so now check the kwargs for init
+        for field in self.fields:
+            if field.field_name in kwargs:
+                if isinstance(kwargs[field.field_name], bytes):
+                    getattr(self, field.field_name).raw = kwargs[field.field_name]
+                else:
+                    getattr(self, field.field_name).value = kwargs[field.field_name]
+
+    def to_bytes(self):
+        field_bytes = b''
+        for field in self.fields:
+            field_bytes += field.raw
+        return BlockHeader.to_bytes(self) + field_bytes
         
-#     def from_bytes(self):
-#         if self.value != None:
-#             return int.from_bytes(self.value, "little")
-#         else:
-#             raise ValueError("Trying to convert NoneType value")
-
-# class L3ContextBlock(AbstractBlock):
-
-#     HEADER_NUM_BYTES = 3
-
-#     # Default members of L3 block
-#     receiver_id = Uint32Field("receiver_id", 4),
-#     timestamp = Uint32Field("timestamp", 4),
-#     receiver_sequence_number = Uint32Field("receiverse_sequence_number", 1)
-
-#     def __init__(self):
-#         # Initialise class
-#         super().__init__(self.identifier)
-#         # Children blocks
-#         self.children = []
-
-    
-
-# # Define L1 block types
-# class LSM303AGRBlock(L1DataBlock):
-#     identifier = 'A'
-
-#     @property
-#     def mag_x(self):
-#         return self._mag_x
-#     @mag_x.setter
-#     def mag_x(self, value):
-#         self._mag_x = validate_int16(value)
-#     @property
-#     def mag_y(self):
-#         return self._mag_y
-#     @mag_y.setter
-#     def mag_y(self, value):
-#         self._mag_y = validate_int16(value)
-#     @property
-#     def mag_z(self):
-#         return self._mag_z
-#     @mag_z.setter
-#     def mag_z(self, value):
-#         self._mag_z = validate_int16(value)
-#     @property
-#     def acc_x(self):
-#         return self._acc_x
-#     @acc_x.setter
-#     def acc_x(self, value):
-#         self._acc_x = validate_int16(value)
-#     @property
-#     def acc_y(self):
-#         return self._acc_y
-#     @acc_y.setter
-#     def acc_y(self, value):
-#         self._acc_y = validate_int16(value)
-#     @property
-#     def acc_z(self):
-#         return self._acc_z
-#     @acc_z.setter
-#     def acc_z(self, value):
-#         self._acc_z = validate_int16(value)
-
-#     def __init__(self, mag_x, mag_y, mag_z, acc_x, acc_y, acc_z):
-#         # Assign identifier
-#         super().__init__(self.identifier)
-#         self.mag_x = mag_x
-#         self.mag_y = mag_y
-#         self.mag_z = mag_z
-#         self.acc_x = acc_x
-#         self.acc_y = acc_y
-#         self.acc_z = acc_z
-
-#     # def to_bytes(self):
-        
-#     #     # Start with empty string
-#     #     output = b''
-#     #     # Append identifier
-#     #     output = self.identifier
-#     #     length = 12
-#     #     output += int.to_bytes(length, byteorder="little")
-#     #     output += self.mag_x.to_bytes(2, byteorder="little", signed=True)
-#     #     output += self.mag_y.to_bytes(2, byteorder="little", signed=True)
-#     #     output += self.mag_z.to_bytes(2, byteorder="little", signed=True)
-#     #     output += self.acc_x.to_bytes(2, byteorder="little", signed=True)
-#     #     output += self.acc_y.to_bytes(2, byteorder="little", signed=True)
-#     #     output += self.acc_z.to_bytes(2, byteorder="little", signed=True)
-
-#     #     return output
-
-#     @staticmethod
-#     def validate_length(length):
-#         raise NotImplementedError()
-
-# class BMA400Block(L1DataBlock):
-#     identifier = 'B'
-
-# class CryoBlock(L1DataBlock):
-#     """
-#     The CryoBlock ('C') describes electrical conductivity, tmeperature, battery voltage and sequence information associated with a CHIL instrument. 
-#     """
-#     identifier = 'C'
-
-# class EnvironmentalBlock(L1DataBlock):
-#     identifier = 'E'
-
-# class KellerPressureBlock(L1DataBlock):
-#     identifier = 'K'
-
-# class CTiTiltBlock(L1DataBlock):
-#     identifier = 'T'
-
-# class PowerStatusBlock(L1DataBlock):
-#     identifier = 'V'
+class Block_C_CHIL(Block, BlockHeader):
+    identifier         = b'C'
+    sequence_number    = UnsignedIntField(field_order=0, byte_width=1)
+    voltage_battery    = UnsignedIntField(field_order=1, byte_width=2)
+    conductivity       = UnsignedIntField(field_order=2, byte_width=2)
+    temperature_tmp117 = UnsignedIntField(field_order=3, byte_width=2)
 
 
-# # Define L2 block types
-# class MBusOriginBlock(L2OriginBlock):
-#     identifier = 'M'
-
-# class ReceiverOriginBlock(L2OriginBlock):
-#     identifier = 'R'
-
-# # Define L2 block types
-# class DataContextBlock(L3ContextBlock):
-#     identifier = 'D'
-
-# class HousekeepingContextBlock(L3ContextBlock):
-#     identifier = 'H'
