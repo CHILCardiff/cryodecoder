@@ -1,20 +1,20 @@
 class CryodecoderException(Exception):
     pass
 
-class IdentifierAlreadyRegisteredError(CryodecoderException):
+class InvalidNestedBlockError(CryodecoderException):
+    """raised when a block has been detected or is being appended within an
+    invalid context (i.e. a L3 block nested within an L2 block). We enforce
+    that only blocks with levels smaller than the current block are valid to
+    be nested (i.e. L3 can nest L2 and L1, L2 can nest L1)
     """
-    Raised when attempting to register a block to an identifier that already exists.
+    pass
+
+class PayloadAccessError(CryodecoderException):
+    """raised when an attempt is made to set the value or raw value of a Payload
+    field
     """
     pass
 
-class InvalidIdentifierError(CryodecoderException):
-    pass
-
-class InvalidBlockHeader(CryodecoderException):
-    pass
-
-class BlockIdentifierMismatch(CryodecoderException):
-    pass
-
-class InvalidBlockLevel(CryodecoderException):
-    pass
+class InvalidPacketError(CryodecoderException):
+    """raised when packet being read in by a parser is invalid
+    """

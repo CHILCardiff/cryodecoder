@@ -1,230 +1,253 @@
-from typing import Union
-from enum import Enum
-
 import cryodecoder
 import cryodecoder.blocks
 import cryodecoder.exceptions
 
+# Define a decorator for the parser stack
+def _parserstackfunction(method):
+    def stackmethod(self, index=None):
+        if index is None:
+            return method(self, self._stack)
+        else:
+            return method(self, index)
+    return stackmethod
+
 class Parser:
 
-    # States are READ_IDENTIFIER
-    #            READ_LENGTH
-    #             
-
     def __init__(self):
+        # Buffer to store valid blocks in
+        self._blocks = []
+        # Buffer to store input to
+        self._buffer : bytes = b''
+        # Stack values
+        self.reset_stack_variables()
+        # Setup state
+        self._state = Parser.state_readIdentifier
+            
+    def reset_stack_variables(self):
+        # Stack values
+        self._stack = 0
+        self._length_bytes     = 0
+        self._init_level       = None
+        self._bytes_remaining : list[int]  = [None, None, None]
+        self._fields_remaining : list[int] = [None, None, None]
+        self._block : list[cryodecoder.blocks.Block] = [None,None,None]
+        return
 
-        # Empty buffer to store input data
-        self.buffer = b''
-        self.buffer_offset = 0
-        self.state  = Parser.state_readIdentifier
-        self.current_class = None
-        self.blocks = []
 
-    def push(self, data : Union[bytes, bytearray]):
-        self.buffer += data
+    def push(self, raw : bytes):
+        """assign raw data to local raw buffer
+        """
+        self._buffer += raw
 
-    def pop(self, length=1):
-        if len(self.buffer) > length - 1:
-            print(f"Popping {length}")
-            popc = self.buffer[0:length]
-            self.buffer = self.buffer[length:]
-            self.buffer_offset = 0
-            return popc
+    def pop(self, count=1):
+        """pop the top off the buffer
+        """
+        if len(self._buffer) >= count + 1:
+            self._buffer = self._buffer[count:]
+        else:
+            self._buffer = b''
+
+    def complete(self):
+        """if we have finished processing the buffer, return true
+        """
+        return len(self._buffer) == 0 and self._init_level == None # TODO: add some state relevant condition here
+
+    def available(self):
+        return len(self._blocks)
+
+    def read(self):
+        """return the next available block
+        """
+        if self.available():
+            # Return first block
+            return self._blocks.pop(0)
         
-    def __len__(self):
-        return len(self.buffer)
-    
     def update(self):
-        self.state(self)
+        self._state(self)
 
     def state_readIdentifier(self):
 
-        try:
-            
-            print(f"Reading identifier: {self.buffer[self.buffer_offset:self.buffer_offset+1]}")
-            # If the identifier isn't valid, this will fail
-            self.current_class = cryodecoder.blocks.get_block_class_from_identifier(self.buffer[self.buffer_offset])
+        # print(f"[rI | fields({self._fields_remaining}), bytes({self._bytes_remaining})]")
 
-            print(f"Got class {self.current_class}")
-            self.current_level = cryodecoder.blocks.get_block_level_from_class(self.current_class)
+        # Invalid block
+        if not self._buffer[0:1] in cryodecoder.blocks.blocks:
+            # print(f"[rI] Invalid identifier {self._buffer[0:1]}")
             
-            self.state = Parser.state_readLength
+            # We might have come from the end of a block with an extra field
+            if self._fields_remaining[self._stack] is not None and \
+               self._bytes_remaining[self._stack] is not None and \
+               self._fields_remaining[self._stack] > 0 and \
+               self._bytes_remaining[self._stack] > 0:
+                self._state = Parser.state_readField
+                return
+            # Otherwise, it's simply and invalid identifier
+            else:
+                self.pop()
+                return
+        
+        # Get block type
+        block_type = cryodecoder.blocks.blocks[self._buffer[0:1]]
+        # print(f"[rI] Valid identifier {self._buffer[0:1]}")
+        
+        # If we haven't initialised then 
+        if self._init_level is None:
+            self._init_level = block_type.level.value
+            # Assign block stack based on level
+            self._stack = block_type.level.value - 1
 
-        except cryodecoder.exceptions.InvalidIdentifierError:
-            print(f"Invalid identifier: {self.buffer[self.buffer_offset]}")
+        # Check whether the block is less than or equal to the current level
+        if block_type.level.value - 1 <= self._stack:
+            self._stack = block_type.level.value - 1
+        else:
+            print(f"Invalid level {block_type.level.value} (stack={self._stack + 1})")
             self.pop()
+            return
+        
+        # print(f"Setting stack to {self._stack}")
+
+        # Assign block type
+        self._block[self._stack] = block_type()
+
+        # get rid of top of the buffer, we've stored the block type
+        self.pop()
+        # and decrease the byte count for every block above this
+        for level in range(self._stack + 1, self._init_level):
+            self._bytes_remaining[level] -= 1
+
+        # Move to next state
+        self._state = Parser.state_readLength
+        return
 
     def state_readLength(self):
+
+        # print(f"[rL | fields({self._fields_remaining}), bytes({self._bytes_remaining})]")
+
+        length_bytes = self._block[self._stack].header.length_byte_width
+        # Check if we don't have enough bytes to read in a full block
+        if len(self._buffer) < length_bytes:
+            # keep waiting
+            return 
         
-        # Determine header type
-        if self.current_level == 3:
-            header_class = cryodecoder.blocks.BlockHeaderL3
+        # Get length
+        length = self._buffer[0:length_bytes]
+        
+        # print(f"Reading {length_bytes} bytes as length={length}")
+        # Assign bytes remaining
+        self._bytes_remaining[self._stack] = int.from_bytes(length, "little")
+        # Assign fields remaining
+        self._fields_remaining[self._stack] = len(self._block[self._stack].fields)
+
+        # If we have bytes or fields remaining then read a field, otherwise
+        # we go straight to appending a block
+        if self._bytes_remaining[self._stack] or self._fields_remaining[self._stack]:
+            # Drop the length, we've stored this
+            self.pop(length_bytes)
+            # and decrease the byte count for every block above this
+            for level in range(self._stack + 1, self._init_level):
+                self._bytes_remaining[level] -= length_bytes
+            # move to readField
+            self._state = Parser.state_readField
+            return
         else:
-            header_class = cryodecoder.blocks.BlockHeaderL1L2
+            # otherwise, try and append this block
+            self._state = Parser.state_appendBlock
+            self.update()
+            return
 
-        print(f"Reading length: {self.buffer}")
+        return
 
-        # have we got enough parts of the header in the buffer
-        if len(self) >= header_class.byte_width:
-            # try and create the header
-            self.current_header = header_class(raw=self.buffer[self.buffer_offset:self.buffer_offset+header_class.byte_width])
-            # Move on to reading block fields (resetting relevant variables)
-            self.current_field_bytes = self.current_class._field_length 
-            print(f"Reading {self.current_class} with {self.current_field_bytes} of field")
-            self.state = Parser.state_readBlockFields
+    def state_readField(self):
 
-    def state_readBlockFields(self):
+        # print(f"[rF | fields({self._fields_remaining}), bytes({self._bytes_remaining})]")
         
-        # Bit of an ugly hack here to use the current class to refer to itself
-        block_length = self.current_class.block_length(self.current_class)
-        if len(self) - self.buffer_offset >= block_length:
-            fields = self.buffer[self.buffer_offset+self.current_header.byte_width:self.buffer_offset+block_length]
-            # try:
-            block = self.current_class(self.current_header, raw_fields=fields)
-            self.blocks.append(block)
-            self.buffer_offset += block_length
-            # except Exception as e:
-            #     self.pop()
-            self.state = Parser.state_readIdentifier
+        # Calculate index of the field we're dealing with
+        field_index = len(self._block[self._stack].fields) - self._fields_remaining[self._stack]
+        # Store field
+        field = getattr(self._block[self._stack], self._block[self._stack].fields[field_index].field_name)
+
+        # Check if we have a payload byte
+        if isinstance(field, cryodecoder.blocks.Payload):
+            # Decrease field count
+            self._fields_remaining[self._stack] -= 1
+            # Go to readIdentifier
+            self._state = Parser.state_readIdentifier
+            return
+
+        # Otherwise, we need to read the file in
+        if len(self._buffer) < field.byte_width:
+            # stay in this state
+            return
         else:
-            pass 
+            # print(f"Assinging {field.field_name} as {self._buffer[0:field.byte_width]}")
+            # We have enough bytes
+            field.raw = self._buffer[0:field.byte_width]
+            # Decrease the field count
+            self._fields_remaining[self._stack] -= 1
+            # Decrease bytes for every block including this
+            for level in range(self._stack, self._init_level):
+                self._bytes_remaining[level] -= field.byte_width
+            self.pop(field.byte_width)
 
+        # Check whether we have any bytes left
+        if self._fields_remaining[self._stack] <= 0:
+            if self._bytes_remaining[self._stack] <= 0:
+                # Move to append this block
+                self._state = Parser.state_appendBlock
+                self.update()
+                return
+            else:
+                self._state = Parser.state_readIdentifier 
+                return
+        else:
+            # We still have fields to read
+            self._state = Parser.state_readField
+            return
+            
+    def state_appendBlock(self):
 
-def read_file(file):
+        # print(f"[aB | fields({self._fields_remaining}), bytes({self._bytes_remaining})]")
+            
+        # Save the block
+        block = self._block[self._stack]
+        # Make the current block empty
+        self._block[self._stack] = None
 
-    # Create parser instance
-    parser = Parser()
+        # Check we are not at the top of the stack
+        if self._stack < self._init_level - 1:
 
-    byte = file.read(1)
-    # Read while there are bytes to be read in, or we've not finished 
-    # popping elements from the buffer
-    while ((byte != None and len(byte) != 0) or len(parser)):
+            # Increment the stack
+            self._stack += 1
+            # implicit guarantee that L2 and L3 blocks are of type BlockChildren - TODO: worth checking?
+            self._block[self._stack].add_child(block)
+            print(f"Assigned {block} to {self._block[self._stack]}")
 
-        parser.push(byte)
-        parser.update()
-        byte = file.read(1)
-    
-    return parser
+            # fields == 0 -> no more fields, bytes == 0 -> no more blocks
+            if self._fields_remaining[self._stack] == 0 and \
+                self._bytes_remaining[self._stack] == 0:
+                # then we can append the next block too)
+                self._state = Parser.state_appendBlock
+                self.update()
+                return
+            elif self._fields_remaining[self._stack] >= 0 and \
+                self._bytes_remaining[self._stack] > 0:
+                # We're done processing this block but are expecting
+                # another one at the same level
+                self._state = Parser.state_readIdentifier
+                return
+            # elif self._fields_remaining[self._stack] > 0 and :
+            #     self._state = Parser.state_readField
 
-# import cryodecoder
-# import cryodecoder.blocks
-# import cryodecoder.exceptions
+        # We are at the top level
+        else:
 
-# from io import RawIOBase
-# from enum import Enum
+            # Append block to top level
+            self._blocks.append(block)
+            print(f"Assigned {block} to parser stack")
+            print(f"[{len(self._buffer)}] {self._buffer}")
 
-# class CryodecoderParser:
-    
-#     def __init__(self, source : RawIOBase, stream_mode=False):
-#         """
-#         source : the origin of data input (file, serial output, etc.)
-#         stream : if true, expect continuous input and continue from EOF
-#                  if false, terminate at EOF
-#         """
-        
-#         self.source = source
-#         self.stream_mode = False
-#         self.__finished = False
-#         self.buffer = b''
-#         # Assign a default state 
-#         self.state = CryodecoderParser.__stateBegin
-#         # Assign varaible for storing valid blocks
-#         self.blocks = []
-#         # Define variable indicating 
+            # Reset variables
+            self.reset_stack_variables()
+            self._state = Parser.state_readIdentifier
+            return
 
-#     def update(self):
-#         # Call the current state
-#         self.state(self)
-
-#     def finished(self):
-#         return self.__finished
-
-#     def __readToBuffer(self, size=1):
-#         bytes_in = self.source.read(size)
-#         if bytes_in != None:
-#             self.buffer += bytes_in
-#             return bytes_in
-#         else:
-#             if not self.stream_mode:
-#                 self.complete = True
-#             return 0
-
-#     def __stateBegin(self):
-#         self.__block_identifier = ''
-#         self.__block_length = 0
-#         self.__total_length = 0
-
-#         # Define a stack object which keeps track of which level we are at
-#         self.__stack = []
-#         self.__stack_level = None
-
-#     def __stateReadBlockIdentifier(self):
-        
-#         # Read in a new byte
-#         self.__readToBuffer()
-#         # Get current block identifier
-#         temp_block_identifier = self.buffer[0]
-
-#         # Check it is valid
-#         block_class = cryodecoder.blocks.get_block_class_from_identifier(temp_block_identifier)
-#         if (block_class == None):
-#             # Not a valid or registered identifier
-#             self.state = self.__statePopBuffer
-#             return
-        
-#         level = cryodecoder.blocks.get_block_level_from_class(block_class)
-#         # If we have items in the stack, check that the new identifier is less
-#         # than the block level at the end of the state
-#         if len(self.__stack) > 0 and \
-#             level >= cryodecoder.blocks.get_block_level_from_class(self.__stack[-1].__class__):
-#             # We've failed that condition so raise an invalid packet error
-#             raise cryodecoder.exceptions.InvalidBlockLevel()
-
-#         # Assign temporary class
-#         self.__current_block_class = block_class
-        
-#         # Move onto next step - read the length
-#         self.state = self.__stateReadBlockLength
-#         return
-
-#     def __stateReadBlockLength(self):
-        
-#         # Check what our current class type is L3
-#         length = 0
-#         if self.__current_block_class == cryodecoder.blocks.L3ContextBlock:
-#             if (self.__total_length < 3):
-#                  # if so, read in enough data that we have 3 bytes in the buffer
-#                 self.__readToBuffer(3 - self.__total_length)
-#                 length = int.from_bytes(self.buffer[1:3], byteorder="little")
-#         else: 
-#             # must be an L1/L2 context block so read in enough data to have two 
-#             # bytes in the buffer
-#             self.__readToBuffer(2 - self.__total_length)
-#             length = int.from_bytes(self.buffer[1:2], byteorder="little")
-
-#         # Set length to current 
-#         self.__block_length = length
-#         self.state = self.__stateReadContents
-#         return
-
-#     def __stateReadContents(self):
-
-#         if self.
-#         self.__readToBuffer(1)
-#         pass
-
-#     def __stateValidBlock(self):
-#         pass
-#     def __statePopBuffer(self):
-#         pass
-
-
-# def read_file(file : RawIOBase):
-    
-#     # Create parser
-#     parser = CryodecoderParser(file)
-    
-#     while (not parser.finished()):
-#         parser.update()
-
-#     return parser
+        return

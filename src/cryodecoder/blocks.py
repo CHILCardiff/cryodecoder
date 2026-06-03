@@ -1,13 +1,18 @@
 import cryodecoder
+import cryodecoder.exceptions
 
 import copy
 from abc import ABC, abstractmethod
+from enum import Enum
 import struct
-from typing import Generic, TypeVar, Union
+from typing import Generic, TypeVar, Union, Literal
 ValueType = TypeVar('ValueType')
 from types import NoneType
 
 class Field(ABC, Generic[ValueType]):
+    """Field defines a generic class which takes raw values in bytes and 
+    provides an interface to convert the byte stream into an interpreted value
+    """
 
     def __init__(self, field_order, byte_width = 0, value_default = None):
         self.field_order = field_order
@@ -45,25 +50,48 @@ class Field(ABC, Generic[ValueType]):
         self._value = value
         self._raw = self.to_bytes(value) or b''
 
+class Payload(Field):
+
+    def __init__(self, field_order):
+        super().__init__(field_order, byte_width = 0)
+
+    # Make no conversion between bytes - this is the only form of valid payload
+    def from_bytes(self, value):
+        return value
+    def to_bytes (self, value):
+        return value
+    
+    # Override the original raw method to disable access
+    @Field.raw.setter
+    def raw(self, value : bytes):
+        raise cryodecoder.exceptions.PayloadAccessError
+
+    # Override the original value method to disable access
+    @Field.value.setter
+    def value(self, value : bytes):
+        raise cryodecoder.exceptions.PayloadAccessError
+
 class UnsignedIntField(Field[int]):
 
-    def __init__(self, field_order, byte_width):
+    def __init__(self, field_order, byte_width, byte_order = "little"):
         super().__init__(field_order, byte_width=byte_width, value_default=0)
+        self.byte_order = byte_order
 
     def to_bytes(self, value):
-        return int.to_bytes(value, self.byte_width, "little")
+        return int.to_bytes(value, self.byte_width, byteorder=self.byte_order)
     def from_bytes(self, value):
-        return int.from_bytes(value, "little")
+        return int.from_bytes(value, byteorder=self.byte_order)
     
 class SignedIntField(Field[int]):
 
-    def __init__(self, field_order, byte_width):
+    def __init__(self, field_order, byte_width, byte_order = "little"):
         super().__init__(field_order, byte_width=byte_width, value_default=0)
+        self.byte_order = byte_order
 
     def to_bytes(self, value):
-        return int.to_bytes(value, self.byte_width, "little", signed=True)
+        return int.to_bytes(value, self.byte_width, byteorder=self.byte_order, signed=True)
     def from_bytes(self, value):
-        return int.from_bytes(value, "little", signed=True)
+        return int.from_bytes(value, byteorder=self.byte_order, signed=True)
     
 class IEEE754Float(Field[int]):
 
@@ -71,28 +99,82 @@ class IEEE754Float(Field[int]):
         super().__init__(field_order, byte_width=4, value_default=0)
 
     def to_bytes(self, value):
-        return struct.pack("<f4", value)
+        return struct.pack("<f", value)
     def from_bytes(self, value):
-        return struct.unpack("<f4", value)
+        return struct.unpack("<f", value)
 
-class BlockHeader(ABC):
-    @abstractmethod
-    def to_bytes(self):
-        ...
+# class BlockHeader(ABC):
+#     @abstractmethod
+#     def to_bytes(self):
+#         ...
+#     @abstractmethod
+#     def length(self):
+#         ...
 
-class BlockHeaderL1(BlockHeader):
-    length_byte_width = 1
+class BlockHeader: # L1(BlockHeader):
+    length_byte_width : int = 1
     def to_bytes(self, block) -> bytes:
         # Calculate length
-        length = block.count_field_bytes()
+        length = self.calculate_block_length(block)
         # Return header
         return block.identifier + \
             int.to_bytes(length, self.length_byte_width, byteorder="little")
+    def length(self) -> int:
+        return self.length_byte_width + 1
+    def calculate_block_length(self, block):
+        # Start wiht the field bytes
+        block_length = block.count_field_bytes()
+        # Check whether we have a L2/L3 block
+        if isinstance(block, BlockChildren):
+            # then iterate through children
+            for child in block.children:
+                if isinstance(child, BlockChildren):
+                    # Only valid for two levels of iteration
+                    for grandchild in child.children:
+                        block_length += len(grandchild)
+                block_length += len(child)
+        # return the final count
+        return block_length
+    
+class BlockHeaderL3(BlockHeader):
+    length_byte_width : int = 2
+
+
+# class BlockHeaderL2():
+#     pass
+
+class BlockLevel(Enum):
+    L1 = 1
+    L2 = 2
+    L3 = 3
+    def __le__(self, v):
+        if not isinstance(v, BlockLevel):
+            return False
+        return self.value <= v.value
+    def __ge__(self, v):
+        if not isinstance(v, BlockLevel):
+            return False
+        return self.value >= v.value
+    def __gt__(self, v):
+        if not isinstance(v, BlockLevel):
+            return False
+        return self.value > v.value
+    def __lt__(self, v):
+        if not isinstance(v, BlockLevel):
+            return False
+        return self.value < v.value
+    def __eq__(self, v):
+        if not isinstance(v, BlockLevel):
+            return False
+        return self.value == v.value
 
 class Block:
 
     # Use an abstract class as the default header to ensure override
     header_class = BlockHeader
+
+    # Block level corresponds to Data, Origin or Context (L1, L2 or L3) blocks
+    level : BlockLevel = BlockLevel.L1 # defaulting to L1
 
     def __init__(self, **kwargs):
         """
@@ -128,24 +210,64 @@ class Block:
         # Initiailise header
         self.header = self.header_class()
 
-    def to_bytes(self):
+    def __len__(self) -> int:
+        return self.header.length() + self.count_field_bytes()
+
+    def to_bytes(self) -> bytes:
         field_bytes = b''
         for field in self.fields:
             field_bytes += field.raw
         return self.header.to_bytes(self) + field_bytes
         
-    def count_field_bytes(self):
+    def count_field_bytes(self) -> int:
         length = 0
         for field in self.fields:
             length += field.byte_width
         return length
 
+class BlockChildren(Block):
+    """Adds an interface for associating sub-blocks within this block which 
+    is used to implement L2 and L3 blocks (Origin and Context) 
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.children = []
+
+    def add_child(self, block):
+        if block.level >= self.level:
+            raise cryodecoder.exceptions.InvalidNestedBlockError
+        else:
+            self.children.append(block)
+    
+    def count_payload_bytes(self) -> int:
+        length = 0
+        for field in self.fields:
+            if isinstance(field, Payload):
+                length += len(field._raw)
+        return length
+
+    def __len__(self):
+        # Add length for all children
+        child_length = sum([len(child) for child in self.children])
+        return super().__len__() + self.count_payload_bytes() + child_length
+    
+    def to_bytes(self) -> bytes:
+        field_bytes = b''
+        for field in self.fields:
+            if isinstance(field, Payload):
+                for child in self.children:
+                    field_bytes += child.to_bytes()
+            else:
+                field_bytes += field.raw
+
+        return self.header.to_bytes(self) + field_bytes
+
 ###############################################################################
 # BLOCK DEFINITIONS
 ###############################################################################
 class Block_A_LSM303(Block):
-    identifer = b'A'
-    header_class = BlockHeaderL1
+    identifier = b'A'
+    header_class = BlockHeader
     mag_x = SignedIntField(field_order=0, byte_width=2)
     mag_y = SignedIntField(field_order=1, byte_width=2)
     mag_z = SignedIntField(field_order=2, byte_width=2)
@@ -155,14 +277,14 @@ class Block_A_LSM303(Block):
 
 class Block_B_BMA400(Block):
     identifier = b'B'
-    header_class = BlockHeaderL1
+    header_class = BlockHeader
     acc_x = SignedIntField(field_order=0, byte_width=2)
     acc_y = SignedIntField(field_order=1, byte_width=2)
     acc_z = SignedIntField(field_order=2, byte_width=2)
     
 class Block_C_CHIL(Block):
     identifier         = b'C'
-    header_class       = BlockHeaderL1
+    header_class       = BlockHeader
     sequence_number    = UnsignedIntField(field_order=0, byte_width=1)
     voltage_battery    = UnsignedIntField(field_order=1, byte_width=2)
     conductivity       = UnsignedIntField(field_order=2, byte_width=2)
@@ -170,7 +292,7 @@ class Block_C_CHIL(Block):
 
 class Block_E_Environmental(Block):
     identifier = b'E'
-    header_class = BlockHeaderL1
+    header_class = BlockHeader
     pressure_ms5607    = IEEE754Float(field_order=0)
     temperature_ms5607 = IEEE754Float(field_order=1)
     temperature_sht30  = UnsignedIntField(field_order=2, byte_width=2)
@@ -178,7 +300,7 @@ class Block_E_Environmental(Block):
 
 class Block_K_Keller(Block):
     identifier = b'K'
-    header_class = BlockHeaderL1
+    header_class = BlockHeader
     pressure = UnsignedIntField(field_order=0, byte_width=2)
     temperature = UnsignedIntField(field_order=1, byte_width=2)
     date_code = UnsignedIntField(field_order=2, byte_width=1)
@@ -187,7 +309,7 @@ class Block_K_Keller(Block):
 
 class Block_V_Voltage(Block):
     identifier = b'V'
-    header_class = BlockHeaderL1
+    header_class = BlockHeader
     voltage_battery   = UnsignedIntField(field_order=0, byte_width=2)
     voltage_shunt_ch1 = UnsignedIntField(field_order=1, byte_width=2)
     voltage_bus_ch1   = UnsignedIntField(field_order=2, byte_width=2)
@@ -195,3 +317,57 @@ class Block_V_Voltage(Block):
     voltage_bus_ch2   = UnsignedIntField(field_order=4, byte_width=2)
     voltage_shunt_ch3 = UnsignedIntField(field_order=5, byte_width=2)
     voltage_bus_ch3   = UnsignedIntField(field_order=6, byte_width=2)
+
+class Block_T_Tilt(Block):
+    identifier = b'T'
+    header_class = BlockHeader
+    acc_x = UnsignedIntField(field_order=0, byte_width=2)
+    acc_y = UnsignedIntField(field_order=1, byte_width=2)
+    acc_z = UnsignedIntField(field_order=2, byte_width=2)
+    pitch_tenth_deg = UnsignedIntField(field_order=3, byte_width=2)
+    roll_tenth_deg  = UnsignedIntField(field_order=4, byte_width=2)
+
+class Block_M_MBusPacket(BlockChildren):
+    identifier     = b'M'
+    level          = BlockLevel.L2
+    header_class   = BlockHeader
+    channel_number = UnsignedIntField(field_order=0, byte_width=1)
+    c_field  = UnsignedIntField(field_order=1, byte_width=1)
+    m_field  = UnsignedIntField(field_order=2, byte_width=2, byte_order="big")
+    uid      = UnsignedIntField(field_order=3, byte_width=4, byte_order="big")
+    version  = UnsignedIntField(field_order=4, byte_width=1)
+    device   = UnsignedIntField(field_order=5, byte_width=1)
+    ci_field = UnsignedIntField(field_order=6, byte_width=1)
+    payload  = Payload(field_order=7)
+    rssi     = UnsignedIntField(field_order=8, byte_width=1)
+
+class Block_R_Receiver(BlockChildren):
+    identifier     = b'R'
+    level          = BlockLevel.L2
+    header_class   = BlockHeader
+    payload  = Payload(field_order=0)
+    
+class Block_D_Datalogger(BlockChildren):
+    identifier = b'D'
+    level = BlockLevel.L3
+    header_class = BlockHeaderL3
+    receiver_id     = UnsignedIntField(field_order=0, byte_width=4)
+    timestamp       = UnsignedIntField(field_order=1, byte_width=4)
+    sequence_number = UnsignedIntField(field_order=2, byte_width=1)
+    payload         = Payload(field_order=3)
+
+# Define acceptable list of blocks
+blocks : dict[bytes,type[Block]] = {
+    block.identifier : block for block in [
+        Block_A_LSM303,
+        Block_B_BMA400,
+        Block_C_CHIL,
+        Block_D_Datalogger,
+        Block_E_Environmental,
+        Block_K_Keller,
+        Block_M_MBusPacket,
+        Block_R_Receiver,
+        Block_T_Tilt,
+        Block_V_Voltage
+    ]
+}
