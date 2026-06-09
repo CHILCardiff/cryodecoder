@@ -9,6 +9,9 @@ from typing import Generic, TypeVar, Union, Literal
 ValueType = TypeVar('ValueType')
 from types import NoneType
 
+##############################################################################
+# Fields
+##############################################################################
 class Field(ABC, Generic[ValueType]):
     """Field defines a generic class which takes raw values in bytes and 
     provides an interface to convert the byte stream into an interpreted value
@@ -19,6 +22,7 @@ class Field(ABC, Generic[ValueType]):
         self.byte_width = byte_width
         self._raw : bytes = b'\x00' * byte_width
         self._value : Union[ValueType, NoneType] = value_default
+        self._parent = None
 
     def __set_name__(self, owner, name):
         self.field_name = name
@@ -29,6 +33,9 @@ class Field(ABC, Generic[ValueType]):
     @abstractmethod
     def to_bytes(self, value):
         ...
+
+    def __repr__(self):
+        return f"{self.field_name}({type(self).__name__}:{self.byte_width} bytes) = {self.value}"
 
     @property
     def raw(self):
@@ -93,7 +100,7 @@ class SignedIntField(Field[int]):
     def from_bytes(self, value):
         return int.from_bytes(value, byteorder=self.byte_order, signed=True)
     
-class IEEE754Float(Field[int]):
+class IEEE754Float(Field[float]):
 
     def __init__(self, field_order):
         super().__init__(field_order, byte_width=4, value_default=0)
@@ -102,15 +109,61 @@ class IEEE754Float(Field[int]):
         return struct.pack("<f", value)
     def from_bytes(self, value):
         return struct.unpack("<f", value)
+    
+#-----------------------------------------------------------------------------
+# Specific field types
+#-----------------------------------------------------------------------------
+class TemperatureTMP117Field(SignedIntField):
 
-# class BlockHeader(ABC):
-#     @abstractmethod
-#     def to_bytes(self):
-#         ...
-#     @abstractmethod
-#     def length(self):
-#         ...
+    @property
+    def convertedValue(self):
+        return self._value / 128
+    
+    @convertedValue.setter
+    def convertedValue(self, temperatureValue : float):
+        self._value = int(temperatureValue * 128)
+        self._raw = self.to_bytes(self._value)
 
+class TemperatureSHT30Field(UnsignedIntField):
+
+    @property
+    def convertedValue(self):
+        return -45 + 175 * (self._value)/(2**16-1)
+    
+    @convertedValue.setter
+    def convertedValue(self, temperatureValue : float):
+        rawValue = (temperatureValue + 45) * (2**16 - 1) / 175
+        self._value = rawValue
+        self._raw = self.to_bytes(self._value)
+
+class RelativeHumiditySHT30Field(UnsignedIntField):
+
+    @property
+    def convertedValue(self):
+        return 100 * (self._value)/(2**16-1)
+    
+    @convertedValue.setter
+    def convertedValue(self, temperatureValue : float):
+        rawValue = temperatureValue * (2**16 - 1) / 100
+        self._value = rawValue
+        self._raw = self.to_bytes(self._value)
+
+class TemperatureKellerField(UnsignedIntField):
+
+    @property
+    def convertedValue(self):
+        return 100 * (self._value)/(2**16-1)
+    
+    @convertedValue.setter
+    def convertedValue(self, temperatureValue : float):
+        rawValue = temperatureValue * (2**16 - 1) / 100
+        self._value = rawValue
+        self._raw = self.to_bytes(self._value)
+
+
+##############################################################################
+# Blocks
+##############################################################################
 class BlockHeader: # L1(BlockHeader):
     length_byte_width : int = 1
     def to_bytes(self, block) -> bytes:
@@ -192,6 +245,7 @@ class Block:
                 if field.field_order in field_orders:
                     raise ValueError(f"Invalid field_order in {__class__}")
                 new_field = copy.deepcopy(field)
+                new_field._parent = self
                 setattr(self, attr, new_field)
                 fields.append(new_field)
                 field_orders.append(new_field.field_order)
@@ -224,6 +278,20 @@ class Block:
         for field in self.fields:
             length += field.byte_width
         return length
+    
+    def __repr_header__(self):
+        header = f"Block {type(self).__name__}"
+        return header
+    
+    def __repr_fields__(self):
+        """return a human readable representation of the class fields"""
+        fields = ""
+        for field in self.fields:
+            fields += "    " + repr(field) + "\n"
+        return fields
+    
+    def __repr__(self):
+        return self.__repr_header__() + ":\n" + self.__repr_fields__()
 
 class BlockChildren(Block):
     """Adds an interface for associating sub-blocks within this block which 
@@ -246,6 +314,18 @@ class BlockChildren(Block):
                 length += len(field._raw)
         return length
 
+    def hasChild(self, type : type) -> bool:
+        for child in self.children:
+            if isinstance(child, type):
+                return True
+        return False
+    
+    def getChild(self, block_type : type) -> Union[Block, NoneType]:
+        for child in self.children:
+            if isinstance(child, block_type):
+                return child
+        return None
+
     def __len__(self):
         # Add length for all children
         child_length = sum([len(child) for child in self.children])
@@ -261,6 +341,33 @@ class BlockChildren(Block):
                 field_bytes += field.raw
 
         return self.header.to_bytes(self) + field_bytes
+    
+    def __repr_fields__(self):
+        """return a human readable representation of the class fields
+        accounting for payloads"""
+        fields = ""
+        payload_field = None
+        for field in self.fields:
+            if not isinstance(field, Payload):
+                fields += "  " + repr(field) + "\n"
+            else:
+                payload_field = field
+        
+        payload = ""
+        if payload_field is not None:
+            payload += "Payload of ["
+            if len(self.children):
+                payloads = []
+                for child in self.children:
+                    payloads.append(child.__repr_header__())
+                payload += ", ".join(payloads)
+            else:
+                payload += "no payload"
+            payload += "]"
+
+        return fields + payload
+        
+        
 
 ###############################################################################
 # BLOCK DEFINITIONS
@@ -288,15 +395,15 @@ class Block_C_CHIL(Block):
     sequence_number    = UnsignedIntField(field_order=0, byte_width=1)
     voltage_battery    = UnsignedIntField(field_order=1, byte_width=2)
     conductivity       = UnsignedIntField(field_order=2, byte_width=2)
-    temperature_tmp117 = UnsignedIntField(field_order=3, byte_width=2)
+    temperature_tmp117 = TemperatureTMP117Field(field_order=3, byte_width=2)
 
 class Block_E_Environmental(Block):
     identifier = b'E'
     header_class = BlockHeader
     pressure_ms5607    = IEEE754Float(field_order=0)
     temperature_ms5607 = IEEE754Float(field_order=1)
-    temperature_sht30  = UnsignedIntField(field_order=2, byte_width=2)
-    humidity_sht30     = UnsignedIntField(field_order=3, byte_width=2)
+    temperature_sht30  = TemperatureSHT30Field(field_order=2, byte_width=2)
+    humidity_sht30     = RelativeHumiditySHT30Field(field_order=3, byte_width=2)
 
 class Block_K_Keller(Block):
     identifier = b'K'

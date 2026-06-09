@@ -66,10 +66,21 @@ def test_parser_from_file_mixed():
     cryowurst_blocks = 0
 
     while parser.available():
-        
+
         block = parser.read()
         assert isinstance(block, cryodecoder.blocks.Block_D_Datalogger)
-        assert isinstance(block.children[1], cryodecoder.blocks.Block_M_MBusPacket)
+        assert block.hasChild(cryodecoder.blocks.Block_M_MBusPacket)
+
+        if block.hasChild(cryodecoder.blocks.Block_M_MBusPacket):
+
+            mbus_block = block.getChild(cryodecoder.blocks.Block_M_MBusPacket)
+            if mbus_block.hasChild(cryodecoder.blocks.Block_C_CHIL):
+
+                chil_block = mbus_block.getChild(cryodecoder.blocks.Block_C_CHIL)
+
+                # Temperature
+                print(f"Temperature     (value): {chil_block.temperature_tmp117.value}")
+                print(f"Temperature (converted): {chil_block.temperature_tmp117.convertedValue}")
 
         if block.children[1].uid.value & 0xff == 0xce:
             cryoegg_blocks += 1
