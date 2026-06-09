@@ -1,3 +1,5 @@
+import argparse 
+
 import cryodecoder
 import cryodecoder.blocks
 import cryodecoder.exceptions
@@ -28,6 +30,7 @@ class Parser:
         self._stack = 0
         self._length_bytes     = 0
         self._init_level       = None
+        self._block_length : list[int] = [None,None,None]
         self._bytes_remaining : list[int]  = [None, None, None]
         self._fields_remaining : list[int] = [None, None, None]
         self._block : list[cryodecoder.blocks.Block] = [None,None,None]
@@ -134,6 +137,7 @@ class Parser:
         # print(f"Reading {length_bytes} bytes as length={length}")
         # Assign bytes remaining
         self._bytes_remaining[self._stack] = int.from_bytes(length, "little")
+        self._block_length[self._stack] = int.from_bytes(length, "little")
         # Assign fields remaining
         self._fields_remaining[self._stack] = len(self._block[self._stack].fields)
 
@@ -173,7 +177,7 @@ class Parser:
             self._state = Parser.state_readIdentifier
             return
 
-        # Otherwise, we need to read the file in
+        # Otherwise, we need to read the field in
         if len(self._buffer) < field.byte_width:
             # stay in this state
             return
@@ -187,6 +191,33 @@ class Parser:
             for level in range(self._stack, self._init_level):
                 self._bytes_remaining[level] -= field.byte_width
             self.pop(field.byte_width)
+
+        # Now we have determined the field, we need to check whether we are
+        # in an MBus block with a CI_FIELD = 0xAA as this will indicate that
+        # the packet format is the original one rather than 
+        if isinstance(self._block[self._stack], cryodecoder.blocks.Block_M_MBusPacket) and field.field_name == "ci_field" and field.raw == b'\xAA': # Legacy packet
+            pass # debug legacy field
+            for legacy_class in (
+                cryodecoder.blocks.Block_M_MBusPacketCryoegg2023,
+                cryodecoder.blocks.Block_M_MBusPacketCryowurst2023,
+            ):
+                # Create test object
+                test_block = legacy_class()
+                # Get expected block length of that object
+                if self._block_length[self._stack] == \
+                    test_block.header.calculate_block_length(test_block):
+                    # Increment remaining fields by the difference between
+                    # this and the old block
+                    self._fields_remaining[self._stack] += \
+                    len(test_block.fields) - len(self._block[self._stack].fields)
+                    # Convert to new block
+                    for field in self._block[self._stack].fields:
+                        # Assign existing fields
+                        if hasattr(test_block, field.field_name):
+                            getattr(test_block, field.field_name).raw = field.raw
+                    # Don't need to complete this step for another packet type
+                    self._block[self._stack] = test_block
+                    break
 
         # Check whether we have any bytes left
         if self._fields_remaining[self._stack] <= 0:
@@ -251,3 +282,13 @@ class Parser:
             return
 
         return
+
+if __name__ == "__main:__":
+
+    parser = argparse.ArgumentParser(
+        prog='parser.py',
+        description='Runs a file-based or Serial decoder for Cryoegg packets.',
+        epilog='See [URL] for more help.'
+    )
+    
+    parser.add_argument("-m")

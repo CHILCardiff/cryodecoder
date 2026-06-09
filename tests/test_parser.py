@@ -45,8 +45,38 @@ def test_parser_from_file_eggonly():
         
         block = parser.read()
         assert isinstance(block, cryodecoder.blocks.Block_D_Datalogger)
+
+def test_parser_from_file_mixed_formats():
+
+    # Define parser object
+    parser = cryodecoder.parser.Parser()
+
+    with open("data/childata_mixed_packet_formats_eggonly.log", "rb") as fh:
+
+        byte = fh.read(1)
+        while (byte != b'' or not parser.complete()):
+            parser.push(byte)
+            parser.update()
+            byte = fh.read(1)
+
+    assert parser.available() == 36
+
+    new_blocks = 0
+    old_blocks = 0
+
+    while parser.available():
         
-def test_parser_from_file_mixed():
+        block = parser.read()
+        if block.hasChild(cryodecoder.blocks.Block_M_MBusPacket):
+            new_blocks += 1
+        if block.hasChild(cryodecoder.blocks.Block_M_MBusPacketCryoegg2023):
+            old_blocks += 1
+
+    assert new_blocks == 18
+    assert old_blocks == 18
+
+        
+def test_parser_from_file_mixed_instruments():
 
     # Define parser object
     parser = cryodecoder.parser.Parser()

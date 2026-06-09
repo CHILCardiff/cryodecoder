@@ -448,6 +448,60 @@ class Block_M_MBusPacket(BlockChildren):
     payload  = Payload(field_order=7)
     rssi     = UnsignedIntField(field_order=8, byte_width=1)
 
+class Block_M_MBusPacketCryoegg2023(BlockChildren):
+    identifier     = b'M'
+    level          = BlockLevel.L2
+    header_class   = BlockHeader
+    channel_number = UnsignedIntField(field_order=0, byte_width=1)
+    c_field  = UnsignedIntField(field_order=1, byte_width=1)
+    m_field  = UnsignedIntField(field_order=2, byte_width=2, byte_order="big")
+    uid      = UnsignedIntField(field_order=3, byte_width=4, byte_order="big")
+    version  = UnsignedIntField(field_order=4, byte_width=1)
+    device   = UnsignedIntField(field_order=5, byte_width=1)
+    ci_field = UnsignedIntField(field_order=6, byte_width=1)
+    # legacy payload start
+    conductivity = UnsignedIntField(field_order=7, byte_width=2)
+    temperature_pt1000 = SignedIntField(field_order=8, byte_width=2)
+    pressure           = UnsignedIntField(field_order=9, byte_width=2)
+    temperature_keller = UnsignedIntField(field_order=10, byte_width=2)
+    voltage_battery    = UnsignedIntField(field_order=11, byte_width=2)
+    sequence_number    = UnsignedIntField(field_order=12, byte_width=1)
+    # legacy payload end
+    rssi               = UnsignedIntField(field_order=13, byte_width=1)
+
+class Block_M_MBusPacketCryowurst2023(BlockChildren):
+    identifier     = b'M'
+    level          = BlockLevel.L2
+    header_class   = BlockHeader
+    legacy_payload_length = 11 # derived from below
+    channel_number = UnsignedIntField(field_order=0, byte_width=1)
+    c_field  = UnsignedIntField(field_order=1, byte_width=1)
+    m_field  = UnsignedIntField(field_order=2, byte_width=2, byte_order="big")
+    uid      = UnsignedIntField(field_order=3, byte_width=4, byte_order="big")
+    version  = UnsignedIntField(field_order=4, byte_width=1)
+    device   = UnsignedIntField(field_order=5, byte_width=1)
+    ci_field = UnsignedIntField(field_order=6, byte_width=1)
+    # legacy payload start
+    temperature_tmp117 = SignedIntField(field_order=7, byte_width=2)
+    magnetometer_x = SignedIntField(field_order=8, byte_width=2)
+    magnetometer_y = SignedIntField(field_order=9, byte_width=2)
+    magnetometer_z = SignedIntField(field_order=10, byte_width=2)
+    accelerometer_x = SignedIntField(field_order=11, byte_width=2)
+    accelerometer_y = SignedIntField(field_order=12, byte_width=2)
+    accelerometer_z = SignedIntField(field_order=13, byte_width=2)
+    accelerometer_tilt_x = SignedIntField(field_order=14, byte_width=2)
+    accelerometer_tilt_y = SignedIntField(field_order=15, byte_width=2)
+    accelerometer_tilt_z = SignedIntField(field_order=16, byte_width=2)
+    pitch_tilt_y = SignedIntField(field_order=17, byte_width=2)
+    roll_tilt_z = SignedIntField(field_order=18, byte_width=2)
+    conductivity = UnsignedIntField(field_order=19, byte_width=2)
+    pressure = UnsignedIntField(field_order=20, byte_width=2)
+    temperature_keller = UnsignedIntField(field_order=21, byte_width=2)
+    voltage_battery = UnsignedIntField(field_order=22, byte_width=2)
+    sequence_number = UnsignedIntField(field_order=23, byte_width=1)
+    # legacy payload end
+    rssi               = UnsignedIntField(field_order=24, byte_width=1)
+
 class Block_R_Receiver(BlockChildren):
     identifier     = b'R'
     level          = BlockLevel.L2
