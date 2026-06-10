@@ -13,15 +13,14 @@ authors = [
 ]
 description = "Module for decoding CHIL data packets."
 readme = "README.md"
-requires-python = ">=3.7" 
+requires-python = ">=3.14" 
 dependencies = [
-    # toml if < 3.11
-    "toml; python_version<'3.11'",
     "pyserial",
-    "pytest" 
+    "pytest", 
 ]
 
 [project.scripts]
+cryodecoder = "cryodecoder.parser:parser_main"
 # seriallogger = "cryodecoder.serial:serial_decoder_cli_entry"
 # cryoeggsddecoder = "cryodecoder.file:read_cryoegg_sd_file_cli"
 

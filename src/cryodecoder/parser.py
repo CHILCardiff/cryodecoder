@@ -830,13 +830,13 @@ class SerialDecoder:
             self.__consoleOutput(time, block)
 
 
-if __name__ == "__main__":
+def parser_main():
 
     parser = argparse.ArgumentParser(
-        prog='parser.py',
-        description='Runs a file-based or Serial decoder for Cryoegg packets.',
-        epilog='See [URL] for more help.'
-    )
+            prog='parser.py',
+            description='Runs a file-based or Serial decoder for Cryoegg packets.',
+            epilog='See [URL] for more help.'
+        )
     
     parser.add_argument("type", choices=["serial", "file"]
                         )
@@ -856,6 +856,13 @@ if __name__ == "__main__":
             print("Quitting...")
             exit()
 
+    elif args.type == "file":
+
+        raise NotImplementedError
+
     else:
 
-        print("No type provided, shutting down.")
+        print("Invalid parser type provided, shutting down.")
+
+if __name__ == "__main__":
+    parser_main()
