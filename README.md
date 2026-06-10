@@ -18,11 +18,13 @@ Once the installation is complete, run the command below to start `cryodecoder` 
 cryodecoder serial --port COM11
 ```
 
-replacing `COM11` with the port corresponding to a connected CHIL receiver or [RadioCrafts MBus modem](https://radiocrafts.com/products/development-kits/buy-a-development-kit-from-radiocrafts/). On Windows, you can identify this under "Ports (COM & LPT)" in the "Device Manager" utility.
+replacing `COM11` with the port corresponding to a connected CHIL receiver or [RadioCrafts MBus modem](https://radiocrafts.com/products/development-kits/buy-a-development-kit-from-radiocrafts/). On Windows, you can identify this under "Ports (COM & LPT)" in the "Device Manager" utility. To exit the program in `serial` mode, press `CTRL+C`, this might take a moment or two!
 
-> [!NOTE]
-> To exit the program, press `CTRL+C`, this might take a moment or two!
+If you have a file from the datalogger (i.e. `chillog.log`), this can be decoded into a CSV file using the command below:
 
+```bash
+cryodecoder file --input /path/to/chillog.log --output /path/to/output.csv
+```
 
 ## Installing from source
 

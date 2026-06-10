@@ -566,24 +566,21 @@ class MS5607DataColumn(L1ReceiverDataColumn):
         else:
             return f""
 
-
-class SerialDecoder:
-
-    def __init__(self, port="COM1", baud_rate=19200, file_root : Union[NoneType,PathLike] = None):
-
-        cryodecoder.blocks.blocks
-
-        self.port = port
-        self.baud_rate = baud_rate
-        self.file_root = file_root
-
-        self._serial = serial.Serial(port, baud_rate)
-        self._parser = Parser()
+class LoggerBase:
+    def __init__(self):
+        super(LoggerBase, self).__init__()
 
         # Setup start time of the logger from local timestamp
         self._init_time = datetime.datetime.now(datetime.UTC)
 
-        self.data_columns = [
+class CSVLogger(LoggerBase):
+
+    def __init__(self, filename : Union[NoneType, PathLike]):
+
+        LoggerBase.__init__(self)
+        self.filename = filename
+
+        self.csv_columns = [
             ReceiverTimestampColumn("timestamp_receiver"),
             ReceiverIDColumn("id_received"),
             ChannelColumn("channel"),
@@ -625,10 +622,55 @@ class SerialDecoder:
             MS5607DataColumn("temperature_ms5607_degC", "temperature_ms5607")
         ]
 
+        self.init_csv_logger()
+
+    def init_csv_logger(self, level=logging.INFO):
+
+        # Setup datalogger output logger
+        csv_handler   = logging.FileHandler(self.filename)   
+        csv_formatter = logging.Formatter('%(message)s')     
+        csv_handler.setFormatter(csv_formatter)
+
+        self._csv_logger = logging.getLogger("cryodecoder.data")
+        self._csv_logger.setLevel(level)
+        self._csv_logger.addHandler(csv_handler)
+
+        # Write header for data
+        headers = [column.name for column in self.csv_columns]
+        headers.insert(0, "timestamp_pc")
+        self._csv_logger.log(logging.INFO, ",".join(headers))
+
+    def logCSV(self, time: datetime.datetime, block: cryodecoder.blocks.Block):
+        # Write columns to CSV
+        values = [column.getColumnValue(block) for column in self.csv_columns]
+        values.insert(0, f"{time.strftime("%Y-%m-%d %H:%M:%S")}")
+        self._csv_logger.log(logging.INFO, ",".join(values))
+
+class SerialDecoder(CSVLogger):
+
+    def __init__(self, port="COM1", baud_rate=19200, file_root : Union[NoneType,PathLike] = None):
+
+        # Initialises creation time
+        LoggerBase.__init__(self)
+
+        # Assign file root
+        self.file_root = file_root
+
+        # Initialise CSVLogger
+        CSVLogger.__init__(
+            self, 
+            filename=self.getCSVFilename()
+        )
+
+        self.port = port
+        self.baud_rate = baud_rate
+
+        self._serial = serial.Serial(port, baud_rate)
+        self._parser = Parser()
+
         # Setup logging
         self.__setup_loggers()
        
-
     def getRoot(self):
 
         # Construct time from init
@@ -645,16 +687,16 @@ class SerialDecoder:
 
         return root
 
+    def getCSVFilename(self):
+
+        return self.getRoot() / f"data_{self._init_time.strftime("%Y%m%d_%H%M%S")}.csv"
+
     def getLoggerFilename(self):
 
         return self.getRoot() / f"logger_{self._init_time.strftime("%Y%m%d_%H%M%S")}.log"
 
-    def getDataFilename(self):
-
-        return self.getRoot() / f"data_{self._init_time.strftime("%Y%m%d_%H%M%S")}.csv"
-
     def __setup_loggers(self, level=logging.INFO):
-            
+        
         # Setup datalogger debug logger
         dl_handler   = logging.FileHandler(self.getLoggerFilename())   
         dl_formatter = logging.Formatter('[%(levelname)s] %(asctime)s: %(message)s')     
@@ -663,15 +705,6 @@ class SerialDecoder:
         dl_logger = logging.getLogger("cryodecoder.logger")
         dl_logger.setLevel(level)
         dl_logger.addHandler(dl_handler)
-
-        # Setup datalogger output logger
-        out_handler   = logging.FileHandler(self.getDataFilename())   
-        out_formatter = logging.Formatter('%(message)s')     
-        out_handler.setFormatter(out_formatter)
-
-        out_logger = logging.getLogger("cryodecoder.data")
-        out_logger.setLevel(level)
-        out_logger.addHandler(out_handler)
 
         # Setup console handler for feedback
         cmd_handler = logging.StreamHandler()
@@ -682,14 +715,8 @@ class SerialDecoder:
         cmd_logger.setLevel(level)
         cmd_logger.addHandler(cmd_handler)
 
-        # Write header for data
-        headers = [column.name for column in self.data_columns]
-        headers.insert(0, "timestamp_pc")
-        out_logger.log(logging.INFO, ",".join(headers))
-
         # Assign logging objects to the decoder
         self.output_logger = dl_logger
-        self.output_data = out_logger
         self.output_console = cmd_logger
 
     def run(self):
@@ -817,17 +844,57 @@ class SerialDecoder:
         
         while self._parser.available():
             time, block = self._parser.read()
-            # values = [
-            #     column.getColumnValue(block) for column in self.data_columns
-            # ]
-            values = []
-            for column in self.data_columns:
-
-                values.append(column.getColumnValue(block))
-            values.insert(0, f"{time.strftime("%Y-%m-%d %H:%M:%S")}")
-            self.output_data.log(logging.INFO, ",".join(values))
             # Output value to console if available
+            self.logCSV(time, block)
             self.__consoleOutput(time, block)
+
+
+class FileDecoder(CSVLogger):
+
+    def __init__(self, input_file, output_file):
+
+        self._parser = Parser()
+        input_file = pathlib.Path(input_file)
+            
+        # Check that the input file is valid
+        if not input_file.exists():
+            raise FileNotFoundError(input_file)
+
+        # If output file is not given then use the input filename and 
+        # add .csv to the end
+        if len(output_file) == 0:
+            output_file = str(pathlib.Path(input_file)) + ".csv"
+        else:
+            output_file = pathlib.Path(output_file)
+            if output_file.is_dir():
+                if not output_file.exists():
+                    output_file.mkdir(parents=True)
+                output_file = output_file / f"{input_file.name}.csv"
+            else:
+                if not output_file.resolve().parent.exists():
+                    output_file.resolve().parent.mkdir(parents=True)
+
+        # Setup input filename
+        self.input_file = input_file
+        # Initialise CSVLogger
+        CSVLogger.__init__(self, output_file)
+
+    def parse(self):
+        
+        with open(self.input_file, "rb") as fh:
+
+            byte = fh.read(1)
+            while (byte != b'' or not self._parser.complete()):
+                self._parser.push(byte)
+                self._parser.update()
+                byte = fh.read(1)
+            
+        while self._parser.available():
+            # Log block to CSV
+            parser_out = self._parser.read()
+            if parser_out is not None:
+                time, block = parser_out
+                self.logCSV(time, block)
 
 
 def parser_main():
@@ -843,23 +910,30 @@ def parser_main():
     parser.add_argument("-p", "--port", type=str, required=False, default="COM1")
     parser.add_argument("-b", "--baud", type=int, required=False, default=19200)
 
+    # Input and output files
+    parser.add_argument("-i", "--input", type=str, required=False, default="")
+    parser.add_argument("-o", "--output", type=str, required=False, default="")
+
     args = parser.parse_args()
 
     if args.type == "serial":
 
         print(f"Starting serial decoder with port {args.port}")
-        try:
-            serialDecoder = SerialDecoder(port=args.port, baud_rate=args.baud)
-            serialDecoder.run()
-        except KeyboardInterrupt:
-            serialDecoder.save()
-            print("Quitting...")
-            exit()
+
+        serialDecoder = SerialDecoder(port=args.port, baud_rate=args.baud)
+        serialDecoder.run()
 
     elif args.type == "file":
 
-        raise NotImplementedError
+        # Check we have an input file
+        if len(args.input) == 0:
+            raise ValueError(
+                "--input required when using cryodecoder in 'file' mode.")
+        else:
 
+            fileDecoder = FileDecoder(args.input, args.output)
+            fileDecoder.parse()
+        
     else:
 
         print("Invalid parser type provided, shutting down.")
