@@ -1,4 +1,6 @@
 import argparse 
+import logging
+import serial
 
 import cryodecoder
 import cryodecoder.blocks
@@ -74,7 +76,7 @@ class Parser:
 
         # Invalid block
         if not self._buffer[0:1] in cryodecoder.blocks.blocks:
-            # print(f"[rI] Invalid identifier {self._buffer[0:1]}")
+            # print(f"[rI] Invalid identifier {self._buffer[0:1]}, {self._fields_remaining[self._stack]}, {self._bytes_remaining[self._stack]}")
             
             # We might have come from the end of a block with an extra field
             if self._fields_remaining[self._stack] is not None and \
@@ -102,7 +104,7 @@ class Parser:
         if block_type.level.value - 1 <= self._stack:
             self._stack = block_type.level.value - 1
         else:
-            print(f"Invalid level {block_type.level.value} (stack={self._stack + 1})")
+            # print(f"Invalid level {block_type.level.value} (stack={self._stack + 1})")
             self.pop()
             return
         
@@ -250,7 +252,7 @@ class Parser:
             self._stack += 1
             # implicit guarantee that L2 and L3 blocks are of type BlockChildren - TODO: worth checking?
             self._block[self._stack].add_child(block)
-            print(f"Assigned {block} to {self._block[self._stack]}")
+            # print(f"Assigned {block} to {self._block[self._stack]}")
 
             # fields == 0 -> no more fields, bytes == 0 -> no more blocks
             if self._fields_remaining[self._stack] == 0 and \
@@ -273,8 +275,8 @@ class Parser:
 
             # Append block to top level
             self._blocks.append(block)
-            print(f"Assigned {block} to parser stack")
-            print(f"[{len(self._buffer)}] {self._buffer}")
+            # print(f"Assigned {block} to parser stack")
+            # print(f"[{len(self._buffer)}] {self._buffer}")
 
             # Reset variables
             self.reset_stack_variables()
@@ -282,8 +284,71 @@ class Parser:
             return
 
         return
+    
+class SerialDecoder:
 
-if __name__ == "__main:__":
+    def __init__(self, port="COM1", baud_rate=19200):
+
+        self.port = port
+        self.baud_rate = baud_rate
+
+        self._serial = serial.Serial(port, baud_rate)
+        self._parser = Parser()
+
+        self._file = ""
+
+    def run(self):
+
+        print("Running decoder...")
+        # self._serial.open()
+
+        while True:
+            try:
+                byte = self._serial.read(1)
+                while ((byte != b'') or not self._parser.complete()):
+                    if (byte == b'#'):
+                        # Read until end of line
+                        print("Decoder log:", end="")
+                        byte = self._serial.read(1)
+                        while (byte != b'\n' and byte != b'\r'):
+                            print(byte.decode("ascii"), end="")
+                            byte = self._serial.read(1)
+                        byte = self._serial.read(1)
+                        print(byte)
+                    else:
+                        # print(f"{byte.hex()} -> {byte.decode("ascii") if byte[0] < 128 and byte[0] > 32 else f"({byte[0]})"}")
+                        self._parser.push(byte)
+                        self._parser.update()
+
+                    if self._parser.available():
+                        break
+
+                    byte = self._serial.read(1)
+
+                if self._parser.available():
+                    print("BLOCK AVAILABLE!")
+                    self.__processBlocks()
+
+            except KeyboardInterrupt:
+                self._serial.close()
+                self.save()
+                return
+        
+    def save(self):
+        pass
+
+    def __processBlocks(self):
+
+        # We've accidentally ended up here
+        if not self._parser.available():
+            return
+        
+        while self._parser.available():
+            block = self._parser.read()
+            print(block)
+
+
+if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
         prog='parser.py',
@@ -291,4 +356,24 @@ if __name__ == "__main:__":
         epilog='See [URL] for more help.'
     )
     
-    parser.add_argument("-m")
+    parser.add_argument("type", choices=["serial", "file"]
+                        )
+    parser.add_argument("-p", "--port", type=str, required=False, default="COM1")
+    parser.add_argument("-b", "--baud", type=int, required=False, default=19200)
+
+    args = parser.parse_args()
+
+    if args.type == "serial":
+
+        print(f"Starting serial decoder with port {args.port}")
+        try:
+            serialDecoder = SerialDecoder(port=args.port, baud_rate=args.baud)
+            serialDecoder.run()
+        except KeyboardInterrupt:
+            serialDecoder.save()
+            print("Quitting...")
+            exit()
+
+    else:
+
+        print("No type provided, shutting down.")
