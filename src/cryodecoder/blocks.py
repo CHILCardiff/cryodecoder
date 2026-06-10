@@ -108,7 +108,7 @@ class IEEE754Float(Field[float]):
     def to_bytes(self, value):
         return struct.pack("<f", value)
     def from_bytes(self, value):
-        return struct.unpack("<f", value)
+        return struct.unpack("<f", value)[0]
     
 #-----------------------------------------------------------------------------
 # Specific field types
@@ -152,14 +152,21 @@ class TemperatureKellerField(UnsignedIntField):
 
     @property
     def convertedValue(self):
-        return 100 * (self._value)/(2**16-1)
+        return ((self._value / 16) - 24) * 0.05 - 50.0
     
     @convertedValue.setter
     def convertedValue(self, temperatureValue : float):
-        rawValue = temperatureValue * (2**16 - 1) / 100
-        self._value = rawValue
-        self._raw = self.to_bytes(self._value)
+        raise NotImplementedError
 
+class PressureKellerField(UnsignedIntField):
+
+    @property
+    def convertedValue(self):
+        return (self._value - 16384) * (self._parent.pressure_max.value - self._parent.pressure_min.value) / 32768 + 1 # Invalid for now, adjust using date code
+    
+    @convertedValue.setter
+    def convertedValue(self, temperatureValue : float):
+        raise NotImplementedError
 
 ##############################################################################
 # Blocks
@@ -408,8 +415,8 @@ class Block_E_Environmental(Block):
 class Block_K_Keller(Block):
     identifier = b'K'
     header_class = BlockHeader
-    pressure = UnsignedIntField(field_order=0, byte_width=2)
-    temperature = UnsignedIntField(field_order=1, byte_width=2)
+    pressure = PressureKellerField(field_order=0, byte_width=2)
+    temperature = TemperatureKellerField(field_order=1, byte_width=2)
     date_code = UnsignedIntField(field_order=2, byte_width=1)
     pressure_min = IEEE754Float(field_order=3)
     pressure_max = IEEE754Float(field_order=4)
@@ -428,9 +435,9 @@ class Block_V_Voltage(Block):
 class Block_T_Tilt(Block):
     identifier = b'T'
     header_class = BlockHeader
-    acc_x = UnsignedIntField(field_order=0, byte_width=2)
-    acc_y = UnsignedIntField(field_order=1, byte_width=2)
-    acc_z = UnsignedIntField(field_order=2, byte_width=2)
+    acc_x = SignedIntField(field_order=0, byte_width=2)
+    acc_y = SignedIntField(field_order=1, byte_width=2)
+    acc_z = SignedIntField(field_order=2, byte_width=2)
     pitch_tenth_deg = UnsignedIntField(field_order=3, byte_width=2)
     roll_tenth_deg  = UnsignedIntField(field_order=4, byte_width=2)
 
@@ -516,6 +523,15 @@ class Block_D_Datalogger(BlockChildren):
     timestamp       = UnsignedIntField(field_order=1, byte_width=4)
     sequence_number = UnsignedIntField(field_order=2, byte_width=1)
     payload         = Payload(field_order=3)
+    
+class Block_H_Housekeeping(BlockChildren):
+    identifier = b'H'
+    level = BlockLevel.L3
+    header_class = BlockHeaderL3
+    receiver_id     = UnsignedIntField(field_order=0, byte_width=4)
+    timestamp       = UnsignedIntField(field_order=1, byte_width=4)
+    sequence_number = UnsignedIntField(field_order=2, byte_width=1)
+    payload         = Payload(field_order=3)
 
 # Define acceptable list of blocks
 blocks : dict[bytes,type[Block]] = {
@@ -525,6 +541,7 @@ blocks : dict[bytes,type[Block]] = {
         Block_C_CHIL,
         Block_D_Datalogger,
         Block_E_Environmental,
+        Block_H_Housekeeping,
         Block_K_Keller,
         Block_M_MBusPacket,
         Block_R_Receiver,

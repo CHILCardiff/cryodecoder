@@ -1,6 +1,13 @@
+from abc import ABC, abstractmethod
 import argparse 
+import datetime
 import logging
+import pathlib
 import serial
+
+from os import PathLike
+from typing import Union
+from types import NoneType
 
 import cryodecoder
 import cryodecoder.blocks
@@ -22,6 +29,8 @@ class Parser:
         self._blocks = []
         # Buffer to store input to
         self._buffer : bytes = b''
+        self._timestamp_buffer : list[datetime.datetime] = []
+        self._last_timestamp = None
         # Stack values
         self.reset_stack_variables()
         # Setup state
@@ -43,14 +52,18 @@ class Parser:
         """assign raw data to local raw buffer
         """
         self._buffer += raw
+        self._timestamp_buffer.append(datetime.datetime.now(datetime.UTC))
+        self._last_timestamp = self._timestamp_buffer[-1]
 
     def pop(self, count=1):
         """pop the top off the buffer
         """
         if len(self._buffer) >= count + 1:
             self._buffer = self._buffer[count:]
+            self._timestamp_buffer = self._timestamp_buffer[count:]
         else:
             self._buffer = b''
+            self._timestamp_buffer = []
 
     def complete(self):
         """if we have finished processing the buffer, return true
@@ -60,12 +73,15 @@ class Parser:
     def available(self):
         return len(self._blocks)
 
-    def read(self):
+    def read(self) -> Union[NoneType, tuple[datetime.datetime, cryodecoder.blocks.Block]]:
         """return the next available block
         """
         if self.available():
             # Return first block
             return self._blocks.pop(0)
+        
+        else:
+            return None
         
     def update(self):
         self._state(self)
@@ -274,7 +290,7 @@ class Parser:
         else:
 
             # Append block to top level
-            self._blocks.append(block)
+            self._blocks.append((self._last_timestamp, block))
             # print(f"Assigned {block} to parser stack")
             # print(f"[{len(self._buffer)}] {self._buffer}")
 
@@ -285,17 +301,386 @@ class Parser:
 
         return
     
+class DataColumn(ABC):
+
+    def __init__(self, column_name):
+        self.name = column_name
+
+    def getColumnName(self):
+        return self.name
+
+    @abstractmethod
+    def getColumnValue(self, block):
+        pass
+
+class ReceiverTimestampColumn(DataColumn):
+
+    def getColumnValue(self, block):
+        if isinstance(block, cryodecoder.blocks.Block_D_Datalogger) or \
+           isinstance(block, cryodecoder.blocks.Block_H_Housekeeping):
+            time = datetime.datetime.fromtimestamp(block.timestamp.value, tz=datetime.UTC)
+            return f"{time.strftime("%Y-%m-%d %H:%M:%S")}"
+        else:
+            return ""
+        
+class ReceiverIDColumn(DataColumn):
+
+    def getColumnValue(self, block):
+        if isinstance(block, cryodecoder.blocks.Block_D_Datalogger) or \
+           isinstance(block, cryodecoder.blocks.Block_H_Housekeeping):
+            return f"{block.receiver_id.value:x}"
+        else:
+            return ""
+        
+class MBusDataColumn(DataColumn):
+
+    def getColumnValue(self, block):
+
+        mbus_block = None
+        if isinstance(block, cryodecoder.blocks.Block_D_Datalogger) or \
+           isinstance(block, cryodecoder.blocks.Block_H_Housekeeping):
+            mbus_block = block.getChild((
+                cryodecoder.blocks.Block_M_MBusPacket,
+                cryodecoder.blocks.Block_M_MBusPacketCryoegg2023,
+                cryodecoder.blocks.Block_M_MBusPacketCryowurst2023,
+            )) # returns None if not a child
+        elif isinstance(block, (
+            cryodecoder.blocks.Block_M_MBusPacket,
+            cryodecoder.blocks.Block_M_MBusPacketCryoegg2023,
+            cryodecoder.blocks.Block_M_MBusPacketCryowurst2023,
+        )):
+            mbus_block = block
+
+        if mbus_block is None:
+            return ""
+        else:
+            return self.getMBusValue(mbus_block)
+
+    @abstractmethod
+    def getMBusValue(self, mbus_block):
+        ...
+        
+class ReceiverSequenceNumberColumn(DataColumn):
+
+    def getColumnValue(self, block):
+        if isinstance(block, cryodecoder.blocks.Block_D_Datalogger) or \
+           isinstance(block, cryodecoder.blocks.Block_H_Housekeeping):
+            return f"{block.receiver_id.value:x}"
+        else:
+            return ""
+
+class ChannelColumn(MBusDataColumn):
+
+    def getMBusValue(self, mbus_block):
+        return f"{mbus_block.channel_number.value:01d}"
+
+class UIDColumn(MBusDataColumn):
+
+    def getMBusValue(self, mbus_block):
+        return f"{mbus_block.uid.value:08x}"
+
+class RSSIColumn(MBusDataColumn):
+
+    def getMBusValue(self, mbus_block):
+        return f"{-mbus_block.rssi.value / 2}"
+    
+class L1MBusDataColumn(DataColumn):
+    L1_class = None
+    
+    @abstractmethod
+    def getDataValue(self, block):
+        ...
+    
+    def getDataValuePre2026(self, block):
+        return ""
+
+    def getColumnValue(self, block):
+
+        mbus_block = None
+        if isinstance(block, cryodecoder.blocks.Block_D_Datalogger) or \
+        isinstance(block, cryodecoder.blocks.Block_H_Housekeeping):
+            mbus_block = block.getChild((
+                cryodecoder.blocks.Block_M_MBusPacket,
+                cryodecoder.blocks.Block_M_MBusPacketCryoegg2023,
+                cryodecoder.blocks.Block_M_MBusPacketCryowurst2023))
+
+        # No MBus data in the top leve
+        if mbus_block is None:
+            return ""
+        
+        if isinstance(mbus_block, (
+            cryodecoder.blocks.Block_M_MBusPacketCryoegg2023,
+            cryodecoder.blocks.Block_M_MBusPacketCryowurst2023
+        )):
+            return self.getDataValuePre2026(mbus_block)
+        
+        data_block = mbus_block.getChild(self.L1_class) 
+        if data_block is None:
+            return ""
+        else:
+            return self.getDataValue(data_block)
+        
+   
+class L1ReceiverDataColumn(DataColumn):
+    L1_class = None
+    
+    @abstractmethod
+    def getDataValue(self, block):
+        ...
+
+    def getColumnValue(self, block):
+
+        rcvr_block = None
+        if isinstance(block, cryodecoder.blocks.Block_D_Datalogger) or \
+        isinstance(block, cryodecoder.blocks.Block_H_Housekeeping):
+            rcvr_block = block.getChild((
+                cryodecoder.blocks.Block_R_Receiver))
+
+        # No MBus data in the top leve
+        if rcvr_block is None:
+            return ""
+        
+        data_block = rcvr_block.getChild(self.L1_class) 
+        if data_block is None:
+            return ""
+        else:
+            return self.getDataValue(data_block)
+        
+class InstrumentSequenceNumberColumn(L1MBusDataColumn):
+    L1_class = cryodecoder.blocks.Block_C_CHIL
+    def getDataValuePre2026(self, block):
+        return f"{block.sequence_number.value}"
+    def getDataValue(self, block):
+        return f"{block.sequence_number.value}"
+    
+class CHILBatteryVoltageColumn(L1MBusDataColumn):
+    L1_class = cryodecoder.blocks.Block_C_CHIL
+    def getDataValuePre2026(self, block):
+        return f"{block.voltage_battery.value}"
+    def getDataValue(self, block):
+        return f"{block.voltage_battery.value}"
+    
+class CHILConductivityColumn(L1MBusDataColumn):
+    L1_class = cryodecoder.blocks.Block_C_CHIL
+    def getDataValuePre2026(self, block):
+        return f"{block.conductivity.value}"
+    def getDataValue(self, block):
+        return f"{block.conductivity.value}"
+    
+class CHILTemperatureColumn(L1MBusDataColumn):
+    L1_class = cryodecoder.blocks.Block_C_CHIL
+    def getDataValuePre2026(self, block):
+        return f"{block.temperature_pt1000.value}"
+    def getDataValue(self, block):
+        return f"{block.temperature_tmp117.convertedValue:.7f}"
+        
+class LSM303DataColumn(L1MBusDataColumn):
+    L1_class = cryodecoder.blocks.Block_A_LSM303
+    def __init__(self, column_name, field_name):
+        super().__init__(column_name)
+        self.field_name = field_name
+    def getDataValue(self, block):
+        if hasattr(block, self.field_name):
+            return f"{getattr(block, self.field_name).value:d}"
+        else:
+            return f""
+        
+class CTiTilt05AccDataColumn(L1MBusDataColumn):
+    L1_class = cryodecoder.blocks.Block_T_Tilt
+    def __init__(self, column_name, field_name):
+        super().__init__(column_name)
+        self.field_name = field_name
+    def getDataValue(self, block):
+        if hasattr(block, self.field_name):
+            return f"{getattr(block, self.field_name).value:d}"
+        else:
+            return f""
+        
+class CTiTilt05AngleDataColumn(L1MBusDataColumn):
+    L1_class = cryodecoder.blocks.Block_T_Tilt
+    def __init__(self, column_name, field_name):
+        super().__init__(column_name)
+        self.field_name = field_name
+    def getDataValue(self, block):
+        if hasattr(block, self.field_name):
+            return f"{getattr(block, self.field_name).value/10:.1f}"
+        else:
+            return f""
+        
+class KellerPressureColumn(L1MBusDataColumn):
+    L1_class = cryodecoder.blocks.Block_K_Keller
+    def getDataValue(self, block):
+        return f"{block.pressure.convertedValue:.4f}"
+        
+class KellerTemperatureColumn(L1MBusDataColumn):
+    L1_class = cryodecoder.blocks.Block_K_Keller
+    def getDataValue(self, block):
+        return f"{block.temperature.convertedValue:.4f}"
+    
+class KellerDateCodeColumn(L1MBusDataColumn):
+    L1_class = cryodecoder.blocks.Block_K_Keller
+    def getDataValue(self, block):
+        return f"{block.date_code.value:x}"
+        
+class BMA400DataColumn(L1ReceiverDataColumn):
+    L1_class = cryodecoder.blocks.Block_B_BMA400
+    def __init__(self, column_name, field_name):
+        super().__init__(column_name)
+        self.field_name = field_name
+    def getDataValue(self, block):
+        if hasattr(block, self.field_name):
+            return f"{getattr(block, self.field_name).value:d}"
+        else:
+            return f""
+        
+class INA3221DataColumn(L1ReceiverDataColumn):
+    L1_class = cryodecoder.blocks.Block_V_Voltage
+    def __init__(self, column_name, field_name):
+        super().__init__(column_name)
+        self.field_name = field_name
+    def getDataValue(self, block):
+        if hasattr(block, self.field_name):
+            return f"{getattr(block, self.field_name).value:d}"
+        else:
+            return f""
+        
+class SHT30DataColumn(L1ReceiverDataColumn):
+    L1_class = cryodecoder.blocks.Block_E_Environmental
+    def __init__(self, column_name, field_name):
+        super().__init__(column_name)
+        self.field_name = field_name
+    def getDataValue(self, block):
+        if hasattr(block, self.field_name):
+            return f"{getattr(block, self.field_name).convertedValue:.4f}"
+        else:
+            return f""
+        
+class MS5607DataColumn(L1ReceiverDataColumn):
+    L1_class = cryodecoder.blocks.Block_E_Environmental
+    def __init__(self, column_name, field_name):
+        super().__init__(column_name)
+        self.field_name = field_name
+    def getDataValue(self, block):
+        if hasattr(block, self.field_name):
+            return f"{getattr(block, self.field_name).value:.4f}"
+        else:
+            return f""
+
+
 class SerialDecoder:
 
-    def __init__(self, port="COM1", baud_rate=19200):
+    def __init__(self, port="COM1", baud_rate=19200, file_root : Union[NoneType,PathLike] = None):
+
+        cryodecoder.blocks.blocks
 
         self.port = port
         self.baud_rate = baud_rate
+        self.file_root = file_root
 
         self._serial = serial.Serial(port, baud_rate)
         self._parser = Parser()
 
-        self._file = ""
+        # Setup start time of the logger from local timestamp
+        self._init_time = datetime.datetime.now(datetime.UTC)
+
+        self.data_columns = [
+            ReceiverTimestampColumn("timestamp_receiver"),
+            ReceiverIDColumn("id_received"),
+            ChannelColumn("channel"),
+            UIDColumn("id_mbus"),
+            RSSIColumn("mbus_rssi"),
+            InstrumentSequenceNumberColumn("sequence_number_instrument"),
+            CHILBatteryVoltageColumn("voltage_battery_mV"),
+            CHILConductivityColumn("conductivity_mV"),
+            CHILTemperatureColumn("temperature_tmp117_degC"),
+            KellerPressureColumn("pressure_keller_bar"),
+            KellerTemperatureColumn("temperature_keller_degC"),
+            KellerDateCodeColumn("date_code_keller_raw"),
+            LSM303DataColumn("mag_lsm303_x", "mag_x"),
+            LSM303DataColumn("mag_lsm303_y", "mag_y"),
+            LSM303DataColumn("mag_lsm303_z", "mag_z"),
+            LSM303DataColumn("acc_lsm303_x", "acc_x"),
+            LSM303DataColumn("acc_lsm303_y", "acc_y"),
+            LSM303DataColumn("acc_lsm303_z", "acc_z"),
+            CTiTilt05AccDataColumn("acc_cti_tilt05_x_mg", "acc_x"),
+            CTiTilt05AccDataColumn("acc_cti_tilt05_y_mg", "acc_y"),
+            CTiTilt05AccDataColumn("acc_cti_tilt05_z_mg", "acc_z"),
+            CTiTilt05AngleDataColumn("pitch", "pitch_tenth_deg"),
+            CTiTilt05AngleDataColumn("roll", "roll_tenth_deg"),
+            # Receiver information
+            ReceiverSequenceNumberColumn("sequence_number_receiver"),
+            BMA400DataColumn("acc_receiver_x", "acc_x"),
+            BMA400DataColumn("acc_receiver_y", "acc_y"),
+            BMA400DataColumn("acc_receiver_z", "acc_z"),
+            INA3221DataColumn("voltage_battery_receiver_raw", "voltage_battery"),
+            INA3221DataColumn("voltage_shunt_ch1", "voltage_shunt_ch1"),
+            INA3221DataColumn("voltage_bus_ch1", "voltage_bus_ch1"),
+            INA3221DataColumn("voltage_shunt_ch2", "voltage_shunt_ch2"),
+            INA3221DataColumn("voltage_bus_ch2", "voltage_bus_ch2"),
+            INA3221DataColumn("voltage_shunt_ch3", "voltage_shunt_ch3"),
+            INA3221DataColumn("voltage_bus_ch3", "voltage_bus_ch3"),
+            SHT30DataColumn("relative_humidity_sht30", "humidity_sht30"),
+            SHT30DataColumn("temperature_sht30_raw", "temperature_sht30"),
+            MS5607DataColumn("pressure_ms5607_bar", "pressure_ms5607"),
+            MS5607DataColumn("temperature_ms5607_degC", "temperature_ms5607")
+        ]
+
+        # Setup logging
+        self.__setup_loggers()
+       
+
+    def getRoot(self):
+
+        # Construct time from init
+        time = self._init_time.strftime("%Y%m%d_%H%M%S")
+    
+        if self.file_root is None:
+            root = pathlib.Path(".") / "data" / time
+        else:
+            root = pathlib.Path(self.file_root)        
+
+        # Create directory if it doesn't exist
+        if not root.exists():
+            root.mkdir(parents=True)
+
+        return root
+
+    def getLoggerFilename(self):
+
+        return self.getRoot() / f"logger_{self._init_time.strftime("%Y%m%d_%H%M%S")}.log"
+
+    def getDataFilename(self):
+
+        return self.getRoot() / f"data_{self._init_time.strftime("%Y%m%d_%H%M%S")}.csv"
+
+    def __setup_loggers(self, level=logging.INFO):
+            
+        # Setup datalogger debug logger
+        dl_handler   = logging.FileHandler(self.getLoggerFilename())   
+        dl_formatter = logging.Formatter('[%(levelname)s] %(asctime)s: %(message)s')     
+        dl_handler.setFormatter(dl_formatter)
+
+        dl_logger = logging.getLogger("cryodecoder.logger")
+        dl_logger.setLevel(level)
+        dl_logger.addHandler(dl_handler)
+
+        # Setup datalogger output logger
+        out_handler   = logging.FileHandler(self.getDataFilename())   
+        out_formatter = logging.Formatter('%(message)s')     
+        out_handler.setFormatter(out_formatter)
+
+        out_logger = logging.getLogger("cryodecoder.data")
+        out_logger.setLevel(level)
+        out_logger.addHandler(out_handler)
+
+        # Write header for data
+        headers = [column.name for column in self.data_columns]
+        headers.insert(0, "timestamp_pc")
+        out_logger.log(logging.INFO, ",".join(headers))
+
+        # Assign logging objects to the decoder
+        self.output_logger = dl_logger
+        self.output_data = out_logger
 
     def run(self):
 
@@ -308,13 +693,13 @@ class SerialDecoder:
                 while ((byte != b'') or not self._parser.complete()):
                     if (byte == b'#'):
                         # Read until end of line
-                        print("Decoder log:", end="")
+                        decode_message = ""
                         byte = self._serial.read(1)
                         while (byte != b'\n' and byte != b'\r'):
-                            print(byte.decode("ascii"), end="")
+                            decode_message += byte.decode("ascii")
                             byte = self._serial.read(1)
                         byte = self._serial.read(1)
-                        print(byte)
+                        self.output_logger.log(logging.INFO, decode_message)
                     else:
                         # print(f"{byte.hex()} -> {byte.decode("ascii") if byte[0] < 128 and byte[0] > 32 else f"({byte[0]})"}")
                         self._parser.push(byte)
@@ -326,8 +711,10 @@ class SerialDecoder:
                     byte = self._serial.read(1)
 
                 if self._parser.available():
-                    print("BLOCK AVAILABLE!")
                     self.__processBlocks()
+
+            except UnicodeDecodeError:
+                continue
 
             except KeyboardInterrupt:
                 self._serial.close()
@@ -344,8 +731,16 @@ class SerialDecoder:
             return
         
         while self._parser.available():
-            block = self._parser.read()
-            print(block)
+            time, block = self._parser.read()
+            # values = [
+            #     column.getColumnValue(block) for column in self.data_columns
+            # ]
+            values = []
+            for column in self.data_columns:
+
+                values.append(column.getColumnValue(block))
+            values.insert(0, f"{time.strftime("%Y-%m-%d %H:%M:%S")}")
+            self.output_data.log(logging.INFO, ",".join(values))
 
 
 if __name__ == "__main__":

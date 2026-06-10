@@ -22,7 +22,7 @@ def test_parser_from_bytestream():
     # Check we have a Datalogger block
     assert parser.available() == 1
     
-    block = parser.read()
+    time, block = parser.read()
     assert isinstance(block, cryodecoder.blocks.Block_D_Datalogger)
 
 def test_parser_from_file_eggonly():
@@ -43,7 +43,7 @@ def test_parser_from_file_eggonly():
 
     while parser.available():
         
-        block = parser.read()
+        time, block = parser.read()
         assert isinstance(block, cryodecoder.blocks.Block_D_Datalogger)
 
 def test_parser_from_file_mixed_formats():
@@ -66,7 +66,7 @@ def test_parser_from_file_mixed_formats():
 
     while parser.available():
         
-        block = parser.read()
+        time, block = parser.read()
         if block.hasChild(cryodecoder.blocks.Block_M_MBusPacket):
             new_blocks += 1
         if block.hasChild(cryodecoder.blocks.Block_M_MBusPacketCryoegg2023):
@@ -97,7 +97,7 @@ def test_parser_from_file_mixed_instruments():
 
     while parser.available():
 
-        block = parser.read()
+        time, block = parser.read()
         assert isinstance(block, cryodecoder.blocks.Block_D_Datalogger)
         assert block.hasChild(cryodecoder.blocks.Block_M_MBusPacket)
 
