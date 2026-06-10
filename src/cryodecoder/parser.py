@@ -673,6 +673,15 @@ class SerialDecoder:
         out_logger.setLevel(level)
         out_logger.addHandler(out_handler)
 
+        # Setup console handler for feedback
+        cmd_handler = logging.StreamHandler()
+        cmd_formatter = logging.Formatter('[%(levelname)s] %(asctime)s: %(message)s')
+        cmd_handler.setFormatter(cmd_formatter)
+
+        cmd_logger = logging.getLogger("cryodecoder.out")
+        cmd_logger.setLevel(level)
+        cmd_logger.addHandler(cmd_handler)
+
         # Write header for data
         headers = [column.name for column in self.data_columns]
         headers.insert(0, "timestamp_pc")
@@ -681,6 +690,7 @@ class SerialDecoder:
         # Assign logging objects to the decoder
         self.output_logger = dl_logger
         self.output_data = out_logger
+        self.output_console = cmd_logger
 
     def run(self):
 
@@ -724,6 +734,81 @@ class SerialDecoder:
     def save(self):
         pass
 
+    def __consoleOutput(self, time, block):
+
+        self.output_console.log(
+            logging.INFO,
+            f"Received packet"
+        )
+
+        mbus_block = None
+        rcvr_block = None
+        if isinstance(block, (cryodecoder.blocks.Block_D_Datalogger, cryodecoder.blocks.Block_H_Housekeeping)):
+
+            self.output_console.log(
+                logging.INFO,
+                f"Received datalogger/housekeeping packet ('D' or 'H')"
+            )
+            
+            time = datetime.datetime.fromtimestamp(block.timestamp.value, tz=datetime.UTC)
+
+            self.output_console.log(
+                logging.INFO,
+                f"Receiver ID #{block.receiver_id.value:x} with onboard time: {time.strftime("%Y-%m-%d %H:%M:%S")}"
+            )
+
+            mbus_block = block.getChild((
+                cryodecoder.blocks.Block_M_MBusPacket,
+                cryodecoder.blocks.Block_M_MBusPacketCryoegg2023,
+                cryodecoder.blocks.Block_M_MBusPacketCryowurst2023,
+            ))
+
+            rcvr_block = block.getChild((
+                cryodecoder.blocks.Block_R_Receiver
+            ))
+
+        elif isinstance(block, (
+            cryodecoder.blocks.Block_M_MBusPacket,
+            cryodecoder.blocks.Block_M_MBusPacketCryoegg2023,
+            cryodecoder.blocks.Block_M_MBusPacketCryowurst2023,
+        )):
+            
+            mbus_block = block
+
+            self.output_console.log(
+                logging.INFO,
+                f"Received MBus packet ('M')"
+            )
+
+        elif isinstance(block, (
+            cryodecoder.blocks.Block_R_Receiver
+        )):
+            
+            rcvr_block = block
+
+            self.output_console.log(
+                logging.INFO,
+                f"Received datalogger info packet ('R')"
+            )
+            
+        if mbus_block is not None:
+
+            self.output_console.log(
+                logging.INFO,
+                f"Instrument ID #{mbus_block.uid.value:x} with RSSI {-mbus_block.rssi.value/2} dBm"
+            )
+
+        if rcvr_block is not None:
+
+            rcvr_voltage = rcvr_block.getChild(cryodecoder.blocks.Block_V_Voltage)
+
+            if rcvr_voltage is not None:
+                self.output_console.log(
+                    logging.INFO,
+                    f"Receiver voltage (raw / 65536): {rcvr_voltage.voltage_battery.value}"
+                )
+
+
     def __processBlocks(self):
 
         # We've accidentally ended up here
@@ -741,6 +826,8 @@ class SerialDecoder:
                 values.append(column.getColumnValue(block))
             values.insert(0, f"{time.strftime("%Y-%m-%d %H:%M:%S")}")
             self.output_data.log(logging.INFO, ",".join(values))
+            # Output value to console if available
+            self.__consoleOutput(time, block)
 
 
 if __name__ == "__main__":

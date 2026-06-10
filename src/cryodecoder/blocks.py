@@ -327,7 +327,7 @@ class BlockChildren(Block):
                 return True
         return False
     
-    def getChild(self, block_type : type) -> Union[Block, NoneType]:
+    def getChild(self, block_type : Union[type, tuple[type]]) -> Union[Block, NoneType]:
         for child in self.children:
             if isinstance(child, block_type):
                 return child
