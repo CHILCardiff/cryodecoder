@@ -565,6 +565,11 @@ class MS5607DataColumn(L1ReceiverDataColumn):
             return f"{getattr(block, self.field_name).value:.4f}"
         else:
             return f""
+        
+class HexColumn(DataColumn):
+
+    def getColumnValue(self, block):
+        return block.to_bytes().hex()
 
 class LoggerBase:
     def __init__(self):
@@ -619,7 +624,8 @@ class CSVLogger(LoggerBase):
             SHT30DataColumn("relative_humidity_sht30", "humidity_sht30"),
             SHT30DataColumn("temperature_sht30_raw", "temperature_sht30"),
             MS5607DataColumn("pressure_ms5607_bar", "pressure_ms5607"),
-            MS5607DataColumn("temperature_ms5607_degC", "temperature_ms5607")
+            MS5607DataColumn("temperature_ms5607_degC", "temperature_ms5607"),
+            HexColumn("hex")
         ]
 
         self.init_csv_logger()
@@ -696,7 +702,7 @@ class SerialDecoder(CSVLogger):
         return self.getRoot() / f"logger_{self._init_time.strftime("%Y%m%d_%H%M%S")}.log"
 
     def __setup_loggers(self, level=logging.INFO):
-        
+
         # Setup datalogger debug logger
         dl_handler   = logging.FileHandler(self.getLoggerFilename())   
         dl_formatter = logging.Formatter('[%(levelname)s] %(asctime)s: %(message)s')     
