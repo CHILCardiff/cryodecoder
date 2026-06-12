@@ -2,7 +2,7 @@
 Decoding raw data CHIL instruments and dataloggers.
 
 ## Quickstart
-To use `cryodecoder` from the command line, you will need to have Python 3.14 or later which can be downloaded from [here](https://www.python.org/downloads/release/python-3146/).
+To use `cryodecoder` from the command line, you will need to have Python 3.13 or later which can be downloaded from [here](https://www.python.org/downloads/release/python-3146/).
 
 > [!NOTE]
 > It is advised to select the option which adds Python to the PATH variable so you can use it directly from a command line instance.
@@ -59,4 +59,4 @@ And install cryodecoder using the following command:
 python -m pip install -e .
 ```
 
-Once this has completed, you should succesfully be able to run `cryodecoder`!
+Once this has completed, you should succesfully be able to run `cryodecoder` from within the virtual environment.

@@ -6,7 +6,7 @@ import pathlib
 import serial
 
 from os import PathLike
-from typing import Union
+from typing import Union, Literal
 from types import NoneType
 
 import cryodecoder
@@ -105,6 +105,20 @@ class Parser:
             else:
                 self.pop()
                 return
+            
+        # We might have come from the end of a block with an extra field
+
+        if self._fields_remaining[self._stack] is not None and \
+            self._bytes_remaining[self._stack] is not None and \
+            self._fields_remaining[self._stack] > 0 and \
+            self._bytes_remaining[self._stack] > 0:
+            # Remaining bytes in this block's fields 
+            bytes_remaining_in_fields = sum(
+                [field.byte_width for field in self._block[self._stack].fields[-self._fields_remaining[self._stack]:]]
+            )
+            if self._bytes_remaining[self._stack] == bytes_remaining_in_fields:
+                self._state = Parser.state_readField
+                return
         
         # Get block type
         block_type = cryodecoder.blocks.blocks[self._buffer[0:1]]
@@ -137,6 +151,9 @@ class Parser:
 
         # Move to next state
         self._state = Parser.state_readLength
+        # Assign fields remaining
+        self._fields_remaining[self._stack] = len(self._block[self._stack].fields)
+
         return
 
     def state_readLength(self):
@@ -156,8 +173,6 @@ class Parser:
         # Assign bytes remaining
         self._bytes_remaining[self._stack] = int.from_bytes(length, "little")
         self._block_length[self._stack] = int.from_bytes(length, "little")
-        # Assign fields remaining
-        self._fields_remaining[self._stack] = len(self._block[self._stack].fields)
 
         # If we have bytes or fields remaining then read a field, otherwise
         # we go straight to appending a block
@@ -403,6 +418,14 @@ class L1MBusDataColumn(DataColumn):
                 cryodecoder.blocks.Block_M_MBusPacket,
                 cryodecoder.blocks.Block_M_MBusPacketCryoegg2023,
                 cryodecoder.blocks.Block_M_MBusPacketCryowurst2023))
+            
+        if isinstance(block, (
+            cryodecoder.blocks.Block_M_MBusPacket,
+            cryodecoder.blocks.Block_M_MBusPacketCryoegg2023,
+            cryodecoder.blocks.Block_M_MBusPacketCryowurst2023
+        )
+            ):
+            mbus_block = block
 
         # No MBus data in the top leve
         if mbus_block is None:
@@ -654,7 +677,7 @@ class CSVLogger(LoggerBase):
 
 class SerialDecoder(CSVLogger):
 
-    def __init__(self, port="COM1", baud_rate=19200, file_root : Union[NoneType,PathLike] = None):
+    def __init__(self, port="COM1", baud_rate=19200, file_root : Union[NoneType,PathLike] = None, mode : Literal["receiver", "mbus"] = "receiver"):
 
         # Initialises creation time
         LoggerBase.__init__(self)
@@ -671,6 +694,7 @@ class SerialDecoder(CSVLogger):
         self.port = port
         self.baud_rate = baud_rate
 
+        self._mode = mode
         self._serial = serial.Serial(port, baud_rate)
         self._parser = Parser()
 
@@ -725,11 +749,8 @@ class SerialDecoder(CSVLogger):
         self.output_logger = dl_logger
         self.output_console = cmd_logger
 
-    def run(self):
-
-        print("Running decoder...")
-        # self._serial.open()
-
+    def runReceiver(self):
+        
         while True:
             try:
                 byte = self._serial.read(1)
@@ -763,6 +784,50 @@ class SerialDecoder(CSVLogger):
                 self._serial.close()
                 self.save()
                 return
+            
+    def runMBus(self):
+
+        while True:
+            try:
+                length = self._serial.read(1)
+                packet = self._serial.read(length[0])
+
+                # Synthesize an MBus packet
+                mbus_header = b'M' + int.to_bytes(length[0] + 1) + b'\0'
+                mbus_packet = mbus_header + packet
+                # FORCE RSSI BUG
+                mbus_packet = mbus_packet[0:-1]
+                mbus_packet += b'B'
+
+                self._parser.push(mbus_packet)
+                while (not self._parser.complete()):
+                    self._parser.update()
+
+                if self._parser.available():
+                    self.__processBlocks()
+
+            except UnicodeDecodeError:
+                continue
+
+            except KeyboardInterrupt:
+                self._serial.close()
+                self.save()
+                return
+
+
+    def run(self):
+
+        if self._mode == "receiver": 
+            print("Running decoder in receiver mode...")
+            self.runReceiver()
+        elif self._mode == "mbus":
+            print("Running decoder in MBus (RadioCrafts) mode...")
+            self.runMBus()
+        else:
+            print("Invalid receiver mode.")
+
+            
+            
         
     def save(self):
         pass
@@ -915,6 +980,7 @@ def parser_main():
                         )
     parser.add_argument("-p", "--port", type=str, required=False, default="COM1")
     parser.add_argument("-b", "--baud", type=int, required=False, default=19200)
+    parser.add_argument("-m", "--mode", type=str, required=False, default="receiver", choices=["receiver", "mbus"])
 
     # Input and output files
     parser.add_argument("-i", "--input", type=str, required=False, default="")
@@ -926,7 +992,7 @@ def parser_main():
 
         print(f"Starting serial decoder with port {args.port}")
 
-        serialDecoder = SerialDecoder(port=args.port, baud_rate=args.baud)
+        serialDecoder = SerialDecoder(port=args.port, baud_rate=args.baud, mode=args.mode)
         serialDecoder.run()
 
     elif args.type == "file":
