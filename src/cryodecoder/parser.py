@@ -955,10 +955,16 @@ class FileDecoder(CSVLogger):
         with open(self.input_file, "rb") as fh:
 
             byte = fh.read(1)
+            bi = 0
             while (byte != b'' or not self._parser.complete()):
                 self._parser.push(byte)
-                self._parser.update()
+                try:
+                    self._parser.update()
+                except:
+                    print(f"Resetting at index {bi}")
+                    self._parser.reset_stack_variables()
                 byte = fh.read(1)
+                bi += 1
             
         while self._parser.available():
             # Log block to CSV
