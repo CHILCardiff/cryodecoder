@@ -561,6 +561,30 @@ class Block_C_Cryoegg(Block):
     identifier = b'C'
     level = BlockLevel.L1
     header_class = BlockHeaderLegacy
+    # -----------------------------------------------------------------
+    # Fields:
+    # -----------------------------------------------------------------
+    timestamp           = UnsignedIntField(field_order=0, byte_width=4)
+    logger_temperature  = IEEE754Float(field_order=1)
+    logger_pressure     = IEEE754Float(field_order=2)
+    logger_voltage      = UnsignedIntField(field_order=3, byte_width=2)
+    channel_number      = UnsignedIntField(field_order=4, byte_width=1)
+    length              = UnsignedIntField(field_order=5, byte_width=1)
+    c_field             = UnsignedIntField(field_order=6, byte_width=1)
+    m_field             = UnsignedIntField(field_order=7, byte_width=2, byte_order="big")
+    uid                 = UnsignedIntField(field_order=8, byte_width=4, byte_order="big")
+    version             = UnsignedIntField(field_order=9, byte_width=1)
+    device              = UnsignedIntField(field_order=10, byte_width=1)
+    ci_field            = UnsignedIntField(field_order=11, byte_width=1)
+    # legacy payload start ---------------------------------------------
+    conductivity        = UnsignedIntField(field_order=12, byte_width=2)
+    temperature_pt100   = UnsignedIntField(field_order=13, byte_width=2)
+    pressure            = UnsignedIntField(field_order=14, byte_width=2)
+    temperature_keller  = UnsignedIntField(field_order=15, byte_width=2)
+    battery_voltage     = UnsignedIntField(field_order=16, byte_width=2)
+    sequence_number     = UnsignedIntField(field_order=17, byte_width=1)
+    # legacy payload end -----------------------------------------------
+    rssi                = UnsignedIntField(field_order=18, byte_width=1)
 
 class Block_W_Wurst(Block):
     # Think about whether this is the right level for hte block, we could override the block length

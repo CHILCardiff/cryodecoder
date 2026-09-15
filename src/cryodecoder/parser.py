@@ -67,8 +67,11 @@ class Parser:
 
     def complete(self):
         """if we have finished processing the buffer, return true
+
+        TODO: add more relevant termination conditions here, including an
+        'infinite' processing mode when using a Serial/asyncronous decoder
         """
-        if len(self._buffer) == 0 and (self._init_level == None or self._state == Parser.state_readIdentifier):
+        if len(self._buffer) == 0 and (self._init_level == None or self._state == Parser.state_readIdentifier or self._state == Parser.state_readLength):
             self.reset_stack_variables()
             return True
         else:
@@ -179,7 +182,8 @@ class Parser:
         if self._block[self._stack].identifier == b'C':
             if length in (b'0', b'1'):
                 print(f"Mutating 'C' block to legacy format.")
-                self._block[self._stack] = cryodecoder.blocks.Block_C_Cryoegg
+                self._block[self._stack] = cryodecoder.blocks.Block_C_Cryoegg()
+                self._fields_remaining[self._stack] = len(self._block[self._stack].fields)
 
         if isinstance(self._block[self._stack].header, cryodecoder.blocks.BlockHeaderLegacy):
             # Get the legacy field length
