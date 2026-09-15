@@ -162,7 +162,7 @@ class PressureKellerField(UnsignedIntField):
 
     @property
     def convertedValue(self):
-        return (self._value - 16384) * (self._parent.pressure_max.value - self._parent.pressure_min.value) / 32768 + 1 # Invalid for now, adjust using date code
+        return (self.value - 16384) / 32768 * (self._parent.pressure_max.value - self._parent.pressure_min.value) + 1 # Invalid for now, adjust using date code
     
     @convertedValue.setter
     def convertedValue(self, temperatureValue : float):
@@ -198,6 +198,30 @@ class BlockHeader: # L1(BlockHeader):
     
 class BlockHeaderL3(BlockHeader):
     length_byte_width : int = 2
+
+class BlockHeaderLegacy(BlockHeader):
+    def __init__(self):
+        super().__init__()
+
+    def length(self):
+        # Define fixed length for legacy headers (W1, W2, C1, C2)
+        return 2
+
+    def get_bytes_remaining(self, identifier, classifier):
+        if identifier == b'W':
+            if classifier == b'1':
+                return 52
+            elif classifier == b'2':
+                return 58
+            else:
+                raise ValueError(f"Invalid legacy packet classifier {identifier}_{classifier}_.")
+        elif identifier == b'C':
+            if classifier == b'0':
+                return 23
+            if classifier == b'1':
+                return 38
+            else:
+                raise ValueError(f"Invalid legacy packet classifier {identifier}_{classifier}_.")
 
 
 # class BlockHeaderL2():
@@ -533,6 +557,52 @@ class Block_H_Housekeeping(BlockChildren):
     sequence_number = UnsignedIntField(field_order=2, byte_width=1)
     payload         = Payload(field_order=3)
 
+class Block_C_Cryoegg(Block):
+    identifier = b'C'
+    level = BlockLevel.L1
+    header_class = BlockHeaderLegacy
+
+class Block_W_Wurst(Block):
+    # Think about whether this is the right level for hte block, we could override the block length
+    identifier = b'W'
+    level = BlockLevel.L1
+    header_class = BlockHeaderLegacy
+    # -----------------------------------------------------------------
+    # Fields:
+    # -----------------------------------------------------------------
+    timestamp           = UnsignedIntField(field_order=0, byte_width=4)
+    logger_temperature  = IEEE754Float(field_order=1)
+    logger_pressure     = IEEE754Float(field_order=2)
+    logger_voltage      = UnsignedIntField(field_order=3, byte_width=2)
+    channel_number      = UnsignedIntField(field_order=4, byte_width=1)
+    length              = UnsignedIntField(field_order=5, byte_width=1)
+    c_field             = UnsignedIntField(field_order=6, byte_width=1)
+    m_field             = UnsignedIntField(field_order=7, byte_width=2, byte_order="big")
+    uid                 = UnsignedIntField(field_order=8, byte_width=4, byte_order="big")
+    version             = UnsignedIntField(field_order=9, byte_width=1)
+    device              = UnsignedIntField(field_order=10, byte_width=1)
+    ci_field            = UnsignedIntField(field_order=11, byte_width=1)
+    # legacy payload start ---------------------------------------------
+    temperature_tmp117  = SignedIntField(field_order=12, byte_width=2)
+    magnetometer_x      = SignedIntField(field_order=13, byte_width=2)
+    magnetometer_y      = SignedIntField(field_order=14, byte_width=2)
+    magnetometer_z      = SignedIntField(field_order=15, byte_width=2)
+    accelerometer_x     = SignedIntField(field_order=16, byte_width=2)
+    accelerometer_y     = SignedIntField(field_order=17, byte_width=2)
+    accelerometer_z     = SignedIntField(field_order=18, byte_width=2)
+    accelerometer_tilt_x = SignedIntField(field_order=19, byte_width=2)
+    accelerometer_tilt_y = SignedIntField(field_order=20, byte_width=2)
+    accelerometer_tilt_z = SignedIntField(field_order=21, byte_width=2)
+    pitch_tilt_y        = SignedIntField(field_order=22, byte_width=2)
+    roll_tilt_z         = SignedIntField(field_order=23, byte_width=2)
+    conductivity        = UnsignedIntField(field_order=24, byte_width=2)
+    pressure            = UnsignedIntField(field_order=25, byte_width=2)
+    temperature_keller  = UnsignedIntField(field_order=26, byte_width=2)
+    voltage_battery     = UnsignedIntField(field_order=27, byte_width=2)
+    sequence_number     = UnsignedIntField(field_order=28, byte_width=1)
+    # legacy payload end -----------------------------------------------
+    rssi                = UnsignedIntField(field_order=29, byte_width=1)            
+
 # Define acceptable list of blocks
 blocks : dict[bytes,type[Block]] = {
     block.identifier : block for block in [
@@ -546,6 +616,8 @@ blocks : dict[bytes,type[Block]] = {
         Block_M_MBusPacket,
         Block_R_Receiver,
         Block_T_Tilt,
-        Block_V_Voltage
+        Block_V_Voltage,
+        # Legacy
+        Block_W_Wurst
     ]
 }

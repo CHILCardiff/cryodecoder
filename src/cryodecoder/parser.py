@@ -68,7 +68,12 @@ class Parser:
     def complete(self):
         """if we have finished processing the buffer, return true
         """
-        return len(self._buffer) == 0 and self._init_level == None # TODO: add some state relevant condition here
+        if len(self._buffer) == 0 and (self._init_level == None or self._state == Parser.state_readIdentifier):
+            self.reset_stack_variables()
+            return True
+        else:
+            return False
+        # TODO: add some state relevant condition here
 
     def available(self):
         return len(self._blocks)
@@ -168,11 +173,25 @@ class Parser:
         
         # Get length
         length = self._buffer[0:length_bytes]
-        
+
+        # We need to check here that we're not dealing with a legacy 'C' block
+        # that would have a length identifier of '0' or '1'.
+        if self._block[self._stack].identifier == b'C':
+            if length in (b'0', b'1'):
+                print(f"Mutating 'C' block to legacy format.")
+                self._block[self._stack] = cryodecoder.blocks.Block_C_Cryoegg
+
+        if isinstance(self._block[self._stack].header, cryodecoder.blocks.BlockHeaderLegacy):
+            # Get the legacy field length
+            legacy_byte_length = self._block[self._stack].header.get_bytes_remaining(self._block[self._stack].identifier, classifier=length)
+            # Then allocate the correct size
+            self._bytes_remaining[self._stack] = legacy_byte_length
+            self._block_length[self._stack] = legacy_byte_length
+        else:
         # print(f"Reading {length_bytes} bytes as length={length}")
-        # Assign bytes remaining
-        self._bytes_remaining[self._stack] = int.from_bytes(length, "little")
-        self._block_length[self._stack] = int.from_bytes(length, "little")
+            # Assign bytes remaining
+            self._bytes_remaining[self._stack] = int.from_bytes(length, "little")
+            self._block_length[self._stack] = int.from_bytes(length, "little")
 
         # If we have bytes or fields remaining then read a field, otherwise
         # we go straight to appending a block
@@ -725,6 +744,10 @@ class SerialDecoder(CSVLogger):
 
         return self.getRoot() / f"logger_{self._init_time.strftime("%Y%m%d_%H%M%S")}.log"
 
+    def getRawFilename(self):
+
+        return self.getRoot() / f"raw_{self._init_time.strftime("%Y%m%d_%H%M%S")}.log"
+
     def __setup_loggers(self, level=logging.INFO):
 
         # Setup datalogger debug logger
@@ -745,24 +768,48 @@ class SerialDecoder(CSVLogger):
         cmd_logger.setLevel(level)
         cmd_logger.addHandler(cmd_handler)
 
+        # Raw logger
+        raw = open(self.getRawFilename(), "w+")
+
         # Assign logging objects to the decoder
         self.output_logger = dl_logger
         self.output_console = cmd_logger
+        self.output_raw = raw
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self):
+        self.output_raw.close()
 
     def runReceiver(self):
         
         while True:
             try:
                 byte = self._serial.read(1)
+                self.output_raw.write(f"{int.from_bytes(byte):02x}")
+                self.output_raw.flush()
+
                 while ((byte != b'') or not self._parser.complete()):
-                    if (byte == b'#'):
+                    # Bit of a hack here to deal with comments
+                    if (byte == b'#' and self._parser._state == Parser.state_readIdentifier):
                         # Read until end of line
                         decode_message = ""
                         byte = self._serial.read(1)
+                        self.output_raw.write(f"{int.from_bytes(byte):02x}")
+                        self.output_raw.flush()
+
                         while (byte != b'\n' and byte != b'\r'):
                             decode_message += byte.decode("ascii")
                             byte = self._serial.read(1)
+                            self.output_raw.write(f"{int.from_bytes(byte):02x}")
+                            self.output_raw.flush()
+
                         byte = self._serial.read(1)
+                        
+                        self.output_raw.write(f"{int.from_bytes(byte):02x}")
+                        self.output_raw.flush()
+                        
                         self.output_logger.log(logging.INFO, decode_message)
                     else:
                         # print(f"{byte.hex()} -> {byte.decode("ascii") if byte[0] < 128 and byte[0] > 32 else f"({byte[0]})"}")
@@ -955,16 +1002,10 @@ class FileDecoder(CSVLogger):
         with open(self.input_file, "rb") as fh:
 
             byte = fh.read(1)
-            bi = 0
             while (byte != b'' or not self._parser.complete()):
                 self._parser.push(byte)
-                try:
-                    self._parser.update()
-                except:
-                    print(f"Resetting at index {bi}")
-                    self._parser.reset_stack_variables()
+                self._parser.update()
                 byte = fh.read(1)
-                bi += 1
             
         while self._parser.available():
             # Log block to CSV
