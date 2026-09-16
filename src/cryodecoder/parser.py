@@ -24,7 +24,9 @@ def _parserstackfunction(method):
 
 class Parser:
 
-    def __init__(self):
+    def __init__(self, async_input : bool = False):
+        # Is the parser expecting asynchronous input
+        self._async = async_input
         # Buffer to store valid blocks in
         self._blocks = []
         # Buffer to store input to
@@ -71,13 +73,23 @@ class Parser:
         TODO: add more relevant termination conditions here, including an
         'infinite' processing mode when using a Serial/asyncronous decoder
         """
-        if len(self._buffer) == 0 and (self._init_level == None or self._state == Parser.state_readIdentifier or self._state == Parser.state_readLength):
-            self.reset_stack_variables()
-            return True
-        else:
-            return False
-        # TODO: add some state relevant condition here
 
+        # Define series of conditions for whether the parsing is complete
+        # ------------------------------------------------------------------
+        # If we are in asynchronous input mode, we keep parsing ad-infinitem
+        if self._async:
+            return False
+        else:
+            if len(self._buffer) == 0 and \
+                self._state != Parser.state_appendBlock:
+                # Reset the stack
+                self.reset_stack_variables()
+                # and return complete
+                return True
+            else:
+                # otherwise we still have bytes to process
+                return False
+        
     def available(self):
         return len(self._blocks)
 
@@ -96,11 +108,11 @@ class Parser:
 
     def state_readIdentifier(self):
 
-        # print(f"[rI | fields({self._fields_remaining}), bytes({self._bytes_remaining})]")
+        print(f"DBG - [rI | fields({self._fields_remaining}), bytes({self._bytes_remaining})]")
 
         # Invalid block
         if not self._buffer[0:1] in cryodecoder.blocks.blocks:
-            # print(f"[rI] Invalid identifier {self._buffer[0:1]}, {self._fields_remaining[self._stack]}, {self._bytes_remaining[self._stack]}")
+            print(f"DBG - [rI] Invalid identifier {self._buffer[0:1]}, {self._fields_remaining[self._stack]}, {self._bytes_remaining[self._stack]}")
             
             # We might have come from the end of a block with an extra field
             if self._fields_remaining[self._stack] is not None and \
@@ -130,7 +142,7 @@ class Parser:
         
         # Get block type
         block_type = cryodecoder.blocks.blocks[self._buffer[0:1]]
-        # print(f"[rI] Valid identifier {self._buffer[0:1]}")
+        print(f"DBG - [rI] Valid identifier {self._buffer[0:1]}")
         
         # If we haven't initialised then 
         if self._init_level is None:
@@ -142,11 +154,11 @@ class Parser:
         if block_type.level.value - 1 <= self._stack:
             self._stack = block_type.level.value - 1
         else:
-            # print(f"Invalid level {block_type.level.value} (stack={self._stack + 1})")
+            print(f"DBG - Invalid level {block_type.level.value} (stack={self._stack + 1})")
             self.pop()
             return
         
-        # print(f"Setting stack to {self._stack}")
+        print(f"DBG - Setting stack to {self._stack}")
 
         # Assign block type
         self._block[self._stack] = block_type()
@@ -166,7 +178,7 @@ class Parser:
 
     def state_readLength(self):
 
-        # print(f"[rL | fields({self._fields_remaining}), bytes({self._bytes_remaining})]")
+        print(f"DBG - [rL | fields({self._fields_remaining}), bytes({self._bytes_remaining})]")
 
         length_bytes = self._block[self._stack].header.length_byte_width
         # Check if we don't have enough bytes to read in a full block
@@ -192,7 +204,7 @@ class Parser:
             self._bytes_remaining[self._stack] = legacy_byte_length
             self._block_length[self._stack] = legacy_byte_length
         else:
-        # print(f"Reading {length_bytes} bytes as length={length}")
+            print(f"DBG - Reading {length_bytes} bytes as length={length}")
             # Assign bytes remaining
             self._bytes_remaining[self._stack] = int.from_bytes(length, "little")
             self._block_length[self._stack] = int.from_bytes(length, "little")
@@ -218,7 +230,7 @@ class Parser:
 
     def state_readField(self):
 
-        # print(f"[rF | fields({self._fields_remaining}), bytes({self._bytes_remaining})]")
+        print(f"DBG - [rF | fields({self._fields_remaining}), bytes({self._bytes_remaining})]")
         
         # Calculate index of the field we're dealing with
         field_index = len(self._block[self._stack].fields) - self._fields_remaining[self._stack]
@@ -238,7 +250,7 @@ class Parser:
             # stay in this state
             return
         else:
-            # print(f"Assinging {field.field_name} as {self._buffer[0:field.byte_width]}")
+            print(f"DBG - Assinging {field.field_name} as {self._buffer[0:field.byte_width]}")
             # We have enough bytes
             field.raw = self._buffer[0:field.byte_width]
             # Decrease the field count
@@ -292,7 +304,7 @@ class Parser:
             
     def state_appendBlock(self):
 
-        # print(f"[aB | fields({self._fields_remaining}), bytes({self._bytes_remaining})]")
+        print(f"DBG - [aB | fields({self._fields_remaining}), bytes({self._bytes_remaining})]")
             
         # Save the block
         block = self._block[self._stack]
@@ -306,7 +318,7 @@ class Parser:
             self._stack += 1
             # implicit guarantee that L2 and L3 blocks are of type BlockChildren - TODO: worth checking?
             self._block[self._stack].add_child(block)
-            # print(f"Assigned {block} to {self._block[self._stack]}")
+            print(f"DBG - Assigned {block} to {self._block[self._stack]}")
 
             # fields == 0 -> no more fields, bytes == 0 -> no more blocks
             if self._fields_remaining[self._stack] == 0 and \
@@ -329,8 +341,8 @@ class Parser:
 
             # Append block to top level
             self._blocks.append((self._last_timestamp, block))
-            # print(f"Assigned {block} to parser stack")
-            # print(f"[{len(self._buffer)}] {self._buffer}")
+            print(f"DBG - Assigned {block} to parser stack")
+            print(f"DBG - [{len(self._buffer)}] {self._buffer}")
 
             # Reset variables
             self.reset_stack_variables()
@@ -816,7 +828,7 @@ class SerialDecoder(CSVLogger):
                         
                         self.output_logger.log(logging.INFO, decode_message)
                     else:
-                        # print(f"{byte.hex()} -> {byte.decode("ascii") if byte[0] < 128 and byte[0] > 32 else f"({byte[0]})"}")
+                        print(f"DBG - {byte.hex()} -> {byte.decode("ascii") if byte[0] < 128 and byte[0] > 32 else f"({byte[0]})"}")
                         self._parser.push(byte)
                         self._parser.update()
 
