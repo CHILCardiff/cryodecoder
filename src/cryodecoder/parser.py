@@ -731,7 +731,7 @@ class SerialDecoder(CSVLogger):
 
         self._mode = mode
         self._serial = serial.Serial(port, baud_rate)
-        self._parser = Parser()
+        self._parser = Parser(async_input=True)
 
         # Setup logging
         self.__setup_loggers()
