@@ -4,10 +4,10 @@ def parse_hex(hex_input : str):
     """
     Parse CHIL data from hexadecimal strings.
 
-    Parameters:
-
-    Returns:
-    list: Ordered list of the decoded blocks from the string
+    :param hex_input: String encoding binary data in CHIL format.
+    :return: Ordered list of the decoded blocks from the string
+    :rtype: list[cryodecoder.blocks.Block]
+    
     """
     # Create a parser object
     parser = Parser()
