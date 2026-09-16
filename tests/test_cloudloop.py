@@ -1,6 +1,5 @@
-import cryodecoder.parser
+import cryodecoder
 import pandas as pd
-import time
 
 timeout = 5 # seconds, timeout interval
 
@@ -15,22 +14,10 @@ if __name__ == "__main__":
     # Then iterate over the data
     for idx, row in cl_data.iterrows():
 
-        # In this example, it's saved in hexadecimal format
-        byte_data = bytes.fromhex(row["Payload"])
-
-        # Create a parser object
-        parser = cryodecoder.parser.Parser()
-        parser.push(byte_data)
-
-        while not parser.complete():
-            print(f"Buffer: ", parser._buffer)
-            parser.update()
-
-        while parser.available():
-            print(f"Block found at row {idx}")
-            _, block = parser.read()
-            print(block)
-            blocks.append(block)
+        # Parse row
+        row_blocks = cryodecoder.parse_hex(row["Payload"])
+        for block in row_blocks:
+            blocks.append(row_blocks)
 
     # Do something with 'blocks' array of data
     print(f"Read {len(blocks)} from {len(cl_data)} rows.")
