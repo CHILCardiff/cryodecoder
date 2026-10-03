@@ -1,3 +1,11 @@
+"""
+This module provides the framework for defining and definitions of blocks 
+as used in CHIL instruments.
+
+More information on the blocks can be found :doc:`
+
+"""
+
 import cryodecoder
 import cryodecoder.exceptions
 
@@ -14,10 +22,21 @@ from types import NoneType
 ##############################################################################
 class Field(ABC, Generic[ValueType]):
     """Field defines a generic class which takes raw values in bytes and 
-    provides an interface to convert the byte stream into an interpreted value
+    provides an interface to convert the byte stream into an interpreted value.
+
+    Field exposes .raw and .value properties which provide real-time conversion
+    between byte and interpreted values (i.e. byte to float, byte to int).
     """
 
     def __init__(self, field_order, byte_width = 0, value_default = None):
+        """
+        Generic constructor for Field.
+
+        :param field_order: order in which the field appears in a block (zero-index)
+        :param byte_width: width of the field in bytes
+        :param value_default: default value of the field when initialised
+
+        """
         self.field_order = field_order
         self.byte_width = byte_width
         self._raw : bytes = b'\x00' * byte_width
@@ -28,10 +47,20 @@ class Field(ABC, Generic[ValueType]):
         self.field_name = name
 
     @abstractmethod
-    def from_bytes(self, raw):
+    def from_bytes(self, bytes):
+        """
+        derive the raw value of the field from byte(s)
+        
+        :param bytes: the bytes to be converted to a raw value
+        """
         ...
     @abstractmethod
     def to_bytes(self, value):
+        """
+        derive the byte representation of the raw value
+
+        :param value: the raw value to be converted to bytes 
+        """
         ...
 
     def __repr__(self):
@@ -58,6 +87,11 @@ class Field(ABC, Generic[ValueType]):
         self._raw = self.to_bytes(value) or b''
 
 class Payload(Field):
+    """
+    Represents a 'special' field which allows for lower-level blocks to be 
+    embedded in the middle of the current block (i.e. the higher level MBus 
+    RSSI byte is appended after the 'payload' block).
+    """
 
     def __init__(self, field_order):
         super().__init__(field_order, byte_width = 0)
@@ -79,6 +113,9 @@ class Payload(Field):
         raise cryodecoder.exceptions.PayloadAccessError
 
 class UnsignedIntField(Field[int]):
+    """
+    Represents a variable-width unsigned integer in binary and interpreted form.
+    """
 
     def __init__(self, field_order, byte_width, byte_order = "little"):
         super().__init__(field_order, byte_width=byte_width, value_default=0)
@@ -90,6 +127,9 @@ class UnsignedIntField(Field[int]):
         return int.from_bytes(value, byteorder=self.byte_order)
     
 class SignedIntField(Field[int]):
+    """
+    Represents a variable-width signed integer in binary and interpreted form.
+    """
 
     def __init__(self, field_order, byte_width, byte_order = "little"):
         super().__init__(field_order, byte_width=byte_width, value_default=0)
@@ -101,6 +141,12 @@ class SignedIntField(Field[int]):
         return int.from_bytes(value, byteorder=self.byte_order, signed=True)
     
 class IEEE754Float(Field[float]):
+    """
+    Represents a 4-byte `IEEE 754`_ floating point number in binary and interpeted 
+    form. 
+
+    .. _IEEE 754: https://en.wikipedia.org/wiki/IEEE_754
+    """
 
     def __init__(self, field_order):
         super().__init__(field_order, byte_width=4, value_default=0)
@@ -114,9 +160,18 @@ class IEEE754Float(Field[float]):
 # Specific field types
 #-----------------------------------------------------------------------------
 class TemperatureTMP117Field(SignedIntField):
+    """
+    Reported temperature from a `TMP117`_ digital temperature sensor.
+
+    .. _TMP117: https://www.ti.com/lit/ds/symlink/tmp117.pdf?
+    """
 
     @property
     def convertedValue(self):
+        """
+        :return: the reported temperature value in degrees Celsius.
+        :rtype: float
+        """
         return self._value / 128
     
     @convertedValue.setter
@@ -125,9 +180,18 @@ class TemperatureTMP117Field(SignedIntField):
         self._raw = self.to_bytes(self._value)
 
 class TemperatureSHT30Field(UnsignedIntField):
+    """
+    Reported temperature from an `SHT30`_ temperature and humidity probe.
+    
+    .. _SHT30: https://sensirion.com/media/documents/213E6A3B/63A5A569/Datasheet_SHT3x_DIS.pdf
+    """
 
     @property
     def convertedValue(self):
+        """
+        :return: the reported temperature value in degrees Celsius.
+        :rtype: float
+        """
         return -45 + 175 * (self._value)/(2**16-1)
     
     @convertedValue.setter
@@ -137,9 +201,18 @@ class TemperatureSHT30Field(UnsignedIntField):
         self._raw = self.to_bytes(self._value)
 
 class RelativeHumiditySHT30Field(UnsignedIntField):
+    """
+    Reported relative humidity from an `SHT30`_ temperature and humidity probe.
+    
+    .. _SHT30: https://sensirion.com/media/documents/213E6A3B/63A5A569/Datasheet_SHT3x_DIS.pdf
+    """
 
     @property
     def convertedValue(self):
+        """
+        :return: the reported relative humidity (as a percentage).
+        :rtype: float
+        """
         return 100 * (self._value)/(2**16-1)
     
     @convertedValue.setter
@@ -149,9 +222,18 @@ class RelativeHumiditySHT30Field(UnsignedIntField):
         self._raw = self.to_bytes(self._value)
 
 class TemperatureKellerField(UnsignedIntField):
+    """
+    Reported temperature from an `Keller 7L(HP)D`_ pressure sensor.
+    
+    .. _Keller 7L(HP)D: https://keller-pressure.com/en/products/pressure-transmitters/oem-pressure-transmitters/series-7ld
+    """
 
     @property
     def convertedValue(self):
+        """
+        :return: the reported temperature value in degrees Celsius.
+        :rtype: float
+        """
         return ((self._value / 16) - 24) * 0.05 - 50.0
     
     @convertedValue.setter
@@ -159,9 +241,18 @@ class TemperatureKellerField(UnsignedIntField):
         raise NotImplementedError
 
 class PressureKellerField(UnsignedIntField):
+    """
+    Reported pressure in bar from an `Keller 7L(HP)D`_ pressure sensor.
+    
+    .. _Keller 7L(HP)D: https://keller-pressure.com/en/products/pressure-transmitters/oem-pressure-transmitters/series-7ld
+    """
 
     @property
     def convertedValue(self):
+        """
+        :return: the reported pressure value in bar.
+        :rtype: float
+        """
         return (self.value - 16384) / 32768 * (self._parent.pressure_max.value - self._parent.pressure_min.value) + 1 # Invalid for now, adjust using date code
     
     @convertedValue.setter
@@ -172,6 +263,10 @@ class PressureKellerField(UnsignedIntField):
 # Blocks
 ##############################################################################
 class BlockHeader: # L1(BlockHeader):
+    """
+    Base class for the header section of CHIL blocks.
+    """
+
     length_byte_width : int = 1
     def to_bytes(self, block) -> bytes:
         # Calculate length
@@ -404,6 +499,25 @@ class BlockChildren(Block):
 # BLOCK DEFINITIONS
 ###############################################################################
 class Block_A_LSM303(Block):
+    """
+    Block representing accelerometer and magnetometer data from the LSM303 
+    sensor.
+    
+    .. csv-table::
+        :header: Length (bytes),Description,Example
+        :widths: auto
+
+        1,Block indentifier,'A'
+        1,Block length,12
+        2,Magnetometer X,"-32,768 to 32,767"
+        2,Magnetometer Y,"-32,768 to 32,767"
+        2,Magnetometer Z,"-32,768 to 32,767"
+        2,Accelerometer X,"-32,768 to 32,767"
+        2,Accelerometer Y,"-32,768 to 32,767"
+        2,Accelerometer Z,"-32,768 to 32,767"
+    
+    """
+
     identifier = b'A'
     header_class = BlockHeader
     mag_x = SignedIntField(field_order=0, byte_width=2)
