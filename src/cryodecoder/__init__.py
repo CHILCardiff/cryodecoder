@@ -1,4 +1,10 @@
+import logging
+
+from sys import stdout
 from cryodecoder.parser import Parser
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.StreamHandler(stdout))
 
 def parse_hex(hex_input : str):
     """
@@ -22,3 +28,4 @@ def parse_hex(hex_input : str):
     #   timestamp that comes from the Parser object so we can do some 
     #   reformating...
     return [block for timestamp, block in parser._blocks]
+
