@@ -695,7 +695,7 @@ class CSVLogger(LoggerBase):
         csv_formatter = logging.Formatter('%(message)s')     
         csv_handler.setFormatter(csv_formatter)
 
-        self._csv_logger = logging.getLogger("cryodecoder.data")
+        self._csv_logger = logging.Logger("cryodecoder.data", level=level)
         self._csv_logger.setLevel(level)
         self._csv_logger.addHandler(csv_handler)
 

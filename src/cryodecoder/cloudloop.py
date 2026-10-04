@@ -9,7 +9,7 @@ import time
 import tqdm
 
 from os import environ, PathLike
-from typing import Union, Optional
+from typing import Union, Optional, Callable
 from types import NoneType
 
 from cryodecoder import logger
@@ -50,7 +50,7 @@ def get_env_api_key():
     else:
         raise KeyError("No API key ('CLOUDLOOP_API') defined in environment variables.")
 
-def __validate_api_parameters(
+def _validate_api_parameters(
     request_params : Optional[dict] = None,
     api_key : Optional[str] = None,
     api_root : str = DEFAULT_API_ROOT
@@ -107,7 +107,7 @@ def list_records_from_cloudloop(
 
     # Validate params users in API request
     request_params, api_key, api_root = \
-        __validate_api_parameters(request_params, api_key, api_root)
+        _validate_api_parameters(request_params, api_key, api_root)
 
     # Get a record of all the messages within the current date range
     iso_datetime_format = "%Y-%m-%dT%H:%M:%S"
@@ -196,9 +196,13 @@ class LingoMOMessage:
 
         if "imei" in identity["hardware"]:
             self.imei = identity["hardware"]["imei"]
+        else:
+            self.imei = None
 
         if "serial" in identity["hardware"]:
             self.serial = identity["hardware"]["serial"]
+        else:
+            self.serial = None
 
         self.raw = raw or None
 
@@ -266,14 +270,10 @@ def get_message_from_cloudloop(
     api_key : Optional[str] = None,
     api_root : str = DEFAULT_API_ROOT
 ):
-    if request_params is None:
-        request_params = dict()
 
-    # Default API key to the environment variable if it is None
-    api_key = api_key or get_env_api_key()
-    
-    if not "token" in request_params:
-        request_params["token"] = api_key
+    # Validate API parameters
+    request_params, api_key, api_root = \
+        _validate_api_parameters(request_params, api_key, api_root)
 
     # Generate API URL 
     message_url="{api_root}/Data/GetLingoMo?messageRecord={record_id}".format(
@@ -294,7 +294,9 @@ def download_records_from_cloudloop(
     end_date : Optional[DateLike] = None,
     request_params : Optional[dict] = None,
     api_key : Optional[str] = None,
-    api_root : str = DEFAULT_API_ROOT
+    api_root : str = DEFAULT_API_ROOT,
+    disable_progress_bar = False,
+    record_hook : Optional[Callable] = None 
 ):
     
     # Parse input arguments
@@ -306,7 +308,8 @@ def download_records_from_cloudloop(
         end_date=end_date,
         request_params=request_params,
         api_key=api_key,
-        api_root=api_root
+        api_root=api_root,
+        disable_progress_bar=disable_progress_bar
     )
 
     dataframe.reset_index(inplace=True)
@@ -342,15 +345,21 @@ def download_records_from_cloudloop(
         dataframe.loc[idx, "imei"] = record.imei
         if record.serial is not None:
             dataframe.loc[idx, "serial"] = record.serial
-        if record.latitude is not None:
-            dataframe.loc[idx, "latitude"] = record.latitude
-        if record.longitude is not None:
-            dataframe.loc[idx, "longitude"] = record.longitude
+
+        if isinstance(record, LingoMOMessageSBD):
+            if record.latitude is not None:
+                dataframe.loc[idx, "latitude"] = record.latitude
+            if record.longitude is not None:
+                dataframe.loc[idx, "longitude"] = record.longitude
 
         if idx == 0:
             dataframe[dataframe.index == idx].to_csv(output_path, mode="w", index=False)
         else:
             dataframe[dataframe.index == idx].to_csv(output_path, mode="a", header=False, index=False)
+
+        # Call record hook if provided to perform and operation
+        if record_hook:
+            record_hook(dataframe.loc[idx])
 
     logger.info(f"Finished writing records to {output_path}")
     return len(dataframe)
