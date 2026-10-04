@@ -16,6 +16,20 @@ def test_download_from_cloudloop():
         df = pandas.read_csv(tmp.name)
         assert len(df) == n_records
 
+def test_download_and_parse_from_cloudloop():
+
+    with tempfile.NamedTemporaryFile(mode="w+") as tmp1:
+        with tempfile.NamedTemporaryFile(mode="w+") as tmp2:
+            tmp1.close(); tmp2.close()
+
+            n_records = cryodecoder.download_and_parse_cloudloop(
+                raw_path = tmp1.name,
+                data_path = tmp2.name,
+                start_date = "2026-10-04 00:00:00"
+            )
+            df = pandas.read_csv(tmp2.name)
+            pass
+            
 # import cryodecoder
 # import pandas as pd
 

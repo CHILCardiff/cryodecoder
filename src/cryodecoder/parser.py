@@ -366,8 +366,12 @@ class DataColumn(ABC):
 class ReceiverTimestampColumn(DataColumn):
 
     def getColumnValue(self, block):
-        if isinstance(block, cryodecoder.blocks.Block_D_Datalogger) or \
-           isinstance(block, cryodecoder.blocks.Block_H_Housekeeping):
+        if isinstance(block, (
+            cryodecoder.blocks.Block_D_Datalogger, 
+            cryodecoder.blocks.Block_H_Housekeeping,
+            cryodecoder.blocks.Block_C_Cryoegg,
+            cryodecoder.blocks.Block_W_Wurst
+        )):
             time = datetime.datetime.fromtimestamp(block.timestamp.value, tz=datetime.UTC)
             return f"{time.strftime("%Y-%m-%d %H:%M:%S")}"
         else:
@@ -385,6 +389,12 @@ class ReceiverIDColumn(DataColumn):
 class MBusDataColumn(DataColumn):
 
     def getColumnValue(self, block):
+
+        if isinstance(block, (
+            cryodecoder.blocks.Block_C_Cryoegg,
+            cryodecoder.blocks.Block_W_Wurst
+        )):
+            return self.getReceiver2023Value(block)
 
         mbus_block = None
         if isinstance(block, cryodecoder.blocks.Block_D_Datalogger) or \
@@ -409,6 +419,10 @@ class MBusDataColumn(DataColumn):
     @abstractmethod
     def getMBusValue(self, mbus_block):
         ...
+
+    @abstractmethod
+    def getReceiver2023Value(self, block):
+        ...
         
 class ReceiverSequenceNumberColumn(DataColumn):
 
@@ -424,19 +438,28 @@ class ChannelColumn(MBusDataColumn):
     def getMBusValue(self, mbus_block):
         return f"{mbus_block.channel_number.value:01d}"
 
+    def getReceiver2023Value(self, block):
+        return f"{block.channel_number.value:01d}"
+
 class UIDColumn(MBusDataColumn):
 
     def getMBusValue(self, mbus_block):
         return f"{mbus_block.uid.value:08x}"
 
+    def getReceiver2023Value(self, block):
+        return f"{block.uid.value:08x}"
+
 class RSSIColumn(MBusDataColumn):
 
     def getMBusValue(self, mbus_block):
         return f"{-mbus_block.rssi.value / 2}"
+
+    def getReceiver2023Value(self, block):
+        return f"{-block.rssi.value / 2}"
     
 class L1MBusDataColumn(DataColumn):
     L1_class = None
-    
+
     @abstractmethod
     def getDataValue(self, block):
         ...
@@ -444,7 +467,16 @@ class L1MBusDataColumn(DataColumn):
     def getDataValuePre2026(self, block):
         return ""
 
+    def getDataValueReceiver2023(self, block):
+        return ""
+
     def getColumnValue(self, block):
+
+        if isinstance(block, (
+            cryodecoder.blocks.Block_C_Cryoegg,
+            cryodecoder.blocks.Block_W_Wurst,
+        )):
+            return self.getDataValueReceiver2023(block)
 
         mbus_block = None
         if isinstance(block, cryodecoder.blocks.Block_D_Datalogger) or \
@@ -462,7 +494,7 @@ class L1MBusDataColumn(DataColumn):
             ):
             mbus_block = block
 
-        # No MBus data in the top leve
+        # No MBus data in the top level
         if mbus_block is None:
             return ""
         
@@ -486,8 +518,17 @@ class L1ReceiverDataColumn(DataColumn):
     def getDataValue(self, block):
         ...
 
+    def getDataValueReceiver2023(self, block):
+        return ""
+
     def getColumnValue(self, block):
 
+        if isinstance(block, (
+            cryodecoder.blocks.Block_C_Cryoegg,
+            cryodecoder.blocks.Block_W_Wurst,
+        )):
+            return self.getDataValueReceiver2023(block)
+        
         rcvr_block = None
         if isinstance(block, cryodecoder.blocks.Block_D_Datalogger) or \
         isinstance(block, cryodecoder.blocks.Block_H_Housekeeping):
@@ -510,6 +551,8 @@ class InstrumentSequenceNumberColumn(L1MBusDataColumn):
         return f"{block.sequence_number.value}"
     def getDataValue(self, block):
         return f"{block.sequence_number.value}"
+    def getDataValueReceiver2023(self, block):
+        return f"{block.sequence_number.value}"
     
 class CHILBatteryVoltageColumn(L1MBusDataColumn):
     L1_class = cryodecoder.blocks.Block_C_CHIL
@@ -517,12 +560,16 @@ class CHILBatteryVoltageColumn(L1MBusDataColumn):
         return f"{block.voltage_battery.value}"
     def getDataValue(self, block):
         return f"{block.voltage_battery.value}"
+    def getDataValueReceiver2023(self, block):
+        return f"{block.battery_voltage.value}"
     
 class CHILConductivityColumn(L1MBusDataColumn):
     L1_class = cryodecoder.blocks.Block_C_CHIL
     def getDataValuePre2026(self, block):
         return f"{block.conductivity.value}"
     def getDataValue(self, block):
+        return f"{block.conductivity.value}"
+    def getDataValueReceiver2023(self, block):
         return f"{block.conductivity.value}"
     
 class CHILTemperatureColumn(L1MBusDataColumn):
@@ -531,7 +578,12 @@ class CHILTemperatureColumn(L1MBusDataColumn):
         return f"{block.temperature_pt1000.value}"
     def getDataValue(self, block):
         return f"{block.temperature_tmp117.convertedValue:.7f}"
-        
+    def getDataValueReceiver2023(self, block):
+        if isinstance(block, cryodecoder.blocks.Block_W_Wurst):
+            return f"{block.temperature_tmp117.value}"
+        else:
+            return ""
+
 class LSM303DataColumn(L1MBusDataColumn):
     L1_class = cryodecoder.blocks.Block_A_LSM303
     def __init__(self, column_name, field_name):
@@ -542,7 +594,12 @@ class LSM303DataColumn(L1MBusDataColumn):
             return f"{getattr(block, self.field_name).value:d}"
         else:
             return f""
-        
+    def getDataValueReceiver2023(self, block):
+        if isinstance(block, cryodecoder.blocks.Block_W_Wurst):
+            return f"{getattr(block, self.field_name).value:d}"
+        else:
+            return ""
+
 class CTiTilt05AccDataColumn(L1MBusDataColumn):
     L1_class = cryodecoder.blocks.Block_T_Tilt
     def __init__(self, column_name, field_name):
@@ -553,6 +610,12 @@ class CTiTilt05AccDataColumn(L1MBusDataColumn):
             return f"{getattr(block, self.field_name).value:d}"
         else:
             return f""
+    def getDataValueReceiver2023(self, block):
+        if isinstance(block, cryodecoder.blocks.Block_W_Wurst):
+            legacy_field_name = self.field_name[0:4] + "tilt_" + self.field_name[4:]
+            return f"{getattr(block, legacy_field_name).value:d}"
+        else:
+            return ""
         
 class CTiTilt05AngleDataColumn(L1MBusDataColumn):
     L1_class = cryodecoder.blocks.Block_T_Tilt
@@ -564,17 +627,28 @@ class CTiTilt05AngleDataColumn(L1MBusDataColumn):
             return f"{getattr(block, self.field_name).value/10:.1f}"
         else:
             return f""
+    def getDataValueReceiver2023(self, block):
+        if isinstance(block, cryodecoder.blocks.Block_W_Wurst):
+            if hasattr(block, self.field_name):
+                return f"{getattr(block, self.field_name).value/10:.1f}"
+            else:
+                return f""
+            
         
 class KellerPressureColumn(L1MBusDataColumn):
     L1_class = cryodecoder.blocks.Block_K_Keller
     def getDataValue(self, block):
         return f"{block.pressure.convertedValue:.4f}"
+    def getDataValueReceiver2023(self, block):
+        return f"{block.pressure.value:.4f}"
         
 class KellerTemperatureColumn(L1MBusDataColumn):
     L1_class = cryodecoder.blocks.Block_K_Keller
     def getDataValue(self, block):
         return f"{block.temperature.convertedValue:.4f}"
-    
+    def getDataValueReceiver2023(self, block):
+        return f"{block.temperature_keller.value:.4f}"
+        
 class KellerDateCodeColumn(L1MBusDataColumn):
     L1_class = cryodecoder.blocks.Block_K_Keller
     def getDataValue(self, block):
@@ -601,6 +675,11 @@ class INA3221DataColumn(L1ReceiverDataColumn):
             return f"{getattr(block, self.field_name).value:d}"
         else:
             return f""
+    def getDataValueReceiver2023(self, block):
+        if self.field_name == "voltage_battery":
+            return f"{block.logger_voltage.value}"
+        else:
+            return ""
         
 class SHT30DataColumn(L1ReceiverDataColumn):
     L1_class = cryodecoder.blocks.Block_E_Environmental
@@ -623,6 +702,13 @@ class MS5607DataColumn(L1ReceiverDataColumn):
             return f"{getattr(block, self.field_name).value:.4f}"
         else:
             return f""
+    def getDataValueReceiver2023(self, block):
+        if self.field_name.startswith("temperature"):
+            return f"{block.logger_temperature.value:.4f}"
+        elif self.field_name.startswith("pressure"):
+            return f"{block.logger_pressure.value:.4f}"
+        else:
+            return ""
         
 class HexColumn(DataColumn):
 
