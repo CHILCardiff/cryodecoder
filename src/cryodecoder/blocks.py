@@ -1,9 +1,18 @@
 """
-This module provides the framework for defining and definitions of blocks 
-as used in CHIL instruments.
+This module provides the framework for defining blocks 
+as used in CHIL instruments, reading them from byte strings and converting interpreted values back to byte strings. More information on the blocks can be found :doc:`here </blocks/blocks>`.
 
-More information on the blocks can be found :doc:`
+Blocks
+------
+Blocks correspond to the :doc:`Level 1 </blocks/level1>`, :doc:`Level 2 </blocks/level2>` or :doc:`Level 3 </blocks/level3>` data structures as defined by the 2026 CHIL instrument protocol. To ensure backwards compatability with the pre-2026 receiver packet formats, two formats of legacy block (:py:class:`Block_C_Cryoegg` and :py:class:`Block_W_Wurst`) are defined.
 
+Each block class extends the :py:class:`Block` abstract base class and is made up of a header (:py:class:`BlockHeader`) which describes the block type and length, and a number of fields (:py:class:`Field`) which contain the data within the block.
+
+The :py:mod:`cryodecoder.blocks` module uses class definitions to describe the various blocks which make up the packet protocol.
+
+Fields
+------
+Each block definition contains a number of fields which are used to represent the binary encoding of data from the CHIL instruments. The :py:class:`Field` objects is used to convert binary data to interpreted values (i.e. byte array to 16-bit signed integer), and vice versa (16-bit signed integer to byte array).
 """
 
 import cryodecoder
@@ -29,12 +38,9 @@ class Field(ABC, Generic[ValueType]):
 
     def __init__(self, field_order, byte_width = 0, value_default = None):
         """
-        Generic constructor for Field.
-
         :param field_order: order in which the field appears in a block (zero-index)
         :param byte_width: width of the field in bytes
         :param value_default: default value of the field when initialised
-
         """
         self.field_order = field_order
         self.byte_width = byte_width
@@ -48,17 +54,19 @@ class Field(ABC, Generic[ValueType]):
     @abstractmethod
     def from_bytes(self, bytes):
         """
-        derive the raw value of the field from byte(s)
+        derive the interpreted value of the field from byte(s)
         
-        :param bytes: the bytes to be converted to a raw value
+        :param bytes: the bytes to be converted to an interpreted value
         """
         ...
     @abstractmethod
-    def to_bytes(self, value):
+    def to_bytes(self, value) -> bytes:
         """
-        derive the byte representation of the raw value
+        derive the byte representation of the interpreted value
 
-        :param value: the raw value to be converted to bytes 
+        :param value: the interpreted value to be converted to bytes 
+        :returns: the value encoded in a byte string
+        :rtype: bytes
         """
         ...
 
@@ -67,6 +75,10 @@ class Field(ABC, Generic[ValueType]):
 
     @property
     def raw(self):
+        """
+        :returns: the binary representation of the field
+        :rtype: bytes
+        """
         return self._raw
     @raw.setter
     def raw(self, value : bytes):
@@ -79,6 +91,9 @@ class Field(ABC, Generic[ValueType]):
 
     @property
     def value(self):
+        """
+        :returns: the interpreted value of the field
+        """
         return self._value
     @value.setter
     def value(self, value : ValueType):
@@ -104,11 +119,17 @@ class Payload(Field):
     # Override the original raw method to disable access
     @Field.raw.setter
     def raw(self, value : bytes):
+        """
+        :raises cryodecoder.exceptions.PayloadAccessError: if the raw value of the payload is attempted the be set, since the payload is only a placeholder field.
+        """
         raise cryodecoder.exceptions.PayloadAccessError
 
     # Override the original value method to disable access
     @Field.value.setter
     def value(self, value : bytes):
+        """
+        :raises cryodecoder.exceptions.PayloadAccessError: if the value of the payload is attempted the be set, since the payload is only a placeholder field.
+        """
         raise cryodecoder.exceptions.PayloadAccessError
 
 class UnsignedIntField(Field[int]):
@@ -116,13 +137,29 @@ class UnsignedIntField(Field[int]):
     Represents a variable-width unsigned integer in binary and interpreted form.
     """
 
-    def __init__(self, field_order, byte_width, byte_order = "little"):
+    def __init__(self, field_order : int, byte_width : int, byte_order : Literal["little", "big"] = "little"):
+        """
+        :param field_order: zero-index order within the block at which this field occurs
+        :type field_order: int
+        :param byte_width: number of bytes occupied by the integer
+        :type byte_width: int
+        :param byte_order: endianness of the binary representation ("*little*" or "*big*")
+        :type byte_order: str
+        """
         super().__init__(field_order, byte_width=byte_width, value_default=0)
+        if byte_order not in ("little", "big"):
+            raise ValueError(f"Invalid byte_order for field {self.field_name}.")
         self.byte_order = byte_order
 
-    def to_bytes(self, value):
+    def to_bytes(self, value) -> bytes:
+        """
+        converts the unsigned integer to its binary representation
+        """
         return int.to_bytes(value, self.byte_width, byteorder=self.byte_order)
-    def from_bytes(self, value):
+    def from_bytes(self, value) -> int:
+        """
+        converts a byte string to an unsigned integer
+        """
         return int.from_bytes(value, byteorder=self.byte_order)
     
 class SignedIntField(Field[int]):
@@ -130,13 +167,27 @@ class SignedIntField(Field[int]):
     Represents a variable-width signed integer in binary and interpreted form.
     """
 
-    def __init__(self, field_order, byte_width, byte_order = "little"):
+    def __init__(self, field_order : int, byte_width : int, byte_order : Literal["little", "big"] = "little"):
+        """
+        :param field_order: zero-index order within the block at which this field occurs
+        :type field_order: int
+        :param byte_width: number of bytes occupied by the integer
+        :type byte_width: int
+        :param byte_order: endianness of the binary representation ("*little*" or "*big*")
+        :type byte_order: str
+        """
         super().__init__(field_order, byte_width=byte_width, value_default=0)
         self.byte_order = byte_order
 
     def to_bytes(self, value):
+        """
+        converts the signed integer to its binary representation
+        """
         return int.to_bytes(value, self.byte_width, byteorder=self.byte_order, signed=True)
     def from_bytes(self, value):
+        """
+        converts a byte string to an signed integer
+        """
         return int.from_bytes(value, byteorder=self.byte_order, signed=True)
     
 class IEEE754Float(Field[float]):
@@ -148,11 +199,23 @@ class IEEE754Float(Field[float]):
     """
 
     def __init__(self, field_order):
+        """
+        :param field_order: zero-index order within the block at which this field occurs
+        :type field_order: int
+        """
         super().__init__(field_order, byte_width=4, value_default=0)
 
-    def to_bytes(self, value):
+    def to_bytes(self, value) -> bytes:
+        """
+        converts a floating point number to its IEEE 754 floating point representation
+        """
         return struct.pack("<f", value)
-    def from_bytes(self, value):
+    
+    def from_bytes(self, value) -> float:
+        """
+        converts a byte string to floating point number
+        :rtype: float
+        """
         return struct.unpack("<f", value)[0]
     
 #-----------------------------------------------------------------------------
@@ -273,9 +336,15 @@ class BlockHeader: # L1(BlockHeader):
         # Return header
         return block.identifier + \
             int.to_bytes(length, self.length_byte_width, byteorder="little")
+
     def length(self) -> int:
+        """
+        :returns: length of the header in bytes
+        :rtype: int
+        """
         return self.length_byte_width + 1
-    def calculate_block_length(self, block):
+
+    def calculate_block_length(self, block : Block) -> int:
         # Start wiht the field bytes
         block_length = block.count_field_bytes()
         # Check whether we have a L2/L3 block
@@ -346,7 +415,10 @@ class BlockLevel(Enum):
             return False
         return self.value == v.value
 
-class Block:
+class Block(ABC):
+    """
+    An abstract base class for defining different block types. 
+    """
 
     # Use an abstract class as the default header to ensure override
     header_class = BlockHeader

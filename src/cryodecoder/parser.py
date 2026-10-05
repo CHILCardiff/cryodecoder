@@ -25,7 +25,31 @@ class Parser:
     """
     The :py:class:`Parser` object implements the logic to decode CHIL instrument packets and previous versions.
 
-    The :py:class:`Parser` object is used by :py:class:`FileDecoder` and :py:class:`SerialDecoder` to read packets logged to CHIL dataloggers and transmitted over USB serial links.
+    The :py:class:`Parser` object is used by :py:class:`FileDecoder` and :py:class:`SerialDecoder` to read packets logged to CHIL dataloggers and transmitted over USB serial links. Parsing logic is separated into four main 'states' which are ``readIdentifier``, ``readLength``, ``readField`` and ``appendBlock``.
+
+    .. note::
+        TODO: Add separate documentation page describing the parser logic and state diagram.
+
+    **Example usage** to parse bytes into :py:class:`cryodecoder.block.Block` objects.
+
+    .. code-block:: Python
+
+        # Define some input data
+        input_data = b"C\\x07\\x01<\\x0f\\x8c\\x0f\\x80\\x0c"
+
+        # Create a parser object
+        parser = cryodecoder.parser.Parser()
+        
+        # Send the data to the parser
+        parser.push(input_data)
+        
+        # Run the parser until it is has finished processing
+        while not parser.complete():
+            parser.update()
+        
+        # Extract valid data
+        timestamp, block = parser.read()
+
     """
 
     def __init__(self, async_input : bool = False):
@@ -108,10 +132,17 @@ class Parser:
                 return False
         
     def available(self):
+        """
+        :return: the number of blocks available that have been parsed but not  read
+        :rtype: int
+        """
         return len(self._blocks)
 
     def read(self) -> Optional[tuple[datetime.datetime, cryodecoder.blocks.Block]]:
-        """return the next available block
+        """
+        This method is used to access the CHIL blocks that have been read from the binary data by the parser object. 
+        :return: a tuple containing the time at which the block was read and the block object itsellf
+        :rtype: tuple(:py:class:`datetime.datetime`, :py:class:`cryodecoder.blocks.Block`) or *None* if no blocks are available.
         """
         if self.available():
             # Return first block
@@ -121,6 +152,9 @@ class Parser:
             return None
         
     def update(self):
+        """
+        Calling the update method runs the parsing logic associated with the current state. It then updates the state based on the outcome of that logic. 
+        """
         self._state(self)
 
     def state_readIdentifier(self):
@@ -368,21 +402,41 @@ class Parser:
 
         return
     
-class DataColumn(ABC):
+class DataFormatter(ABC):
+    """
+    Abstract class defining an interface for formatting data from blocks into values.
+    """
 
-    def __init__(self, column_name):
+    def __init__(self, column_name : str):
+        """
+        :param column_name: the name associated with the field being formatted
+        :type column_name: str
+        """
         self.name = column_name
 
-    def getColumnName(self):
+    def getFormattedName(self) -> str:
+        """
+        :returns: the name of the field associated with the data formatter
+        :rtype: str
+        """
         return self.name
 
     @abstractmethod
-    def getColumnValue(self, block):
+    def getFormattedValue(self, block):
+        """
+        An abstract method that returns a formatted value associated with *block*.
+
+        :param block: The block to be formatted
+        :type block: :py:class:`cryodecoder.blocks.Block`
+        """
         pass
 
-class ReceiverTimestampColumn(DataColumn):
-
-    def getColumnValue(self, block):
+class ReceiverTimestampFormatter(DataFormatter):
+    def getFormattedValue(self, block) -> str:
+        """
+        :returns: if available, the timestamp at the receiver formatted as an ISO 8601 string ``(``YYYY-mm-dd HH:MM:SS``), otherwise an empty string.
+        :rtype: str
+        """
         if isinstance(block, (
             cryodecoder.blocks.Block_D_Datalogger, 
             cryodecoder.blocks.Block_H_Housekeeping,
@@ -394,18 +448,35 @@ class ReceiverTimestampColumn(DataColumn):
         else:
             return ""
         
-class ReceiverIDColumn(DataColumn):
+class ReceiverIDFormatter(DataFormatter):
 
-    def getColumnValue(self, block):
+    def getFormattedValue(self, block):
+        """
+        :returns: if available, the receiver ID formated as a hexadecimal string, otherwise and empty string.
+        :rtype: str
+        """
         if isinstance(block, cryodecoder.blocks.Block_D_Datalogger) or \
            isinstance(block, cryodecoder.blocks.Block_H_Housekeeping):
             return f"{block.receiver_id.value:x}"
         else:
             return ""
         
-class MBusDataColumn(DataColumn):
+class MBusDataFormatter(DataFormatter):
+    """
+    Extends the :py:class:`DataFormatter` class to be used specifically for fields contained with MBus packets.
 
-    def getColumnValue(self, block):
+    If a :doc:`Level 2 </blocks/level2>` or :doc:`Level 3 </blocks/level3>` block is used as the argument to :py:meth:`getFormattedValue` then it will apply the formatting to the child :py:class:`cryodecoder.blocks.Block_M_MBusPacket` block if one is available.
+
+    To ensure backwards compatibility with pre-2026 packet formats, two methods are implemented:
+
+    - :py:meth:`getMBusValue` for blocks in the :doc:`2026 packet format </blocks/blocks>`. 
+    - :py:meth:`getReceiver2023Value` for :doc:`legacy packets </blocks/legacy>`.
+    """
+
+    def getFormattedValue(self, block):
+        """
+        Selects the appropriate method from :py:meth:`getMBusValue` and :py:meth:`getReceiver2023Value`, applies the appropriate formatting to the MBus sub-block and returns the formatting value.
+        """
 
         if isinstance(block, (
             cryodecoder.blocks.Block_C_Cryoegg,
@@ -441,16 +512,23 @@ class MBusDataColumn(DataColumn):
     def getReceiver2023Value(self, block):
         ...
         
-class ReceiverSequenceNumberColumn(DataColumn):
+class ReceiverSequenceNumberFormatter(DataFormatter):
 
-    def getColumnValue(self, block):
+    def getFormattedValue(self, block):
+        """
+        :returns: if available, returns the receiver sequence number, otherwise returns an empty string.
+        :rtype: str
+        """
         if isinstance(block, cryodecoder.blocks.Block_D_Datalogger) or \
            isinstance(block, cryodecoder.blocks.Block_H_Housekeeping):
-            return f"{block.receiver_id.value:x}"
+            return f"{block.receiver_id.value:d}"
         else:
             return ""
 
-class ChannelColumn(MBusDataColumn):
+class ChannelFormatter(MBusDataFormatter):
+    """
+    returns the channel number ("0" or "1") indicating which radio modem the packet was received on. 
+    """
 
     def getMBusValue(self, mbus_block):
         return f"{mbus_block.channel_number.value:01d}"
@@ -458,7 +536,7 @@ class ChannelColumn(MBusDataColumn):
     def getReceiver2023Value(self, block):
         return f"{block.channel_number.value:01d}"
 
-class UIDColumn(MBusDataColumn):
+class UIDFormatter(MBusDataFormatter):
 
     def getMBusValue(self, mbus_block):
         return f"{mbus_block.uid.value:08x}"
@@ -466,7 +544,7 @@ class UIDColumn(MBusDataColumn):
     def getReceiver2023Value(self, block):
         return f"{block.uid.value:08x}"
 
-class RSSIColumn(MBusDataColumn):
+class RSSIFormatter(MBusDataFormatter):
 
     def getMBusValue(self, mbus_block):
         return f"{-mbus_block.rssi.value / 2}"
@@ -474,7 +552,7 @@ class RSSIColumn(MBusDataColumn):
     def getReceiver2023Value(self, block):
         return f"{-block.rssi.value / 2}"
     
-class L1MBusDataColumn(DataColumn):
+class L1MBusDataFormatter(DataFormatter):
     L1_class = None
 
     @abstractmethod
@@ -487,7 +565,7 @@ class L1MBusDataColumn(DataColumn):
     def getDataValueReceiver2023(self, block):
         return ""
 
-    def getColumnValue(self, block):
+    def getFormattedValue(self, block):
 
         if isinstance(block, (
             cryodecoder.blocks.Block_C_Cryoegg,
@@ -528,7 +606,7 @@ class L1MBusDataColumn(DataColumn):
             return self.getDataValue(data_block)
         
    
-class L1ReceiverDataColumn(DataColumn):
+class L1ReceiverDataFormatter(DataFormatter):
     L1_class = None
     
     @abstractmethod
@@ -538,7 +616,7 @@ class L1ReceiverDataColumn(DataColumn):
     def getDataValueReceiver2023(self, block):
         return ""
 
-    def getColumnValue(self, block):
+    def getFormattedValue(self, block):
 
         if isinstance(block, (
             cryodecoder.blocks.Block_C_Cryoegg,
@@ -562,7 +640,7 @@ class L1ReceiverDataColumn(DataColumn):
         else:
             return self.getDataValue(data_block)
         
-class InstrumentSequenceNumberColumn(L1MBusDataColumn):
+class InstrumentSequenceNumberFormatter(L1MBusDataFormatter):
     L1_class = cryodecoder.blocks.Block_C_CHIL
     def getDataValuePre2026(self, block):
         return f"{block.sequence_number.value}"
@@ -571,7 +649,7 @@ class InstrumentSequenceNumberColumn(L1MBusDataColumn):
     def getDataValueReceiver2023(self, block):
         return f"{block.sequence_number.value}"
     
-class CHILBatteryVoltageColumn(L1MBusDataColumn):
+class CHILBatteryVoltageFormatter(L1MBusDataFormatter):
     L1_class = cryodecoder.blocks.Block_C_CHIL
     def getDataValuePre2026(self, block):
         return f"{block.voltage_battery.value}"
@@ -580,7 +658,7 @@ class CHILBatteryVoltageColumn(L1MBusDataColumn):
     def getDataValueReceiver2023(self, block):
         return f"{block.battery_voltage.value}"
     
-class CHILConductivityColumn(L1MBusDataColumn):
+class CHILConductivityFormatter(L1MBusDataFormatter):
     L1_class = cryodecoder.blocks.Block_C_CHIL
     def getDataValuePre2026(self, block):
         return f"{block.conductivity.value}"
@@ -589,7 +667,7 @@ class CHILConductivityColumn(L1MBusDataColumn):
     def getDataValueReceiver2023(self, block):
         return f"{block.conductivity.value}"
     
-class CHILTemperatureColumn(L1MBusDataColumn):
+class CHILTemperatureFormatter(L1MBusDataFormatter):
     L1_class = cryodecoder.blocks.Block_C_CHIL
     def getDataValuePre2026(self, block):
         return f"{block.temperature_pt1000.value}"
@@ -601,7 +679,7 @@ class CHILTemperatureColumn(L1MBusDataColumn):
         else:
             return ""
 
-class LSM303DataColumn(L1MBusDataColumn):
+class LSM303DataFormatter(L1MBusDataFormatter):
     L1_class = cryodecoder.blocks.Block_A_LSM303
     def __init__(self, column_name, field_name):
         super().__init__(column_name)
@@ -617,7 +695,7 @@ class LSM303DataColumn(L1MBusDataColumn):
         else:
             return ""
 
-class CTiTilt05AccDataColumn(L1MBusDataColumn):
+class CTiTilt05AccDataFormatter(L1MBusDataFormatter):
     L1_class = cryodecoder.blocks.Block_T_Tilt
     def __init__(self, column_name, field_name):
         super().__init__(column_name)
@@ -634,7 +712,7 @@ class CTiTilt05AccDataColumn(L1MBusDataColumn):
         else:
             return ""
         
-class CTiTilt05AngleDataColumn(L1MBusDataColumn):
+class CTiTilt05AngleDataFormatter(L1MBusDataFormatter):
     L1_class = cryodecoder.blocks.Block_T_Tilt
     def __init__(self, column_name, field_name):
         super().__init__(column_name)
@@ -652,26 +730,26 @@ class CTiTilt05AngleDataColumn(L1MBusDataColumn):
                 return f""
             
         
-class KellerPressureColumn(L1MBusDataColumn):
+class KellerPressureFormatter(L1MBusDataFormatter):
     L1_class = cryodecoder.blocks.Block_K_Keller
     def getDataValue(self, block):
         return f"{block.pressure.convertedValue:.4f}"
     def getDataValueReceiver2023(self, block):
         return f"{block.pressure.value:.4f}"
         
-class KellerTemperatureColumn(L1MBusDataColumn):
+class KellerTemperatureFormatter(L1MBusDataFormatter):
     L1_class = cryodecoder.blocks.Block_K_Keller
     def getDataValue(self, block):
         return f"{block.temperature.convertedValue:.4f}"
     def getDataValueReceiver2023(self, block):
         return f"{block.temperature_keller.value:.4f}"
         
-class KellerDateCodeColumn(L1MBusDataColumn):
+class KellerDateCodeFormatter(L1MBusDataFormatter):
     L1_class = cryodecoder.blocks.Block_K_Keller
     def getDataValue(self, block):
         return f"{block.date_code.value:x}"
         
-class BMA400DataColumn(L1ReceiverDataColumn):
+class BMA400DataFormatter(L1ReceiverDataFormatter):
     L1_class = cryodecoder.blocks.Block_B_BMA400
     def __init__(self, column_name, field_name):
         super().__init__(column_name)
@@ -682,7 +760,7 @@ class BMA400DataColumn(L1ReceiverDataColumn):
         else:
             return f""
         
-class INA3221DataColumn(L1ReceiverDataColumn):
+class INA3221DataFormatter(L1ReceiverDataFormatter):
     L1_class = cryodecoder.blocks.Block_V_Voltage
     def __init__(self, column_name, field_name):
         super().__init__(column_name)
@@ -698,7 +776,7 @@ class INA3221DataColumn(L1ReceiverDataColumn):
         else:
             return ""
         
-class SHT30DataColumn(L1ReceiverDataColumn):
+class SHT30DataFormatter(L1ReceiverDataFormatter):
     L1_class = cryodecoder.blocks.Block_E_Environmental
     def __init__(self, column_name, field_name):
         super().__init__(column_name)
@@ -709,7 +787,7 @@ class SHT30DataColumn(L1ReceiverDataColumn):
         else:
             return f""
         
-class MS5607DataColumn(L1ReceiverDataColumn):
+class MS5607DataFormatter(L1ReceiverDataFormatter):
     L1_class = cryodecoder.blocks.Block_E_Environmental
     def __init__(self, column_name, field_name):
         super().__init__(column_name)
@@ -727,9 +805,9 @@ class MS5607DataColumn(L1ReceiverDataColumn):
         else:
             return ""
         
-class HexColumn(DataColumn):
+class HexFormatter(DataFormatter):
 
-    def getColumnValue(self, block):
+    def getFormattedValue(self, block):
         return block.to_bytes().hex()
 
 class LoggerBase:
@@ -751,46 +829,46 @@ class CSVLogger(LoggerBase):
         self.filename = filename
 
         self.csv_columns = [
-            ReceiverTimestampColumn("timestamp_receiver"),
-            ReceiverIDColumn("id_received"),
-            ChannelColumn("channel"),
-            UIDColumn("id_mbus"),
-            RSSIColumn("mbus_rssi"),
-            InstrumentSequenceNumberColumn("sequence_number_instrument"),
-            CHILBatteryVoltageColumn("voltage_battery_mV"),
-            CHILConductivityColumn("conductivity_mV"),
-            CHILTemperatureColumn("temperature_tmp117_degC"),
-            KellerPressureColumn("pressure_keller_bar"),
-            KellerTemperatureColumn("temperature_keller_degC"),
-            KellerDateCodeColumn("date_code_keller_raw"),
-            LSM303DataColumn("mag_lsm303_x", "mag_x"),
-            LSM303DataColumn("mag_lsm303_y", "mag_y"),
-            LSM303DataColumn("mag_lsm303_z", "mag_z"),
-            LSM303DataColumn("acc_lsm303_x", "acc_x"),
-            LSM303DataColumn("acc_lsm303_y", "acc_y"),
-            LSM303DataColumn("acc_lsm303_z", "acc_z"),
-            CTiTilt05AccDataColumn("acc_cti_tilt05_x_mg", "acc_x"),
-            CTiTilt05AccDataColumn("acc_cti_tilt05_y_mg", "acc_y"),
-            CTiTilt05AccDataColumn("acc_cti_tilt05_z_mg", "acc_z"),
-            CTiTilt05AngleDataColumn("pitch", "pitch_tenth_deg"),
-            CTiTilt05AngleDataColumn("roll", "roll_tenth_deg"),
+            ReceiverTimestampFormatter("timestamp_receiver"),
+            ReceiverIDFormatter("id_received"),
+            ChannelFormatter("channel"),
+            UIDFormatter("id_mbus"),
+            RSSIFormatter("mbus_rssi"),
+            InstrumentSequenceNumberFormatter("sequence_number_instrument"),
+            CHILBatteryVoltageFormatter("voltage_battery_mV"),
+            CHILConductivityFormatter("conductivity_mV"),
+            CHILTemperatureFormatter("temperature_tmp117_degC"),
+            KellerPressureFormatter("pressure_keller_bar"),
+            KellerTemperatureFormatter("temperature_keller_degC"),
+            KellerDateCodeFormatter("date_code_keller_raw"),
+            LSM303DataFormatter("mag_lsm303_x", "mag_x"),
+            LSM303DataFormatter("mag_lsm303_y", "mag_y"),
+            LSM303DataFormatter("mag_lsm303_z", "mag_z"),
+            LSM303DataFormatter("acc_lsm303_x", "acc_x"),
+            LSM303DataFormatter("acc_lsm303_y", "acc_y"),
+            LSM303DataFormatter("acc_lsm303_z", "acc_z"),
+            CTiTilt05AccDataFormatter("acc_cti_tilt05_x_mg", "acc_x"),
+            CTiTilt05AccDataFormatter("acc_cti_tilt05_y_mg", "acc_y"),
+            CTiTilt05AccDataFormatter("acc_cti_tilt05_z_mg", "acc_z"),
+            CTiTilt05AngleDataFormatter("pitch", "pitch_tenth_deg"),
+            CTiTilt05AngleDataFormatter("roll", "roll_tenth_deg"),
             # Receiver information
-            ReceiverSequenceNumberColumn("sequence_number_receiver"),
-            BMA400DataColumn("acc_receiver_x", "acc_x"),
-            BMA400DataColumn("acc_receiver_y", "acc_y"),
-            BMA400DataColumn("acc_receiver_z", "acc_z"),
-            INA3221DataColumn("voltage_battery_receiver_raw", "voltage_battery"),
-            INA3221DataColumn("voltage_shunt_ch1", "voltage_shunt_ch1"),
-            INA3221DataColumn("voltage_bus_ch1", "voltage_bus_ch1"),
-            INA3221DataColumn("voltage_shunt_ch2", "voltage_shunt_ch2"),
-            INA3221DataColumn("voltage_bus_ch2", "voltage_bus_ch2"),
-            INA3221DataColumn("voltage_shunt_ch3", "voltage_shunt_ch3"),
-            INA3221DataColumn("voltage_bus_ch3", "voltage_bus_ch3"),
-            SHT30DataColumn("relative_humidity_sht30", "humidity_sht30"),
-            SHT30DataColumn("temperature_sht30_raw", "temperature_sht30"),
-            MS5607DataColumn("pressure_ms5607_bar", "pressure_ms5607"),
-            MS5607DataColumn("temperature_ms5607_degC", "temperature_ms5607"),
-            HexColumn("hex")
+            ReceiverSequenceNumberFormatter("sequence_number_receiver"),
+            BMA400DataFormatter("acc_receiver_x", "acc_x"),
+            BMA400DataFormatter("acc_receiver_y", "acc_y"),
+            BMA400DataFormatter("acc_receiver_z", "acc_z"),
+            INA3221DataFormatter("voltage_battery_receiver_raw", "voltage_battery"),
+            INA3221DataFormatter("voltage_shunt_ch1", "voltage_shunt_ch1"),
+            INA3221DataFormatter("voltage_bus_ch1", "voltage_bus_ch1"),
+            INA3221DataFormatter("voltage_shunt_ch2", "voltage_shunt_ch2"),
+            INA3221DataFormatter("voltage_bus_ch2", "voltage_bus_ch2"),
+            INA3221DataFormatter("voltage_shunt_ch3", "voltage_shunt_ch3"),
+            INA3221DataFormatter("voltage_bus_ch3", "voltage_bus_ch3"),
+            SHT30DataFormatter("relative_humidity_sht30", "humidity_sht30"),
+            SHT30DataFormatter("temperature_sht30_raw", "temperature_sht30"),
+            MS5607DataFormatter("pressure_ms5607_bar", "pressure_ms5607"),
+            MS5607DataFormatter("temperature_ms5607_degC", "temperature_ms5607"),
+            HexFormatter("hex")
         ]
 
         self.init_csv_logger()
@@ -813,7 +891,7 @@ class CSVLogger(LoggerBase):
 
     def logCSV(self, time: datetime.datetime, block: cryodecoder.blocks.Block):
         # Write columns to CSV
-        values = [column.getColumnValue(block) for column in self.csv_columns]
+        values = [column.getFormattedValue(block) for column in self.csv_columns]
         values.insert(0, f"{time.strftime("%Y-%m-%d %H:%M:%S")}")
         self._csv_logger.log(logging.INFO, ",".join(values))
 
