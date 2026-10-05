@@ -13,9 +13,8 @@ import copy
 from abc import ABC, abstractmethod
 from enum import Enum
 import struct
-from typing import Generic, TypeVar, Union, Literal
+from typing import Generic, TypeVar, Union, Literal, Optional
 ValueType = TypeVar('ValueType')
-from types import NoneType
 
 ##############################################################################
 # Fields
@@ -40,7 +39,7 @@ class Field(ABC, Generic[ValueType]):
         self.field_order = field_order
         self.byte_width = byte_width
         self._raw : bytes = b'\x00' * byte_width
-        self._value : Union[ValueType, NoneType] = value_default
+        self._value : Optional[ValueType] = value_default
         self._parent = None
 
     def __set_name__(self, owner, name):
@@ -446,7 +445,7 @@ class BlockChildren(Block):
                 return True
         return False
     
-    def getChild(self, block_type : Union[type, tuple[type]]) -> Union[Block, NoneType]:
+    def getChild(self, block_type : Union[type, tuple[type]]) -> Optional[Block]:
         for child in self.children:
             if isinstance(child, block_type):
                 return child

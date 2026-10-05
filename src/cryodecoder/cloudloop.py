@@ -10,7 +10,6 @@ import tqdm
 
 from os import environ, PathLike
 from typing import Union, Optional, Callable
-from types import NoneType
 
 from cryodecoder import logger
 

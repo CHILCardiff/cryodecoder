@@ -110,7 +110,7 @@ class Parser:
     def available(self):
         return len(self._blocks)
 
-    def read(self) -> Union[NoneType, tuple[datetime.datetime, cryodecoder.blocks.Block]]:
+    def read(self) -> Optional[tuple[datetime.datetime, cryodecoder.blocks.Block]]:
         """return the next available block
         """
         if self.available():
@@ -745,7 +745,7 @@ class LoggerBase:
 
 class CSVLogger(LoggerBase):
 
-    def __init__(self, filename : Union[NoneType, PathLike]):
+    def __init__(self, filename : Optional[PathLike]):
 
         LoggerBase.__init__(self)
         self.filename = filename
