@@ -1,0 +1,1393 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>cryodecoder.parser &#8212; cryodecoder 0.2 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=4418a689" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+
+    <script src="../_static/documentation_options.js?v=f6d3da1f"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/parser';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="cryodecoder.exceptions" href="exceptions.html" />
+    <link rel="prev" title="cryodecoder.cloudloop" href="cloudloop.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo.png" class="logo__image only-light" alt="cryodecoder 0.2 documentation - Home"/>
+    <img src="../_static/logo.png" class="logo__image only-dark pst-js-only" alt="cryodecoder 0.2 documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../serial.html">Serial decoding (USB)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../file.html">Datalogger file decoding</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../blocks/blocks.html">Instrument data protocol</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../blocks/level3.html">Level 3 blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../blocks/level2.html">Level 2 blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../blocks/level1.html">Level 1 blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../blocks/legacy.html">Legacy blocks</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">API (cryodecoder)</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="blocks.html">cryodecoder.blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cloudloop.html">cryodecoder.cloudloop</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">cryodecoder.parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exceptions.html">cryodecoder.exceptions</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/reference/parser.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>cryodecoder.parser</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.Parser"><code class="docutils literal notranslate"><span class="pre">Parser</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.Parser.reset_stack_variables"><code class="docutils literal notranslate"><span class="pre">Parser.reset_stack_variables()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.Parser.push"><code class="docutils literal notranslate"><span class="pre">Parser.push()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.Parser.pop"><code class="docutils literal notranslate"><span class="pre">Parser.pop()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.Parser.complete"><code class="docutils literal notranslate"><span class="pre">Parser.complete()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.Parser.available"><code class="docutils literal notranslate"><span class="pre">Parser.available()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.Parser.read"><code class="docutils literal notranslate"><span class="pre">Parser.read()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.Parser.update"><code class="docutils literal notranslate"><span class="pre">Parser.update()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.DataFormatter"><code class="docutils literal notranslate"><span class="pre">DataFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.DataFormatter.getFormattedName"><code class="docutils literal notranslate"><span class="pre">DataFormatter.getFormattedName()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.DataFormatter.getFormattedValue"><code class="docutils literal notranslate"><span class="pre">DataFormatter.getFormattedValue()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.ReceiverTimestampFormatter"><code class="docutils literal notranslate"><span class="pre">ReceiverTimestampFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.ReceiverTimestampFormatter.getFormattedValue"><code class="docutils literal notranslate"><span class="pre">ReceiverTimestampFormatter.getFormattedValue()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.ReceiverIDFormatter"><code class="docutils literal notranslate"><span class="pre">ReceiverIDFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.ReceiverIDFormatter.getFormattedValue"><code class="docutils literal notranslate"><span class="pre">ReceiverIDFormatter.getFormattedValue()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.MBusDataFormatter"><code class="docutils literal notranslate"><span class="pre">MBusDataFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.MBusDataFormatter.getFormattedValue"><code class="docutils literal notranslate"><span class="pre">MBusDataFormatter.getFormattedValue()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.ReceiverSequenceNumberFormatter"><code class="docutils literal notranslate"><span class="pre">ReceiverSequenceNumberFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.ReceiverSequenceNumberFormatter.getFormattedValue"><code class="docutils literal notranslate"><span class="pre">ReceiverSequenceNumberFormatter.getFormattedValue()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.ChannelFormatter"><code class="docutils literal notranslate"><span class="pre">ChannelFormatter</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.UIDFormatter"><code class="docutils literal notranslate"><span class="pre">UIDFormatter</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.RSSIFormatter"><code class="docutils literal notranslate"><span class="pre">RSSIFormatter</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.L1MBusDataFormatter"><code class="docutils literal notranslate"><span class="pre">L1MBusDataFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.L1MBusDataFormatter.getFormattedValue"><code class="docutils literal notranslate"><span class="pre">L1MBusDataFormatter.getFormattedValue()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.L1ReceiverDataFormatter"><code class="docutils literal notranslate"><span class="pre">L1ReceiverDataFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.L1ReceiverDataFormatter.getFormattedValue"><code class="docutils literal notranslate"><span class="pre">L1ReceiverDataFormatter.getFormattedValue()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.InstrumentSequenceNumberFormatter"><code class="docutils literal notranslate"><span class="pre">InstrumentSequenceNumberFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.InstrumentSequenceNumberFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">InstrumentSequenceNumberFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.CHILBatteryVoltageFormatter"><code class="docutils literal notranslate"><span class="pre">CHILBatteryVoltageFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.CHILBatteryVoltageFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">CHILBatteryVoltageFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.CHILConductivityFormatter"><code class="docutils literal notranslate"><span class="pre">CHILConductivityFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.CHILConductivityFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">CHILConductivityFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.CHILTemperatureFormatter"><code class="docutils literal notranslate"><span class="pre">CHILTemperatureFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.CHILTemperatureFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">CHILTemperatureFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.LSM303DataFormatter"><code class="docutils literal notranslate"><span class="pre">LSM303DataFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.LSM303DataFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">LSM303DataFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.CTiTilt05AccDataFormatter"><code class="docutils literal notranslate"><span class="pre">CTiTilt05AccDataFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.CTiTilt05AccDataFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">CTiTilt05AccDataFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.CTiTilt05AngleDataFormatter"><code class="docutils literal notranslate"><span class="pre">CTiTilt05AngleDataFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.CTiTilt05AngleDataFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">CTiTilt05AngleDataFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.KellerPressureFormatter"><code class="docutils literal notranslate"><span class="pre">KellerPressureFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.KellerPressureFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">KellerPressureFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.KellerTemperatureFormatter"><code class="docutils literal notranslate"><span class="pre">KellerTemperatureFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.KellerTemperatureFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">KellerTemperatureFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.KellerDateCodeFormatter"><code class="docutils literal notranslate"><span class="pre">KellerDateCodeFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.KellerDateCodeFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">KellerDateCodeFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.BMA400DataFormatter"><code class="docutils literal notranslate"><span class="pre">BMA400DataFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.BMA400DataFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">BMA400DataFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.INA3221DataFormatter"><code class="docutils literal notranslate"><span class="pre">INA3221DataFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.INA3221DataFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">INA3221DataFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.SHT30DataFormatter"><code class="docutils literal notranslate"><span class="pre">SHT30DataFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.SHT30DataFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">SHT30DataFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.MS5607DataFormatter"><code class="docutils literal notranslate"><span class="pre">MS5607DataFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.MS5607DataFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">MS5607DataFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.HexFormatter"><code class="docutils literal notranslate"><span class="pre">HexFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.HexFormatter.getFormattedValue"><code class="docutils literal notranslate"><span class="pre">HexFormatter.getFormattedValue()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.LoggerBase"><code class="docutils literal notranslate"><span class="pre">LoggerBase</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.CSVLogger"><code class="docutils literal notranslate"><span class="pre">CSVLogger</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.SerialDecoder"><code class="docutils literal notranslate"><span class="pre">SerialDecoder</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.SerialDecoder.getRoot"><code class="docutils literal notranslate"><span class="pre">SerialDecoder.getRoot()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.SerialDecoder.getCSVFilename"><code class="docutils literal notranslate"><span class="pre">SerialDecoder.getCSVFilename()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.SerialDecoder.getLoggerFilename"><code class="docutils literal notranslate"><span class="pre">SerialDecoder.getLoggerFilename()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.SerialDecoder.getRawFilename"><code class="docutils literal notranslate"><span class="pre">SerialDecoder.getRawFilename()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.SerialDecoder.run"><code class="docutils literal notranslate"><span class="pre">SerialDecoder.run()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.SerialDecoder.save"><code class="docutils literal notranslate"><span class="pre">SerialDecoder.save()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.FileDecoder"><code class="docutils literal notranslate"><span class="pre">FileDecoder</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.FileDecoder.parse"><code class="docutils literal notranslate"><span class="pre">FileDecoder.parse()</span></code></a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-cryodecoder.parser">
+<span id="cryodecoder-parser"></span><h1>cryodecoder.parser<a class="headerlink" href="#module-cryodecoder.parser" title="Link to this heading">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.Parser">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">Parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">async_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.Parser" title="Link to this definition">#</a></dt>
+<dd><p>The <a class="reference internal" href="#cryodecoder.parser.Parser" title="cryodecoder.parser.Parser"><code class="xref py py-class docutils literal notranslate"><span class="pre">Parser</span></code></a> object implements the logic to decode CHIL instrument packets and previous versions.</p>
+<p>The <a class="reference internal" href="#cryodecoder.parser.Parser" title="cryodecoder.parser.Parser"><code class="xref py py-class docutils literal notranslate"><span class="pre">Parser</span></code></a> object is used by <a class="reference internal" href="#cryodecoder.parser.FileDecoder" title="cryodecoder.parser.FileDecoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileDecoder</span></code></a> and <a class="reference internal" href="#cryodecoder.parser.SerialDecoder" title="cryodecoder.parser.SerialDecoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">SerialDecoder</span></code></a> to read packets logged to CHIL dataloggers and transmitted over USB serial links. Parsing logic is separated into four main ‘states’ which are <code class="docutils literal notranslate"><span class="pre">readIdentifier</span></code>, <code class="docutils literal notranslate"><span class="pre">readLength</span></code>, <code class="docutils literal notranslate"><span class="pre">readField</span></code> and <code class="docutils literal notranslate"><span class="pre">appendBlock</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>TODO: Add separate documentation page describing the parser logic and state diagram.</p>
+</div>
+<p><strong>Example usage</strong> to parse bytes into <code class="xref py py-class docutils literal notranslate"><span class="pre">cryodecoder.block.Block</span></code> objects.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define some input data</span>
+<span class="n">input_data</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">"C</span><span class="se">\x07\x01</span><span class="s2">&lt;</span><span class="se">\x0f\x8c\x0f\x80\x0c</span><span class="s2">"</span>
+
+<span class="c1"># Create a parser object</span>
+<span class="n">parser</span> <span class="o">=</span> <span class="n">cryodecoder</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">Parser</span><span class="p">()</span>
+
+<span class="c1"># Send the data to the parser</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">input_data</span><span class="p">)</span>
+
+<span class="c1"># Run the parser until it is has finished processing</span>
+<span class="k">while</span> <span class="ow">not</span> <span class="n">parser</span><span class="o">.</span><span class="n">complete</span><span class="p">():</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+
+<span class="c1"># Extract valid data</span>
+<span class="n">timestamp</span><span class="p">,</span> <span class="n">block</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>async_input</strong> (<em>bool</em>) – set to <em>True</em> if bytes are expected to be delivered asynchronously (i.e. over a USB decoder). Defaults to <em>False</em>.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.parser.Parser.reset_stack_variables">
+<span class="sig-name descname"><span class="pre">reset_stack_variables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.Parser.reset_stack_variables" title="Link to this definition">#</a></dt>
+<dd><p>resets the internal state variables that implement the parser logic.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.parser.Parser.push">
+<span class="sig-name descname"><span class="pre">push</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.Parser.push" title="Link to this definition">#</a></dt>
+<dd><p>appends bytes to the end of the FIFO buffer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>raw</strong> (<em>bytes</em>) – the bytes to append to the buffer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.parser.Parser.pop">
+<span class="sig-name descname"><span class="pre">pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.Parser.pop" title="Link to this definition">#</a></dt>
+<dd><p>removes bytes from the beginning of the FIFO buffer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>count</strong> – number of bytes to remove, defaults to 1.</p></li>
+<li><p><strong>type</strong> – int</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.parser.Parser.complete">
+<span class="sig-name descname"><span class="pre">complete</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.Parser.complete" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>True</em> if the parser has finished interpreting the input bytes, otherwise returns <em>False</em>. Always returns <em>False</em> if the <a class="reference internal" href="#cryodecoder.parser.Parser" title="cryodecoder.parser.Parser"><code class="xref py py-class docutils literal notranslate"><span class="pre">Parser</span></code></a> has been initialised in asynchronous mode.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.parser.Parser.available">
+<span class="sig-name descname"><span class="pre">available</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.Parser.available" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the number of blocks available that have been parsed but not  read</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.parser.Parser.read">
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">datetime</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="blocks.html#cryodecoder.blocks.Block" title="cryodecoder.blocks.Block"><span class="pre">Block</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#cryodecoder.parser.Parser.read" title="Link to this definition">#</a></dt>
+<dd><p>This method is used to access the CHIL blocks that have been read from the binary data by the parser object. 
+:return: a tuple containing the time at which the block was read and the block object itsellf
+:rtype: tuple(<code class="xref py py-class docutils literal notranslate"><span class="pre">datetime.datetime</span></code>, <a class="reference internal" href="blocks.html#cryodecoder.blocks.Block" title="cryodecoder.blocks.Block"><code class="xref py py-class docutils literal notranslate"><span class="pre">cryodecoder.blocks.Block</span></code></a>) or <em>None</em> if no blocks are available.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.parser.Parser.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.Parser.update" title="Link to this definition">#</a></dt>
+<dd><p>Calling the update method runs the parsing logic associated with the current state. It then updates the state based on the outcome of that logic.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.DataFormatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">DataFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.DataFormatter" title="Link to this definition">#</a></dt>
+<dd><p>Abstract class defining an interface for formatting data from blocks into values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<em>str</em>) – the name associated with the field being formatted</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.parser.DataFormatter.getFormattedName">
+<span class="sig-name descname"><span class="pre">getFormattedName</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#cryodecoder.parser.DataFormatter.getFormattedName" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the name of the field associated with the data formatter</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.parser.DataFormatter.getFormattedValue">
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">getFormattedValue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.DataFormatter.getFormattedValue" title="Link to this definition">#</a></dt>
+<dd><p>An abstract method that returns a formatted value associated with <em>block</em>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>block</strong> (<a class="reference internal" href="blocks.html#cryodecoder.blocks.Block" title="cryodecoder.blocks.Block"><code class="xref py py-class docutils literal notranslate"><span class="pre">cryodecoder.blocks.Block</span></code></a>) – The block to be formatted</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.ReceiverTimestampFormatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">ReceiverTimestampFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.ReceiverTimestampFormatter" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<em>str</em>) – the name associated with the field being formatted</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.parser.ReceiverTimestampFormatter.getFormattedValue">
+<span class="sig-name descname"><span class="pre">getFormattedValue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#cryodecoder.parser.ReceiverTimestampFormatter.getFormattedValue" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>if available, the timestamp at the receiver formatted as an ISO 8601 string <code class="docutils literal notranslate"><span class="pre">(``YYYY-mm-dd</span> <span class="pre">HH:MM:SS</span></code>), otherwise an empty string.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.ReceiverIDFormatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">ReceiverIDFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.ReceiverIDFormatter" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<em>str</em>) – the name associated with the field being formatted</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.parser.ReceiverIDFormatter.getFormattedValue">
+<span class="sig-name descname"><span class="pre">getFormattedValue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.ReceiverIDFormatter.getFormattedValue" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>if available, the receiver ID formated as a hexadecimal string, otherwise and empty string.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.MBusDataFormatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">MBusDataFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.MBusDataFormatter" title="Link to this definition">#</a></dt>
+<dd><p>Extends the <a class="reference internal" href="#cryodecoder.parser.DataFormatter" title="cryodecoder.parser.DataFormatter"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFormatter</span></code></a> class to be used specifically for fields contained with MBus packets.</p>
+<p>If a <a class="reference internal" href="../blocks/level2.html"><span class="doc">Level 2</span></a> or <a class="reference internal" href="../blocks/level3.html"><span class="doc">Level 3</span></a> block is used as the argument to <a class="reference internal" href="#cryodecoder.parser.MBusDataFormatter.getFormattedValue" title="cryodecoder.parser.MBusDataFormatter.getFormattedValue"><code class="xref py py-meth docutils literal notranslate"><span class="pre">getFormattedValue()</span></code></a> then it will apply the formatting to the child <a class="reference internal" href="blocks.html#cryodecoder.blocks.Block_M_MBusPacket" title="cryodecoder.blocks.Block_M_MBusPacket"><code class="xref py py-class docutils literal notranslate"><span class="pre">cryodecoder.blocks.Block_M_MBusPacket</span></code></a> block if one is available.</p>
+<p>To ensure backwards compatibility with pre-2026 packet formats, two methods are implemented:</p>
+<ul class="simple">
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">getMBusValue()</span></code> for blocks in the <a class="reference internal" href="../blocks/blocks.html"><span class="doc">2026 packet format</span></a>.</p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">getReceiver2023Value()</span></code> for <a class="reference internal" href="../blocks/legacy.html"><span class="doc">legacy packets</span></a>.</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<em>str</em>) – the name associated with the field being formatted</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.parser.MBusDataFormatter.getFormattedValue">
+<span class="sig-name descname"><span class="pre">getFormattedValue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.MBusDataFormatter.getFormattedValue" title="Link to this definition">#</a></dt>
+<dd><p>Selects the appropriate method from <code class="xref py py-meth docutils literal notranslate"><span class="pre">getMBusValue()</span></code> and <code class="xref py py-meth docutils literal notranslate"><span class="pre">getReceiver2023Value()</span></code>, applies the appropriate formatting to the MBus sub-block and returns the formatting value.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.ReceiverSequenceNumberFormatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">ReceiverSequenceNumberFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.ReceiverSequenceNumberFormatter" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<em>str</em>) – the name associated with the field being formatted</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.parser.ReceiverSequenceNumberFormatter.getFormattedValue">
+<span class="sig-name descname"><span class="pre">getFormattedValue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.ReceiverSequenceNumberFormatter.getFormattedValue" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>if available, returns the receiver sequence number, otherwise returns an empty string.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.ChannelFormatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">ChannelFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.ChannelFormatter" title="Link to this definition">#</a></dt>
+<dd><p>returns the channel number (“0” or “1”) indicating which radio modem the packet was received on.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<em>str</em>) – the name associated with the field being formatted</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.UIDFormatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">UIDFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.UIDFormatter" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<em>str</em>) – the name associated with the field being formatted</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.RSSIFormatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">RSSIFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.RSSIFormatter" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<em>str</em>) – the name associated with the field being formatted</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.L1MBusDataFormatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">L1MBusDataFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.L1MBusDataFormatter" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<em>str</em>) – the name associated with the field being formatted</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.parser.L1MBusDataFormatter.getFormattedValue">
+<span class="sig-name descname"><span class="pre">getFormattedValue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.L1MBusDataFormatter.getFormattedValue" title="Link to this definition">#</a></dt>
+<dd><p>An abstract method that returns a formatted value associated with <em>block</em>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>block</strong> (<a class="reference internal" href="blocks.html#cryodecoder.blocks.Block" title="cryodecoder.blocks.Block"><code class="xref py py-class docutils literal notranslate"><span class="pre">cryodecoder.blocks.Block</span></code></a>) – The block to be formatted</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.L1ReceiverDataFormatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">L1ReceiverDataFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.L1ReceiverDataFormatter" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<em>str</em>) – the name associated with the field being formatted</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.parser.L1ReceiverDataFormatter.getFormattedValue">
+<span class="sig-name descname"><span class="pre">getFormattedValue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.L1ReceiverDataFormatter.getFormattedValue" title="Link to this definition">#</a></dt>
+<dd><p>An abstract method that returns a formatted value associated with <em>block</em>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>block</strong> (<a class="reference internal" href="blocks.html#cryodecoder.blocks.Block" title="cryodecoder.blocks.Block"><code class="xref py py-class docutils literal notranslate"><span class="pre">cryodecoder.blocks.Block</span></code></a>) – The block to be formatted</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.InstrumentSequenceNumberFormatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">InstrumentSequenceNumberFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.InstrumentSequenceNumberFormatter" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<em>str</em>) – the name associated with the field being formatted</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cryodecoder.parser.InstrumentSequenceNumberFormatter.L1_class">
+<span class="sig-name descname"><span class="pre">L1_class</span></span><a class="headerlink" href="#cryodecoder.parser.InstrumentSequenceNumberFormatter.L1_class" title="Link to this definition">#</a></dt>
+<dd><p>alias of <a class="reference internal" href="blocks.html#cryodecoder.blocks.Block_C_CHIL" title="cryodecoder.blocks.Block_C_CHIL"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_C_CHIL</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.CHILBatteryVoltageFormatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">CHILBatteryVoltageFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.CHILBatteryVoltageFormatter" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<em>str</em>) – the name associated with the field being formatted</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cryodecoder.parser.CHILBatteryVoltageFormatter.L1_class">
+<span class="sig-name descname"><span class="pre">L1_class</span></span><a class="headerlink" href="#cryodecoder.parser.CHILBatteryVoltageFormatter.L1_class" title="Link to this definition">#</a></dt>
+<dd><p>alias of <a class="reference internal" href="blocks.html#cryodecoder.blocks.Block_C_CHIL" title="cryodecoder.blocks.Block_C_CHIL"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_C_CHIL</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.CHILConductivityFormatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">CHILConductivityFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.CHILConductivityFormatter" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<em>str</em>) – the name associated with the field being formatted</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cryodecoder.parser.CHILConductivityFormatter.L1_class">
+<span class="sig-name descname"><span class="pre">L1_class</span></span><a class="headerlink" href="#cryodecoder.parser.CHILConductivityFormatter.L1_class" title="Link to this definition">#</a></dt>
+<dd><p>alias of <a class="reference internal" href="blocks.html#cryodecoder.blocks.Block_C_CHIL" title="cryodecoder.blocks.Block_C_CHIL"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_C_CHIL</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.CHILTemperatureFormatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">CHILTemperatureFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.CHILTemperatureFormatter" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<em>str</em>) – the name associated with the field being formatted</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cryodecoder.parser.CHILTemperatureFormatter.L1_class">
+<span class="sig-name descname"><span class="pre">L1_class</span></span><a class="headerlink" href="#cryodecoder.parser.CHILTemperatureFormatter.L1_class" title="Link to this definition">#</a></dt>
+<dd><p>alias of <a class="reference internal" href="blocks.html#cryodecoder.blocks.Block_C_CHIL" title="cryodecoder.blocks.Block_C_CHIL"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_C_CHIL</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.LSM303DataFormatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">LSM303DataFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.LSM303DataFormatter" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<em>str</em>) – the name associated with the field being formatted</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cryodecoder.parser.LSM303DataFormatter.L1_class">
+<span class="sig-name descname"><span class="pre">L1_class</span></span><a class="headerlink" href="#cryodecoder.parser.LSM303DataFormatter.L1_class" title="Link to this definition">#</a></dt>
+<dd><p>alias of <a class="reference internal" href="blocks.html#cryodecoder.blocks.Block_A_LSM303" title="cryodecoder.blocks.Block_A_LSM303"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_A_LSM303</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.CTiTilt05AccDataFormatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">CTiTilt05AccDataFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.CTiTilt05AccDataFormatter" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<em>str</em>) – the name associated with the field being formatted</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cryodecoder.parser.CTiTilt05AccDataFormatter.L1_class">
+<span class="sig-name descname"><span class="pre">L1_class</span></span><a class="headerlink" href="#cryodecoder.parser.CTiTilt05AccDataFormatter.L1_class" title="Link to this definition">#</a></dt>
+<dd><p>alias of <a class="reference internal" href="blocks.html#cryodecoder.blocks.Block_T_Tilt" title="cryodecoder.blocks.Block_T_Tilt"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_T_Tilt</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.CTiTilt05AngleDataFormatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">CTiTilt05AngleDataFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.CTiTilt05AngleDataFormatter" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<em>str</em>) – the name associated with the field being formatted</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cryodecoder.parser.CTiTilt05AngleDataFormatter.L1_class">
+<span class="sig-name descname"><span class="pre">L1_class</span></span><a class="headerlink" href="#cryodecoder.parser.CTiTilt05AngleDataFormatter.L1_class" title="Link to this definition">#</a></dt>
+<dd><p>alias of <a class="reference internal" href="blocks.html#cryodecoder.blocks.Block_T_Tilt" title="cryodecoder.blocks.Block_T_Tilt"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_T_Tilt</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.KellerPressureFormatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">KellerPressureFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.KellerPressureFormatter" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<em>str</em>) – the name associated with the field being formatted</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cryodecoder.parser.KellerPressureFormatter.L1_class">
+<span class="sig-name descname"><span class="pre">L1_class</span></span><a class="headerlink" href="#cryodecoder.parser.KellerPressureFormatter.L1_class" title="Link to this definition">#</a></dt>
+<dd><p>alias of <a class="reference internal" href="blocks.html#cryodecoder.blocks.Block_K_Keller" title="cryodecoder.blocks.Block_K_Keller"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_K_Keller</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.KellerTemperatureFormatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">KellerTemperatureFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.KellerTemperatureFormatter" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<em>str</em>) – the name associated with the field being formatted</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cryodecoder.parser.KellerTemperatureFormatter.L1_class">
+<span class="sig-name descname"><span class="pre">L1_class</span></span><a class="headerlink" href="#cryodecoder.parser.KellerTemperatureFormatter.L1_class" title="Link to this definition">#</a></dt>
+<dd><p>alias of <a class="reference internal" href="blocks.html#cryodecoder.blocks.Block_K_Keller" title="cryodecoder.blocks.Block_K_Keller"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_K_Keller</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.KellerDateCodeFormatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">KellerDateCodeFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.KellerDateCodeFormatter" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<em>str</em>) – the name associated with the field being formatted</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cryodecoder.parser.KellerDateCodeFormatter.L1_class">
+<span class="sig-name descname"><span class="pre">L1_class</span></span><a class="headerlink" href="#cryodecoder.parser.KellerDateCodeFormatter.L1_class" title="Link to this definition">#</a></dt>
+<dd><p>alias of <a class="reference internal" href="blocks.html#cryodecoder.blocks.Block_K_Keller" title="cryodecoder.blocks.Block_K_Keller"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_K_Keller</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.BMA400DataFormatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">BMA400DataFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.BMA400DataFormatter" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<em>str</em>) – the name associated with the field being formatted</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cryodecoder.parser.BMA400DataFormatter.L1_class">
+<span class="sig-name descname"><span class="pre">L1_class</span></span><a class="headerlink" href="#cryodecoder.parser.BMA400DataFormatter.L1_class" title="Link to this definition">#</a></dt>
+<dd><p>alias of <a class="reference internal" href="blocks.html#cryodecoder.blocks.Block_B_BMA400" title="cryodecoder.blocks.Block_B_BMA400"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_B_BMA400</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.INA3221DataFormatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">INA3221DataFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.INA3221DataFormatter" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<em>str</em>) – the name associated with the field being formatted</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cryodecoder.parser.INA3221DataFormatter.L1_class">
+<span class="sig-name descname"><span class="pre">L1_class</span></span><a class="headerlink" href="#cryodecoder.parser.INA3221DataFormatter.L1_class" title="Link to this definition">#</a></dt>
+<dd><p>alias of <a class="reference internal" href="blocks.html#cryodecoder.blocks.Block_V_Voltage" title="cryodecoder.blocks.Block_V_Voltage"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_V_Voltage</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.SHT30DataFormatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">SHT30DataFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.SHT30DataFormatter" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<em>str</em>) – the name associated with the field being formatted</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cryodecoder.parser.SHT30DataFormatter.L1_class">
+<span class="sig-name descname"><span class="pre">L1_class</span></span><a class="headerlink" href="#cryodecoder.parser.SHT30DataFormatter.L1_class" title="Link to this definition">#</a></dt>
+<dd><p>alias of <a class="reference internal" href="blocks.html#cryodecoder.blocks.Block_E_Environmental" title="cryodecoder.blocks.Block_E_Environmental"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_E_Environmental</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.MS5607DataFormatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">MS5607DataFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.MS5607DataFormatter" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<em>str</em>) – the name associated with the field being formatted</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cryodecoder.parser.MS5607DataFormatter.L1_class">
+<span class="sig-name descname"><span class="pre">L1_class</span></span><a class="headerlink" href="#cryodecoder.parser.MS5607DataFormatter.L1_class" title="Link to this definition">#</a></dt>
+<dd><p>alias of <a class="reference internal" href="blocks.html#cryodecoder.blocks.Block_E_Environmental" title="cryodecoder.blocks.Block_E_Environmental"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_E_Environmental</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.HexFormatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">HexFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.HexFormatter" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<em>str</em>) – the name associated with the field being formatted</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.parser.HexFormatter.getFormattedValue">
+<span class="sig-name descname"><span class="pre">getFormattedValue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.HexFormatter.getFormattedValue" title="Link to this definition">#</a></dt>
+<dd><p>An abstract method that returns a formatted value associated with <em>block</em>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>block</strong> (<a class="reference internal" href="blocks.html#cryodecoder.blocks.Block" title="cryodecoder.blocks.Block"><code class="xref py py-class docutils literal notranslate"><span class="pre">cryodecoder.blocks.Block</span></code></a>) – The block to be formatted</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.LoggerBase">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">LoggerBase</span></span><a class="headerlink" href="#cryodecoder.parser.LoggerBase" title="Link to this definition">#</a></dt>
+<dd><p>Interface class for defining logger classes</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.CSVLogger">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">CSVLogger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">PathLike</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.CSVLogger" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.SerialDecoder">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">SerialDecoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'COM1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baud_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">19200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_root</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">PathLike</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'receiver'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'mbus'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'receiver'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.SerialDecoder" title="Link to this definition">#</a></dt>
+<dd><p>The <a class="reference internal" href="#cryodecoder.parser.SerialDecoder" title="cryodecoder.parser.SerialDecoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">SerialDecoder</span></code></a> class provides an interface to decode realtime packets transmitted from a CHIL datalogger over a USB serial connection.</p>
+<p>Example usage:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a SerialLogger on COM10 with a 19,200 Hz baud rate and saving</span>
+<span class="c1"># in a subfolder of the current directory</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">SerialLogger</span><span class="p">(</span><span class="s2">"COM10"</span><span class="p">,</span> <span class="n">file_root</span> <span class="o">=</span> <span class="s2">"./my_logger_data"</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>port</strong> (<em>str</em>) – identifier of the COM port</p></li>
+<li><p><strong>baud_rate</strong> (<em>int</em>) – the baud rate of the serial connection, defaults to 19200</p></li>
+<li><p><strong>file_root</strong> (<em>Optional</em><em>[</em><em>PathLike</em><em>]</em>) – path to where packets should be saved in CSV format.</p></li>
+<li><p><strong>mode</strong> (<em>str</em>) – sets whether a CHIL datalogger (“receiver”) or Radiocrafts MBus receiver (“mbus”) is being used as the USB receiver.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.parser.SerialDecoder.getRoot">
+<span class="sig-name descname"><span class="pre">getRoot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.SerialDecoder.getRoot" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the parent folder of where file is to be saved</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">pathlib.Path</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.parser.SerialDecoder.getCSVFilename">
+<span class="sig-name descname"><span class="pre">getCSVFilename</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.SerialDecoder.getCSVFilename" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the name of the CSV file where data is to be saved</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">pathlib.Path</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.parser.SerialDecoder.getLoggerFilename">
+<span class="sig-name descname"><span class="pre">getLoggerFilename</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.SerialDecoder.getLoggerFilename" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the name of the log file where the debugging log from the datalogger is to be saved</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">pathlib.Path</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.parser.SerialDecoder.getRawFilename">
+<span class="sig-name descname"><span class="pre">getRawFilename</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.SerialDecoder.getRawFilename" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the name of the .log file where raw binary from the datalogger is to be saved</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">pathlib.Path</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.parser.SerialDecoder.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.SerialDecoder.run" title="Link to this definition">#</a></dt>
+<dd><p>begin receiving data over the COM port.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.parser.SerialDecoder.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.SerialDecoder.save" title="Link to this definition">#</a></dt>
+<dd><p>not yet implemented method to save data on exit.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.parser.FileDecoder">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.parser.</span></span><span class="sig-name descname"><span class="pre">FileDecoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">PathLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">PathLike</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.FileDecoder" title="Link to this definition">#</a></dt>
+<dd><p>The <a class="reference internal" href="#cryodecoder.parser.FileDecoder" title="cryodecoder.parser.FileDecoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileDecoder</span></code></a> class provides an interface to decode data stored on the SD cards of CHIL dataloggers and write the processed data to a CSV file.</p>
+<p>Example usage:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a SerialLogger on COM10 with a 19,200 Hz baud rate and saving</span>
+<span class="c1"># in a subfolder of the current directory</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">FileLogger</span><span class="p">(</span>
+
+<span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_file</strong> (<em>str</em><em> | </em><em>PathLike</em>) – path to the file from a CHIL datalogger to parse, typically ending in a .log extension.</p></li>
+<li><p><strong>output_file</strong> – path of where to save the parsed data.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.parser.FileDecoder.parse">
+<span class="sig-name descname"><span class="pre">parse</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.parser.FileDecoder.parse" title="Link to this definition">#</a></dt>
+<dd><p>parse the file and write any blocks encountered to <cite>self.output_file</cite>.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="cloudloop.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">cryodecoder.cloudloop</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="exceptions.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">cryodecoder.exceptions</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.Parser"><code class="docutils literal notranslate"><span class="pre">Parser</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.Parser.reset_stack_variables"><code class="docutils literal notranslate"><span class="pre">Parser.reset_stack_variables()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.Parser.push"><code class="docutils literal notranslate"><span class="pre">Parser.push()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.Parser.pop"><code class="docutils literal notranslate"><span class="pre">Parser.pop()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.Parser.complete"><code class="docutils literal notranslate"><span class="pre">Parser.complete()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.Parser.available"><code class="docutils literal notranslate"><span class="pre">Parser.available()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.Parser.read"><code class="docutils literal notranslate"><span class="pre">Parser.read()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.Parser.update"><code class="docutils literal notranslate"><span class="pre">Parser.update()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.DataFormatter"><code class="docutils literal notranslate"><span class="pre">DataFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.DataFormatter.getFormattedName"><code class="docutils literal notranslate"><span class="pre">DataFormatter.getFormattedName()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.DataFormatter.getFormattedValue"><code class="docutils literal notranslate"><span class="pre">DataFormatter.getFormattedValue()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.ReceiverTimestampFormatter"><code class="docutils literal notranslate"><span class="pre">ReceiverTimestampFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.ReceiverTimestampFormatter.getFormattedValue"><code class="docutils literal notranslate"><span class="pre">ReceiverTimestampFormatter.getFormattedValue()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.ReceiverIDFormatter"><code class="docutils literal notranslate"><span class="pre">ReceiverIDFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.ReceiverIDFormatter.getFormattedValue"><code class="docutils literal notranslate"><span class="pre">ReceiverIDFormatter.getFormattedValue()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.MBusDataFormatter"><code class="docutils literal notranslate"><span class="pre">MBusDataFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.MBusDataFormatter.getFormattedValue"><code class="docutils literal notranslate"><span class="pre">MBusDataFormatter.getFormattedValue()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.ReceiverSequenceNumberFormatter"><code class="docutils literal notranslate"><span class="pre">ReceiverSequenceNumberFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.ReceiverSequenceNumberFormatter.getFormattedValue"><code class="docutils literal notranslate"><span class="pre">ReceiverSequenceNumberFormatter.getFormattedValue()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.ChannelFormatter"><code class="docutils literal notranslate"><span class="pre">ChannelFormatter</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.UIDFormatter"><code class="docutils literal notranslate"><span class="pre">UIDFormatter</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.RSSIFormatter"><code class="docutils literal notranslate"><span class="pre">RSSIFormatter</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.L1MBusDataFormatter"><code class="docutils literal notranslate"><span class="pre">L1MBusDataFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.L1MBusDataFormatter.getFormattedValue"><code class="docutils literal notranslate"><span class="pre">L1MBusDataFormatter.getFormattedValue()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.L1ReceiverDataFormatter"><code class="docutils literal notranslate"><span class="pre">L1ReceiverDataFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.L1ReceiverDataFormatter.getFormattedValue"><code class="docutils literal notranslate"><span class="pre">L1ReceiverDataFormatter.getFormattedValue()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.InstrumentSequenceNumberFormatter"><code class="docutils literal notranslate"><span class="pre">InstrumentSequenceNumberFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.InstrumentSequenceNumberFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">InstrumentSequenceNumberFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.CHILBatteryVoltageFormatter"><code class="docutils literal notranslate"><span class="pre">CHILBatteryVoltageFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.CHILBatteryVoltageFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">CHILBatteryVoltageFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.CHILConductivityFormatter"><code class="docutils literal notranslate"><span class="pre">CHILConductivityFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.CHILConductivityFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">CHILConductivityFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.CHILTemperatureFormatter"><code class="docutils literal notranslate"><span class="pre">CHILTemperatureFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.CHILTemperatureFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">CHILTemperatureFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.LSM303DataFormatter"><code class="docutils literal notranslate"><span class="pre">LSM303DataFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.LSM303DataFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">LSM303DataFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.CTiTilt05AccDataFormatter"><code class="docutils literal notranslate"><span class="pre">CTiTilt05AccDataFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.CTiTilt05AccDataFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">CTiTilt05AccDataFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.CTiTilt05AngleDataFormatter"><code class="docutils literal notranslate"><span class="pre">CTiTilt05AngleDataFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.CTiTilt05AngleDataFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">CTiTilt05AngleDataFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.KellerPressureFormatter"><code class="docutils literal notranslate"><span class="pre">KellerPressureFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.KellerPressureFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">KellerPressureFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.KellerTemperatureFormatter"><code class="docutils literal notranslate"><span class="pre">KellerTemperatureFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.KellerTemperatureFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">KellerTemperatureFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.KellerDateCodeFormatter"><code class="docutils literal notranslate"><span class="pre">KellerDateCodeFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.KellerDateCodeFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">KellerDateCodeFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.BMA400DataFormatter"><code class="docutils literal notranslate"><span class="pre">BMA400DataFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.BMA400DataFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">BMA400DataFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.INA3221DataFormatter"><code class="docutils literal notranslate"><span class="pre">INA3221DataFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.INA3221DataFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">INA3221DataFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.SHT30DataFormatter"><code class="docutils literal notranslate"><span class="pre">SHT30DataFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.SHT30DataFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">SHT30DataFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.MS5607DataFormatter"><code class="docutils literal notranslate"><span class="pre">MS5607DataFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.MS5607DataFormatter.L1_class"><code class="docutils literal notranslate"><span class="pre">MS5607DataFormatter.L1_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.HexFormatter"><code class="docutils literal notranslate"><span class="pre">HexFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.HexFormatter.getFormattedValue"><code class="docutils literal notranslate"><span class="pre">HexFormatter.getFormattedValue()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.LoggerBase"><code class="docutils literal notranslate"><span class="pre">LoggerBase</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.CSVLogger"><code class="docutils literal notranslate"><span class="pre">CSVLogger</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.SerialDecoder"><code class="docutils literal notranslate"><span class="pre">SerialDecoder</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.SerialDecoder.getRoot"><code class="docutils literal notranslate"><span class="pre">SerialDecoder.getRoot()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.SerialDecoder.getCSVFilename"><code class="docutils literal notranslate"><span class="pre">SerialDecoder.getCSVFilename()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.SerialDecoder.getLoggerFilename"><code class="docutils literal notranslate"><span class="pre">SerialDecoder.getLoggerFilename()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.SerialDecoder.getRawFilename"><code class="docutils literal notranslate"><span class="pre">SerialDecoder.getRawFilename()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.SerialDecoder.run"><code class="docutils literal notranslate"><span class="pre">SerialDecoder.run()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.SerialDecoder.save"><code class="docutils literal notranslate"><span class="pre">SerialDecoder.save()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.FileDecoder"><code class="docutils literal notranslate"><span class="pre">FileDecoder</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.parser.FileDecoder.parse"><code class="docutils literal notranslate"><span class="pre">FileDecoder.parse()</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By J. D. Hawkins, L. Craw, M. R. Prior-Jones, P. Biggs
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, CHIL (Cryospheric and Hydrological Instrumentation Laboratory), Cardiff University.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
