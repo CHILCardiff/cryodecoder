@@ -324,7 +324,7 @@ class Parser:
                 test_block = legacy_class()
                 # Get expected block length of that object
                 if self._block_length[self._stack] == \
-                    test_block.header.calculate_block_length(test_block):
+                    test_block.calculate_block_length():
                     # Increment remaining fields by the difference between
                     # this and the old block
                     self._fields_remaining[self._stack] += \

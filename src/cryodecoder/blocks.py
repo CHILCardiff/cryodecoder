@@ -332,7 +332,7 @@ class BlockHeader: # L1(BlockHeader):
     length_byte_width : int = 1
     def to_bytes(self, block) -> bytes:
         # Calculate length
-        length = self.calculate_block_length(block)
+        length = block.calculate_block_length()
         # Return header
         return block.identifier + \
             int.to_bytes(length, self.length_byte_width, byteorder="little")
@@ -343,21 +343,6 @@ class BlockHeader: # L1(BlockHeader):
         :rtype: int
         """
         return self.length_byte_width + 1
-
-    def calculate_block_length(self, block : Block) -> int:
-        # Start wiht the field bytes
-        block_length = block.count_field_bytes()
-        # Check whether we have a L2/L3 block
-        if isinstance(block, BlockChildren):
-            # then iterate through children
-            for child in block.children:
-                if isinstance(child, BlockChildren):
-                    # Only valid for two levels of iteration
-                    for grandchild in child.children:
-                        block_length += len(grandchild)
-                block_length += len(child)
-        # return the final count
-        return block_length
     
 class BlockHeaderL3(BlockHeader):
     length_byte_width : int = 2
@@ -489,6 +474,21 @@ class Block(ABC):
     
     def __repr__(self):
         return self.__repr_header__() + ":\n" + self.__repr_fields__()
+    
+    def calculate_block_length(self) -> int:
+        # Start wiht the field bytes
+        block_length = self.count_field_bytes()
+        # Check whether we have a L2/L3 block
+        if isinstance(self, BlockChildren):
+            # then iterate through children
+            for child in self.children:
+                if isinstance(child, BlockChildren):
+                    # Only valid for two levels of iteration
+                    for grandchild in child.children:
+                        block_length += len(grandchild)
+                block_length += len(child)
+        # return the final count
+        return block_length
 
 class BlockChildren(Block):
     """Adds an interface for associating sub-blocks within this block which 

@@ -120,7 +120,7 @@ def test_l2_block_creation():
 
     assert len(mbus_block) == len(mbus_block.to_bytes())
 
-    assert mbus_block.header.calculate_block_length(mbus_block) == len_l1_block + len_l1_block_b + 12 # 12 for mbus header length
+    assert mbus_block.calculate_block_length() == len_l1_block + len_l1_block_b + 12 # 12 for mbus header length
 
 def test_l2_receiver_block():
     
