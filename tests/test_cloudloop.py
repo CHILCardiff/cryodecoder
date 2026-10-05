@@ -1,23 +1,55 @@
-import cryodecoder
-import pandas as pd
+import pytest
 
-timeout = 5 # seconds, timeout interval
+import cryodecoder, cryodecoder.cloudloop
+import pandas 
+import logging
+import tempfile
 
-if __name__ == "__main__":
+def test_download_from_cloudloop():
 
-    # Load data and give a name to the data column (we don't have other strings)
-    cl_data = pd.read_csv("./data/test/cloudloop_example.csv")
+    with tempfile.NamedTemporaryFile(mode="w+") as tmp:
+        tmp.close()
+        n_records = cryodecoder.cloudloop.download_records_from_cloudloop(
+            output_path = tmp.name,
+            start_date = "2026-10-04 00:00:00"
+        )
+        df = pandas.read_csv(tmp.name)
+        assert len(df) == n_records
 
-    # Create a simple list to store blocks in
-    blocks = []
+def test_download_and_parse_from_cloudloop():
 
-    # Then iterate over the data
-    for idx, row in cl_data.iterrows():
+    with tempfile.NamedTemporaryFile(mode="w+") as tmp1:
+        with tempfile.NamedTemporaryFile(mode="w+") as tmp2:
+            tmp1.close(); tmp2.close()
 
-        # Parse row
-        row_blocks = cryodecoder.parse_hex(row["Payload"])
-        for block in row_blocks:
-            blocks.append(row_blocks)
+            n_records = cryodecoder.download_and_parse_cloudloop(
+                raw_path = tmp1.name,
+                data_path = tmp2.name,
+                start_date = "2026-10-04 00:00:00"
+            )
+            df = pandas.read_csv(tmp2.name)
+            pass
+            
+# import cryodecoder
+# import pandas as pd
 
-    # Do something with 'blocks' array of data
-    print(f"Read {len(blocks)} from {len(cl_data)} rows.")
+# timeout = 5 # seconds, timeout interval
+
+# if __name__ == "__main__":
+
+#     # Load data and give a name to the data column (we don't have other strings)
+#     cl_data = pd.read_csv("./data/test/cloudloop_example.csv")
+
+#     # Create a simple list to store blocks in
+#     blocks = []
+
+#     # Then iterate over the data
+#     for idx, row in cl_data.iterrows():
+
+#         # Parse row
+#         row_blocks = cryodecoder.parse_hex(row["Payload"])
+#         for block in row_blocks:
+#             blocks.append(row_blocks)
+
+#     # Do something with 'blocks' array of data
+#     print(f"Read {len(blocks)} from {len(cl_data)} rows.")
