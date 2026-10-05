@@ -23,10 +23,10 @@ def _parserstackfunction(method):
 
 class Parser:
     """
-    The :py:class:`Parser` object implements the logic to decode CHIL instrument packets and previous versions
-    
+    The :py:class:`Parser` object implements the logic to decode CHIL instrument packets and previous versions.
 
-    ."""
+    The :py:class:`Parser` object is used by :py:class:`FileDecoder` and :py:class:`SerialDecoder` to read packets logged to CHIL dataloggers and transmitted over USB serial links.
+    """
 
     def __init__(self, async_input : bool = False):
         """
@@ -61,14 +61,22 @@ class Parser:
         return
     
     def push(self, raw : bytes):
-        """assign raw data to local raw buffer
+        """
+        appends bytes to the end of the FIFO buffer
+
+        :param raw: the bytes to append to the buffer
+        :type raw: bytes
         """
         self._buffer += raw
         self._timestamp_buffer.append(datetime.datetime.now(datetime.UTC))
         self._last_timestamp = self._timestamp_buffer[-1]
 
-    def pop(self, count=1):
-        """pop the top off the buffer
+    def pop(self, count : int = 1):
+        """
+        removes bytes from the beginning of the FIFO buffer
+
+        :param count: number of bytes to remove, defaults to 1.
+        :param type: int
         """
         if len(self._buffer) >= count + 1:
             self._buffer = self._buffer[count:]
@@ -78,10 +86,9 @@ class Parser:
             self._timestamp_buffer = []
 
     def complete(self):
-        """if we have finished processing the buffer, return true
-
-        TODO: add more relevant termination conditions here, including an
-        'infinite' processing mode when using a Serial/asyncronous decoder
+        """
+        :returns: *True* if the parser has finished interpreting the input bytes, otherwise returns *False*. Always returns *False* if the :py:class:`Parser` has been initialised in asynchronous mode. 
+        :rtype: bool
         """
 
         # Define series of conditions for whether the parsing is complete
