@@ -1,4 +1,5 @@
 class CryodecoderException(Exception):
+    """A generic class used to describe exceptions that occur within :py:mod:`cryodecoder`."""
     pass
 
 class InvalidNestedBlockError(CryodecoderException):

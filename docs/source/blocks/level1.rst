@@ -29,8 +29,6 @@ This block represents data from the integrated magnetometer and accelerometer in
 
 The LSM303 block is represented by :py:class:`cryodecoder.blocks.Block_A_LSM303`.
 
-.. autoclass:: cryodecoder.blocks.Block_A_LSM303
-
 .. csv-table::
     :header: Length (bytes),Description,Example
     :widths: auto
@@ -105,6 +103,7 @@ If an SHT30 sensor is available, the length of the block is modified and the tem
 .. csv-table::
     :header: Length (bytes),Description,Example
     :widths: auto
+
     1,Block indentifier,'E'
     1,Block length,12
     4,Barometric pressure from MS5607,IEEE 754 float
@@ -167,15 +166,17 @@ The datalogger voltage block is represented by :py:class:`cryodecoder.blocks.Blo
 .. csv-table::
     :header: Length (bytes),Description,Example
     :widths: auto
+
     1,Block indentifier,'V'
     1,Block length,2
     2,Battery voltage divider ADC value,"0 to 65,535"
 
 If present and enabled, it can report the power system status using an INA3221 current and bus monitor.
 
-.. cst-table::
+.. csv-table::
     :header: Length (bytes),Description,Example
     :widths: auto
+
     1,Block indentifier,'V'
     1,Block length,14
     2,Battery voltage divider ADC value,"0 to 65,535"

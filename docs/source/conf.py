@@ -1,3 +1,9 @@
+import os
+import sys
+
+# Add source folder to path for autodoc
+sys.path.insert(0, os.path.abspath("../src/cryodecoder"))
+
 # Configuration file for the Sphinx documentation builder.
 #
 # For the full list of built-in configuration values, see the documentation:
@@ -37,3 +43,7 @@ html_logo = "_static/logo.png"
 
 # Refer to here for autosummary templates
 # > https://www.aahilm.com/blog/documenting-large-projects-with-sphinx
+
+# Autodoc options
+autoclass_content = 'both'
+autodoc_member_order = 'bysource'

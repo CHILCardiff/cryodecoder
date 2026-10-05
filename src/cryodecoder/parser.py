@@ -6,8 +6,7 @@ import pathlib
 import serial
 
 from os import PathLike
-from typing import Union, Literal
-from types import NoneType
+from typing import Union, Literal, Optional
 
 import cryodecoder
 import cryodecoder.blocks
@@ -23,8 +22,17 @@ def _parserstackfunction(method):
     return stackmethod
 
 class Parser:
+    """
+    The :py:class:`Parser` object implements the logic to decode CHIL instrument packets and previous versions
+    
+
+    ."""
 
     def __init__(self, async_input : bool = False):
+        """
+        :param async_input: set to *True* if bytes are expected to be delivered asynchronously (i.e. over a USB decoder). Defaults to *False*.
+        :type async_input: bool
+        """
         # Is the parser expecting asynchronous input
         self._async = async_input
         # Buffer to store valid blocks in
@@ -39,6 +47,9 @@ class Parser:
         self._state = Parser.state_readIdentifier
             
     def reset_stack_variables(self):
+        """
+        resets the internal state variables that implement the parser logic.
+        """
         # Stack values
         self._stack = 0
         self._length_bytes     = 0
@@ -48,8 +59,7 @@ class Parser:
         self._fields_remaining : list[int] = [None, None, None]
         self._block : list[cryodecoder.blocks.Block] = [None,None,None]
         return
-
-
+    
     def push(self, raw : bytes):
         """assign raw data to local raw buffer
         """
@@ -630,6 +640,10 @@ class HexColumn(DataColumn):
         return block.to_bytes().hex()
 
 class LoggerBase:
+    """
+    Interface class for defining logger classes
+    """
+    
     def __init__(self):
         super(LoggerBase, self).__init__()
 
@@ -711,8 +725,36 @@ class CSVLogger(LoggerBase):
         self._csv_logger.log(logging.INFO, ",".join(values))
 
 class SerialDecoder(CSVLogger):
+    """
+    The :py:class:`SerialDecoder` class provides an interface to decode realtime packets transmitted from a CHIL datalogger over a USB serial connection.
 
-    def __init__(self, port="COM1", baud_rate=19200, file_root : Union[NoneType,PathLike] = None, mode : Literal["receiver", "mbus"] = "receiver"):
+    Example usage:
+
+    .. code-block:: Python
+
+        # Create a SerialLogger on COM10 with a 19,200 Hz baud rate and saving
+        # in a subfolder of the current directory
+        logger = SerialLogger("COM10", file_root = "./my_logger_data")
+        logger.run()
+
+    """
+
+    def __init__(self, 
+        port : str ="COM1" , 
+        baud_rate : int = 19200, 
+        file_root : Optional[PathLike] = None, 
+        mode : Literal["receiver", "mbus"] = "receiver"
+    ):
+        """
+        :param port: identifier of the COM port
+        :type port: str
+        :param baud_rate: the baud rate of the serial connection, defaults to 19200
+        :type baud_rate: int
+        :param file_root: path to where packets should be saved in CSV format.
+        :type file_root: Optional[PathLike]
+        :param mode: sets whether a CHIL datalogger ("receiver") or Radiocrafts MBus receiver ("mbus") is being used as the USB receiver.
+        :type mode: str
+        """
 
         # Initialises creation time
         LoggerBase.__init__(self)
@@ -737,6 +779,10 @@ class SerialDecoder(CSVLogger):
         self.__setup_loggers()
        
     def getRoot(self):
+        """
+        :returns: the parent folder of where file is to be saved
+        :rtype: :py:class:`pathlib.Path`
+        """
 
         # Construct time from init
         time = self._init_time.strftime("%Y%m%d_%H%M%S")
@@ -753,14 +799,26 @@ class SerialDecoder(CSVLogger):
         return root
 
     def getCSVFilename(self):
+        """
+        :returns: the name of the CSV file where data is to be saved
+        :rtype: :py:class:`pathlib.Path`
+        """
 
         return self.getRoot() / f"data_{self._init_time.strftime("%Y%m%d_%H%M%S")}.csv"
 
     def getLoggerFilename(self):
+        """
+        :returns: the name of the log file where the debugging log from the datalogger is to be saved
+        :rtype: :py:class:`pathlib.Path`
+        """
 
         return self.getRoot() / f"logger_{self._init_time.strftime("%Y%m%d_%H%M%S")}.log"
 
     def getRawFilename(self):
+        """
+        :returns: the name of the .log file where raw binary from the datalogger is to be saved
+        :rtype: :py:class:`pathlib.Path`
+        """
 
         return self.getRoot() / f"raw_{self._init_time.strftime("%Y%m%d_%H%M%S")}.log"
 
@@ -799,6 +857,9 @@ class SerialDecoder(CSVLogger):
         self.output_raw.close()
 
     def runReceiver(self):
+        """
+        :meta private:
+        """
         
         while True:
             try:
@@ -849,6 +910,9 @@ class SerialDecoder(CSVLogger):
                 return
             
     def runMBus(self):
+        """
+        :meta private:
+        """
 
         while True:
             try:
@@ -879,6 +943,9 @@ class SerialDecoder(CSVLogger):
 
 
     def run(self):
+        """
+        begin receiving data over the COM port.
+        """
 
         if self._mode == "receiver": 
             print("Running decoder in receiver mode...")
@@ -889,10 +956,10 @@ class SerialDecoder(CSVLogger):
         else:
             print("Invalid receiver mode.")
 
-            
-            
-        
     def save(self):
+        """
+        not yet implemented method to save data on exit.
+        """
         pass
 
     def __consoleOutput(self, time, block):
@@ -984,8 +1051,32 @@ class SerialDecoder(CSVLogger):
 
 
 class FileDecoder(CSVLogger):
+    """
+    The :py:class:`FileDecoder` class provides an interface to decode data stored on the SD cards of CHIL dataloggers and write the processed data to a CSV file.
 
-    def __init__(self, input_file, output_file):
+    Example usage:
+
+    .. code-block:: Python
+
+        # Create a SerialLogger on COM10 with a 19,200 Hz baud rate and saving
+        # in a subfolder of the current directory
+        logger = FileLogger(
+
+        )
+        logger.run()
+    """
+
+    def __init__(self, 
+        input_file : str | PathLike, 
+        output_file : str | PathLike
+    ):
+        """
+        :param input_file: path to the file from a CHIL datalogger to parse, typically ending in a .log extension.
+        :type input_file: str | PathLike
+        
+        :param output_file: path of where to save the parsed data.
+        :type input_file: str | PathLike
+        """
 
         self._parser = Parser()
         input_file = pathlib.Path(input_file)
@@ -1014,6 +1105,9 @@ class FileDecoder(CSVLogger):
         CSVLogger.__init__(self, output_file)
 
     def parse(self):
+        """
+        parse the file and write any blocks encountered to `self.output_file`.
+        """
         
         with open(self.input_file, "rb") as fh:
 
@@ -1032,6 +1126,9 @@ class FileDecoder(CSVLogger):
 
 
 def parser_main():
+    """
+    :meta private:
+    """
 
     parser = argparse.ArgumentParser(
             prog='parser.py',
