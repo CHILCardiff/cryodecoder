@@ -15,8 +15,11 @@ description = "Module for decoding CHIL data packets."
 readme = "README.md"
 requires-python = ">=3.12" 
 dependencies = [
+    "numpy",
+    "pandas",
     "pyserial",
     "pytest", 
+    "tqdm"
 ]
 
 [project.scripts]
