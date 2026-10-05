@@ -1,6 +1,5 @@
 import os
 import sys
-import cryodecoder
 
 # Add source folder to path for autodoc
 sys.path.insert(0, os.path.abspath("../src/cryodecoder"))
