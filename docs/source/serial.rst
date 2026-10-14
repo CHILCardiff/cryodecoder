@@ -88,3 +88,40 @@ Additional output may also appear from the receiver while it is performing opera
 .. figure:: /_static/serial/cli_transmitting_packet.png
 
     cryodecoder command line output showing debugging information related to the Iridium modem.
+
+Output files
+------------
+While the logger is running, it writes to three files in the timestamped directory it created within the ``data`` folder. The files serve different purposes and contain the content described below:
+
+* ``logger_YYYYmmdd_HHMMSS.log``: logger and messages from the receiver and cryodecoder.
+* ``raw_YYYYmmdd_HHMMSS.log``: raw data transmitted over the serial link as a hexadecimal stream.
+* ``data_YYYYmmdd_HHMMSS.csv``: parsed packet data into a CSV format for quick analysis.
+
+Log file
+^^^^^^^^
+The ``logger_\*.log`` file contains output from the datalogger that is prefixed with *#* (the log or comment symbol). Each line is prefixed with a logging level and timestamp which corresponds to the time on the host PC adjusted to UTC.
+
+.. code-block:: log
+    
+    [INFO] 2026-10-14 12:01:05,971:  ---------------- Receiver sensors ----------------
+    [INFO] 2026-10-14 12:01:06,005:  Time: 2026-10-14 11:01:05, Display update: 10 s
+    [INFO] 2026-10-14 12:01:06,011:  --------------------------------------------------
+    [INFO] 2026-10-14 12:01:06,018:  SHT30   Temp.: N/A, Relative Humidity: N/A
+
+The ``logger_\*.log`` file provides a record of the receiver messages during the cryodecoder session and can be useful for debugging issues with Iridium connectivity or a quick reference to received packets.
+
+Raw file
+^^^^^^^^
+The ``raw_\*.log`` file contains a hexadecimal stream of the raw data transmitted by the serial connection during the cryodecoder session. This is different from the ``*.log`` file that is stored on the SD card in that is also captures the logging messages sent by the receiver in addition to data packets.
+
+.. note::
+    Work is in progress on a utility function in the cryodecoder API to convert ``raw_\*.log`` files to the same format as the ``*.log`` files stored on the SD card. 
+
+CSV file
+^^^^^^^^
+The ``data_\*.csv`` file contains decoded packet data and raw hexadecimal strings for packets sent over the serial connection. It is described in detail in the next section.
+
+.. toctree::
+    :hidden:
+
+    csv/logfile.rst

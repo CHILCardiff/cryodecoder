@@ -1,0 +1,41 @@
+Name,Units,Sensor,Location (origin),Requires conversion,Description
+timestamp_pc,N/A,N/A,User PC,N/A,Timestamp the record was decoded on the PC (YYYY-mm-DD HH:MM:SS).
+timestamp_receiver,N/A,N/A,Datalogger,N/A,Timestamp the record was received on the datalogger (YYYY-mm-DD HH:MM:SS).
+id_received,N/A,N/A,Datalogger,N/A,ID of the receiver (if set in the SD card).
+channel,N/A,N/A,Datalogger,N/A,Radio channel of the receiver on which the packet was received.
+id_mbus,N/A,N/A,Instrument,N/A,Unique identifier of the sensor (i.e. CE260001)
+mbus_rssi,dBm,N/A,Instrument,N/A,Received signal strength in dBm (decibel milliwatts).
+sequence_number_instrument,N/A,N/A,Instrument,N/A,Sequence number of the transmitted packet (increments on each measurement).
+voltage_battery_mV,mV,Custom circuit,Instrument,No,Battery voltage of the instrument in millivolts.
+conductivity_mV,mV,Custom circuit,Instrument,No,Measured conductivity in millivolts.
+temperature_tmp117_degC,degrees celsius,TMP117,Instrument,No,Temperature within the instrument from the internal TMP117 in degrees celsius.
+pressure_keller_bar,bar,Keller 7LD,Instrument,No,Pressure measured by the Keller pressure sensor in bar (may require re-calculation if the date code field is missing…).
+temperature_keller_degC,degrees celsius,Keller 7LD,Instrument,No,Temperature measured by the Keller pressure sensor in degrees celsius.
+date_code_keller_raw,N/A,Keller 7LD,Instrument,N/A,Metadata from the Keller pressure sensor.
+mag_lsm303_x,N/A,LSM303AGR,Instrument,Yes,Raw instrument magnetometer data in x-axis: convert to Gauss with (value/2^15 * 50).
+mag_lsm303_y,N/A,LSM303AGR,Instrument,Yes,Raw instrument magnetometer data in y-axis: convert to Gauss with (value/2^15 * 50).
+mag_lsm303_z,N/A,LSM303AGR,Instrument,Yes,Raw instrument magnetometer data in z-axis: convert to Gauss with (value/2^15 * 50).
+acc_lsm303_x,N/A,LSM303AGR,Instrument,Yes,Raw instrument accelerometer data in x-axis: convert to g (Earth's gravitational field strength) with (value/2^15 * 2).
+acc_lsm303_y,N/A,LSM303AGR,Instrument,Yes,Raw instrument accelerometer data in y-axis: convert to g (Earth's gravitational field strength) with (value/2^15 * 2).
+acc_lsm303_z,N/A,LSM303AGR,Instrument,Yes,Raw instrument accelerometer data in z-axis: convert to g (Earth's gravitational field strength) with (value/2^15 * 2).
+acc_cti_tilt05_x_mg,mg,CTI Tilt-05,Instrument,No,For Cryowurst raw accelerometer data from the Tilt-05 sensor in x-axis.
+acc_cti_tilt05_y_mg,mg,CTI Tilt-05,Instrument,No,For Cryowurst raw accelerometer data from the Tilt-05 sensor in y-axis.
+acc_cti_tilt05_z_mg,mg,CTI Tilt-05,Instrument,No,For Cryowurst raw accelerometer data from the Tilt-05 sensor in z-axis.
+pitch,degrees,CTI Tilt-05,Instrument,No,For Cryowurst calculated pitch data in degrees
+roll,degrees,CTI Tilt-05,Instrument,No,For Cryowurst calculated roll data in degrees
+sequence_number_receiver,N/A,N/A,Datalogger,N/A,Receiver sequence number (not implemented).
+acc_receiver_x,N/A,BMA400,Datalogger,Yes,Raw datalogger accelerometer data in x-axis: convert to g (Earth's gravitational field strength) with (value/2^15 * 2).
+acc_receiver_y,N/A,BMA400,Datalogger,Yes,Raw datalogger accelerometer data in x-axis: convert to g (Earth's gravitational field strength) with (value/2^15 * 2).
+acc_receiver_z,N/A,BMA400,Datalogger,Yes,Raw datalogger accelerometer data in x-axis: convert to g (Earth's gravitational field strength) with (value/2^15 * 2).
+voltage_battery_receiver_raw,N/A,Custom circuit,Datalogger,Yes,Unprocessed datalogger battery voltage.
+voltage_shunt_ch1,uV,INA3221,Datalogger,Yes,Raw shunt voltage on datalogger channel 1 (solar panel) multiply by 5e-6 and 0.1 to convert to current in Amps.
+voltage_bus_ch1,mV,INA3221,Datalogger,Yes,Raw bus voltage on datalogger channel 1 (solar panel) multiply by 5e-3 to convert to Volts.
+voltage_shunt_ch2,uV,INA3221,Datalogger,Yes,Raw shunt voltage on datalogger channel 2 (battery) multiply by 5e-6 and 0.1 to convert to current in Amps.
+voltage_bus_ch2,mV,INA3221,Datalogger,Yes,Raw bus voltage on datalogger channel 2 (battery) multiply by 5e-3 to convert to Volts.
+voltage_shunt_ch3,uV,INA3221,Datalogger,Yes,Raw shunt voltage on datalogger channel 3 (load) multiply by 5e-6 and 0.1 to convert to current in Amps.
+voltage_bus_ch3,mV,INA3221,Datalogger,Yes,Raw bus voltage on datalogger channel 3 (load) multiply by 5e-3 to convert to Volts.
+relative_humidity_sht30,N/A,SHT30,Datalogger,N/A,Not fitted.
+temperature_sht30_raw,N/A,SHT30,Datalogger,N/A,Not fitted.
+pressure_ms5607_bar,bar,MS5607,Datalogger,No,Air pressure from the datalogger MS5607 pressure sensor.
+temperature_ms5607_degC,degrees celsius,MS5607,Datalogger,No,Temperature from the datalogger MS5607 pressure sensor.
+hex,N/A,N/A,Datalogger,No,Raw message.
