@@ -1,4 +1,4 @@
-.. _blocks_level3:
+.. _blocks_legacy:
 
 Legacy blocks
 =============

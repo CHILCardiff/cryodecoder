@@ -18,7 +18,8 @@ dependencies = [
     "numpy",
     "pandas",
     "pyserial",
-    "pytest", 
+    "pytest",
+    "requests", 
     "tqdm"
 ]
 

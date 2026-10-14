@@ -3,7 +3,7 @@ This module provides the framework for defining blocks
 as used in CHIL instruments, reading them from byte strings and converting interpreted values back to byte strings. More information on the blocks can be found :doc:`here </blocks/blocks>`.
 
 Blocks
-------
+======
 Blocks correspond to the :doc:`Level 1 </blocks/level1>`, :doc:`Level 2 </blocks/level2>` or :doc:`Level 3 </blocks/level3>` data structures as defined by the 2026 CHIL instrument protocol. To ensure backwards compatability with the pre-2026 receiver packet formats, two formats of legacy block (:py:class:`Block_C_Cryoegg` and :py:class:`Block_W_Wurst`) are defined.
 
 Each block class extends the :py:class:`Block` abstract base class and is made up of a header (:py:class:`BlockHeader`) which describes the block type and length, and a number of fields (:py:class:`Field`) which contain the data within the block.
@@ -11,7 +11,7 @@ Each block class extends the :py:class:`Block` abstract base class and is made u
 The :py:mod:`cryodecoder.blocks` module uses class definitions to describe the various blocks which make up the packet protocol.
 
 Fields
-------
+======
 Each block definition contains a number of fields which are used to represent the binary encoding of data from the CHIL instruments. The :py:class:`Field` objects is used to convert binary data to interpreted values (i.e. byte array to 16-bit signed integer), and vice versa (16-bit signed integer to byte array).
 """
 
@@ -244,8 +244,6 @@ class TemperatureTMP117Field(SignedIntField):
 class TemperatureSHT30Field(UnsignedIntField):
     """
     Reported temperature from an `SHT30`_ temperature and humidity probe.
-    
-    .. _SHT30: https://sensirion.com/media/documents/213E6A3B/63A5A569/Datasheet_SHT3x_DIS.pdf
     """
 
     @property
@@ -265,8 +263,6 @@ class TemperatureSHT30Field(UnsignedIntField):
 class RelativeHumiditySHT30Field(UnsignedIntField):
     """
     Reported relative humidity from an `SHT30`_ temperature and humidity probe.
-    
-    .. _SHT30: https://sensirion.com/media/documents/213E6A3B/63A5A569/Datasheet_SHT3x_DIS.pdf
     """
 
     @property
@@ -331,6 +327,12 @@ class BlockHeader: # L1(BlockHeader):
 
     length_byte_width : int = 1
     def to_bytes(self, block) -> bytes:
+        """
+        :param block: parent block of the BlockHeader to be used in calculating total block length
+        :type block: :py:class:`Block`
+
+        :returns: byte representation of the header
+        :rtype: bytes"""
         # Calculate length
         length = block.calculate_block_length()
         # Return header
@@ -412,10 +414,6 @@ class Block(ABC):
     level : BlockLevel = BlockLevel.L1 # defaulting to L1
 
     def __init__(self, **kwargs):
-        """
-        When we initialise a block, check for the all the attributes
-        which derive from Field and convert these into instance variables
-        """
         # Create array to store fields temporarily
         fields = []
         field_orders = []
@@ -517,7 +515,14 @@ class BlockChildren(Block):
                 return True
         return False
     
-    def getChild(self, block_type : Union[type, tuple[type]]) -> Optional[Block]:
+    def getChild(self, block_type : Union[type, tuple[type]]) -> Optional[Block]: 
+        """
+        returns the child block of type ``block_type``, if it exists, used for extracting L2 and L1 blocks from their parents.
+
+        :param Union[type, tuple[type]] block_type: type (or tuple of types) of blocks to extract.
+        :returns: if it exists, a block of type `block_type`.
+        :rtype: :py:class:`Block` or `None`
+        """
         for child in self.children:
             if isinstance(child, block_type):
                 return child
@@ -571,26 +576,49 @@ class BlockChildren(Block):
 ###############################################################################
 class Block_A_LSM303(Block):
     """
-    Block representing accelerometer and magnetometer data from the LSM303 
-    sensor.
-    
-    .. csv-table::
-        :header: Length (bytes),Description,Example
-        :widths: auto
+    Stores magnetometer and accelerometer data from the `LSM303AGR`_ 
+    sensor used in CHIL instrumentation. More details on the LSM303 block format are available :ref:`here <block_a_lsm303>`.
 
-        1,Block indentifier,'A'
-        1,Block length,12
-        2,Magnetometer X,"-32,768 to 32,767"
-        2,Magnetometer Y,"-32,768 to 32,767"
-        2,Magnetometer Z,"-32,768 to 32,767"
-        2,Accelerometer X,"-32,768 to 32,767"
-        2,Accelerometer Y,"-32,768 to 32,767"
-        2,Accelerometer Z,"-32,768 to 32,767"
+    Magnetometer data are signed 16-bit values which have a code range from -32,768 to 32,767 corresponding to sensor values of ±50 Gauss.
+
+    Accelerometer data are signed 16-bit values which have a code range from -32,768 to 32,767 corresponding to sensor values of ±2g (19.61 m/s\\ :sup:`2`).
     
+    :example: Converting magnetometer data to physical values:
+
+        .. code-block:: python
+
+            # Load an LSM303 dataset
+            block = Block_A_LSM303(...)
+
+            # Convert the magnetometer sensor to its physical value in Gauss
+            mag_x_gauss = 50 * block.mag_x.value / 32768
+    
+    :example: Converting accelerometer data to physical values:
+
+        .. code-block:: python
+
+            # Load an LSM303 dataset
+            block = Block_A_LSM303(...)
+
+            # Convert the acceleration sensor to its physical value in g
+            acc_x_gauss = 2 * block.acc_x.value / 32768
+
+    .. note::
+        **TODO:** Add reference to Cryowurst and Cryoegg for acc/mag vector orientation.
+
+    :param SignedIntField mag_x: x-axis component of the magnetometer sensor.
+    :param SignedIntField mag_y: y-axis component of the magnetometer sensor.
+    :param SignedIntField mag_z: z-axis component of the magnetometer sensor.
+    :param SignedIntField acc_x: x-axis component of the accelerometer sensor.
+    :param SignedIntField acc_y: y-axis component of the accelerometer sensor.
+    :param SignedIntField acc_z: z-axis component of the accelerometer sensor.
+
+    .. _LSM303AGR: https://www.st.com/en/mems-and-sensors/lsm303agr.html 
     """
 
     identifier = b'A'
     header_class = BlockHeader
+    """:meta private:"""
     mag_x = SignedIntField(field_order=0, byte_width=2)
     mag_y = SignedIntField(field_order=1, byte_width=2)
     mag_z = SignedIntField(field_order=2, byte_width=2)
@@ -599,31 +627,169 @@ class Block_A_LSM303(Block):
     acc_z = SignedIntField(field_order=5, byte_width=2)
 
 class Block_B_BMA400(Block):
+    """
+    Stores accelerometer data from the `BMA400`_ accelerometer used on the CHIL receiver. More details on the BMA400 block format are available :ref:`here <block_b_bma400>`.
+
+    Accelerometer data are signed 12-bit values which have a code range from -2048 to +2047 corresponding to sensor values of ±2g (19.61 m/s\\ :sup:`2`).
+
+    :example: Converting acceleration data to physical values:
+
+        .. code-block:: python
+
+            # Load a BMA400 dataset
+            block = Block_B_BMA400(...)
+
+            # Convert the acceleration to its physical value in g (m/s^2)
+            acc_x_g = 2 * block.acc_x.value / 2048
+
+    :param SignedIntField acc_x: x-axis component of the accelerometer sensor.
+    :param SignedIntField acc_y: y-axis component of the accelerometer sensor.
+    :param SignedIntField acc_z: z-axis component of the accelerometer sensor.
+
+    .. _BMA400: https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bma400-ds000.pdf
+    """
     identifier = b'B'
     header_class = BlockHeader
+    """:meta private:"""
     acc_x = SignedIntField(field_order=0, byte_width=2)
     acc_y = SignedIntField(field_order=1, byte_width=2)
     acc_z = SignedIntField(field_order=2, byte_width=2)
     
 class Block_C_CHIL(Block):
+    """
+    Stores instrument battery voltage, packet metadata, temperature and conductivity measurements. The origin of the temperature measurement can with the instrument type but is typically a `TMP117`_ sensor. More details on the CHIL block format are available :ref:`here <block_c_chil>`.
+
+    :example: Get measured temperature value from the TMP117 sensor.
+
+        .. code-block:: python
+
+            # Load a CHIL sensor dataset
+            block = Block_C_CHIL(...)
+
+            # Convert the raw temperature value to degrees celsius.
+            temp_raw_to_degC = block.temperature_tmp117.value / 128.0
+
+            # or use the built in .convertedValue to do the same
+            assert temp_raw_to_degC == block.temperature_tmp117.convertedValue
+    
+    :param UnsignedIntField sequence_number: Sequence number of the transmitted packet increments by one after each transmission from 0 to 255 and then resets.
+    :param UnsignedIntField voltage_battery: Battery voltage of the instrument in millivolts (mV).
+    :param UnsignedIntField conductivity: Uncalibrated conductivity sensor measurement in millivolts (mV). 
+    :param TemperatureTMP117Field temperature_tmp117: Raw temperature value from the TMP117 temperature sensor.
+
+    """
+
     identifier         = b'C'
     header_class       = BlockHeader
+    """:meta private:"""
     sequence_number    = UnsignedIntField(field_order=0, byte_width=1)
     voltage_battery    = UnsignedIntField(field_order=1, byte_width=2)
     conductivity       = UnsignedIntField(field_order=2, byte_width=2)
     temperature_tmp117 = TemperatureTMP117Field(field_order=3, byte_width=2)
 
 class Block_E_Environmental(Block):
+    """
+    Stores the environmental data (temperature, pressure, relative humidity) from the receiver. More details on the environmental block format are available :ref:`here <block_e_environmental>`.
+
+    All dataloggers contain the `MS5607`_ pressure and temperature sensor. There is the option to install an external `SHT30`_ temperature and relative humidity sensor.
+
+    :example: Get measured temperature and pressure values from the MS5607.
+
+        .. code-block:: python
+
+            # Load a receiver environmental sensor dataset
+            block = Block_E_Environmental(...)
+
+            # Get the air temperature in degrees celsius.
+            temperature = block.temperature_ms5607.value
+
+            # Get the air pressure in bar.
+            temperature = block.pressure_ms5607.value
+
+    :example: Get measured temperature and relative humdidity from the SHT30.
+
+        .. code-block:: python
+
+            # Load a receiver environmental sensor dataset
+            block = Block_E_Environmental(...)
+
+            # Get the air temperature in degrees celsius.
+            temperature = block.temperature_sht30.convertedValue
+
+            # Get the relative humditiy in percent
+            # ...requires temperature from SHT30...
+            rel_humidity = block.humidity_sht30.convertedValue(
+                block.temperature_sht30.value
+            )
+            
+    :param IEEE754Float pressure_ms5607: Surface air pressure recorded by the datalogger in bar.
+    :param IEEE754Float temperature_ms5607: Internal air temperature of the datalogger in degrees celsius.
+    :param TemperatureSHT30Field temperature_sht30: *(Optional)* External air temperature recorded by the datalogger using an SHT30 sensor.
+    :param RelativeHumiditySHT30Field humidity_sht30: *(Optional)* External relative humidity recorded by the datalogger using an SHT30 sensor.
+
+    .. _MS5607: https://www.te.com/en/product-MS560702BA03-50.html
+    
+    .. _SHT30: https://thepihut.com/products/sht-30-mesh-protected-weather-proof-temperature-humidity-sensor
+
+    """
+    
     identifier = b'E'
     header_class = BlockHeader
+    """:meta private:"""
     pressure_ms5607    = IEEE754Float(field_order=0)
     temperature_ms5607 = IEEE754Float(field_order=1)
     temperature_sht30  = TemperatureSHT30Field(field_order=2, byte_width=2)
     humidity_sht30     = RelativeHumiditySHT30Field(field_order=3, byte_width=2)
 
 class Block_K_Keller(Block):
+    """
+    Stores the temperature and pressure data from a Keller `7LD`_ or `7LHPD`_ pressure sensor. More details on the Keller block format are available :ref:`here <block_k_keller>`.
+
+    .. warning::
+
+        If the ``pressure_min`` or ``pressure_max`` are invalid, it can cause the ``pressure.convertedValue`` field to be incorrectly converted. If values from the pressure sensor do not look valid, make sure to check  ``pressure.value``. 
+
+    :example: Read the temperature and pressure from a Keller sensor
+
+        .. code-block:: python
+
+            # Read a Block_K_Keller block
+            block = Block_K_Keller(...)
+
+            # Get the temperature value in celsius
+            temperature_degC = block.temperature.convertedValue
+
+            # Get the pressure value in bar
+            pressure_bar = block.pressure.convertedValue
+
+    :example: Convert raw temperature and pressure values from a Keller sensor, if the minimum and maximum pressure are known
+
+        .. code-block:: python
+
+            # Read a Block_K_Keller block
+            block = Block_K_Keller(...)
+
+            # Get the temperature value in celsius
+            temperature_degC = (block.temperature.value >> 4) - 24 ) * 0.05 - 50.0
+
+            # Set the known minimum and maximum pressure values assuming it
+            # is a seal gauge sensor (zero at 1.0 bar absolute).
+            p_min = 0.0  # minimum pressure
+            p_max = 30.0 # maximum pressure
+
+            # Get the pressure value in bar
+            pressure_bar = (block.pressure.value - 16384) x (p_max - p_min) / 32768
+
+    :param PressureKellerField pressure: measured pressure value.
+    :param TemperatureKellerField temperature: measured temperature value.
+    :param UnsignedIntField date_code: 
+    :param IEEE754Float pressure_min: Minimum rated pressure value (corresponding to a raw value of 16,384)
+    :param IEEE754Float pressure_max: Maximum rated pressure value (corresponding to a raw value of 49,152). 
+    """
+    
     identifier = b'K'
     header_class = BlockHeader
+    """:meta private:"""
     pressure = PressureKellerField(field_order=0, byte_width=2)
     temperature = TemperatureKellerField(field_order=1, byte_width=2)
     date_code = UnsignedIntField(field_order=2, byte_width=1)
@@ -631,8 +797,49 @@ class Block_K_Keller(Block):
     pressure_max = IEEE754Float(field_order=4)
 
 class Block_V_Voltage(Block):
+    """
+    Stores the receiver power system data from the voltage divider input voltage monitor and power sensing `INA3221`_ sensor. More details on the Keller block format are available :ref:`here <block_v_voltage>`.
+
+    .. note::
+
+        The input voltage divider circuit on newer dataloggers appears to have a very non-linear characteristic which requires further investigation.
+
+    Shunt resistors for the INA3321 are 0.1 Ohms, which means that the current flowing through them can be calculated from the shunt voltage divided by resistance.
+
+    The shunt voltage and bus voltage fields from the INA3221 are 13 bits long and left-shifted into a 16-bit field. To convert the raw shunt voltage value to volts, multiply by 5e-6. To convert the raw bus voltage value to volts, multiply by 1e-3.
+
+    :example: Calculate power from solar panel.
+
+        .. code-block::
+
+            # Read a Block_V_Voltage block
+            block = Block_V_Voltage(...)
+
+            # Calculate current
+            R_shunt = 0.1 # Ohms
+            current_ch1_amps = block.voltage_shunt_ch1.value * 5e-6 / R_shunt
+            
+            # Calculate voltage
+            voltage_ch1_volts = block.voltage_bus_ch1.value * 1e-3
+
+            # Calculate power
+            power_ch1_watts = current_ch1_amps * voltage_ch1_volts
+
+    :param UnsignedIntField voltage_battery: raw output from the voltage divider input voltage monitor.
+    :param UnsignedIntField voltage_shunt_ch1: shunt voltage from the solar panel (channel 1), used to calculate the current.
+    :param UnsignedIntField voltage_bus_ch1: bus voltage from the solar panel (channel 1), used to derive total power.
+    :param UnsignedIntField voltage_shunt_ch2: shunt voltage from the solar regulator (channel 2), used to calculate the current.
+    :param UnsignedIntField voltage_bus_ch2: bus voltage from the solar regulator (channel 3), used to derive total power.
+    :param UnsignedIntField voltage_shunt_ch3: shunt voltage to the datalogger (channel 3), used to calculate the current.
+    :param UnsignedIntField voltage_bus_ch3: input voltage at the datalogger (channel 3), used to derive total power.
+
+    .. _INA3221: https://www.ti.com/lit/ds/symlink/ina3221.pdf
+    """
+    
     identifier = b'V'
     header_class = BlockHeader
+    """:meta private:"""
+    
     voltage_battery   = UnsignedIntField(field_order=0, byte_width=2)
     voltage_shunt_ch1 = UnsignedIntField(field_order=1, byte_width=2)
     voltage_bus_ch1   = UnsignedIntField(field_order=2, byte_width=2)
@@ -642,6 +849,31 @@ class Block_V_Voltage(Block):
     voltage_bus_ch3   = UnsignedIntField(field_order=6, byte_width=2)
 
 class Block_T_Tilt(Block):
+    """
+    Stores data from the CTi `TILT-05`_ accelerometer and orientation sensor. More details on the Keller block format are available :ref:`here <block_t_tilt>`. 
+
+    Accelerometer data are signed 16-bit values are return acceleration values in units of milli-g. To convert to g (m\\ :sup:`2`), divide by 1,000.
+
+    :example: Convert pitch and roll to units of degrees
+
+        .. code-block:: python
+
+            # Read a Block_T_Tilt block
+            block = Block_T_Tilt(...)
+
+            # Convert pitch and roll to degrees
+            pitch_degress = block.pitch_tenth_deg.value / 10
+            roll_degrees  = block.roll_tenth_deg.value / 10
+
+    :param SignedIntField acc_x: x-axis component of the accelerometer sensor.
+    :param SignedIntField acc_y: y-axis component of the accelerometer sensor.
+    :param SignedIntField acc_z: z-axis component of the accelerometer sensor.
+    :param SignedIntField pitch_tenth_deg: pitch (angle) along x-axis in tenths of a degree.
+    :param SignedIntField roll_tenth_deg: roll (angle) along y-axis in tenths of a degree.
+
+    .. _TILT-05: https://ctisensors.com/Documents/TILT-05-Datasheet.pdf 
+    """
+    
     identifier = b'T'
     header_class = BlockHeader
     acc_x = SignedIntField(field_order=0, byte_width=2)
@@ -651,9 +883,36 @@ class Block_T_Tilt(Block):
     roll_tenth_deg  = UnsignedIntField(field_order=4, byte_width=2)
 
 class Block_M_MBusPacket(BlockChildren):
+    """
+    Mirrors the format of the Radiocrafts UART interface `packet format <https://radiocrafts.com/uploads/MBUS_User_Manual.pdf>`__, acting as a transport layer for the CHIL packet contained within :py:class:`Payload`. More details on the Keller block format are available :ref:`here <block_t_tilt>`.
+
+    The received signal strength (``rssi``) can be converted to units of RSSI by multiplying with -1 and dividing by 2.
+
+    :example: Convert received signal strength to dBm
+
+        .. code-block:: python
+
+            # Read a Block_M_MBus block
+            block = Block_M_MBus(...)
+
+            # Convert RSSI to dBm
+            rssi_dBm = -block.rssi.value / 2
+
+    :param UnsignedIntField channel_number: channel number (1 or 2) on which the packet was received.
+    :param UnsignedIntField c_field: control field in the MBus packet header.
+    :param UnsignedIntField m_field: manufacturer field in MBus packet header.
+    :param UnsignedIntField uid: unique identifier, used to identify CHIL instruments, i.e. `CE240001` or `CF230010`.
+    :param UnsignedIntField version: version field in the MBus packet header.
+    :param UnsignedIntField device: device field in the MBus packet header.
+    :param UnsignedIntField ci_field: control information field in the MBus packet header, used to discriminate between 2023 and 2026 packet formats.
+    :param Payload payload: contents of the MBus packet.
+    :param UnsignedIntField rssi: encoded received signal strength.
+    """
+
     identifier     = b'M'
     level          = BlockLevel.L2
     header_class   = BlockHeader
+    """:meta private:"""
     channel_number = UnsignedIntField(field_order=0, byte_width=1)
     c_field  = UnsignedIntField(field_order=1, byte_width=1)
     m_field  = UnsignedIntField(field_order=2, byte_width=2, byte_order="big")
@@ -665,9 +924,49 @@ class Block_M_MBusPacket(BlockChildren):
     rssi     = UnsignedIntField(field_order=8, byte_width=1)
 
 class Block_M_MBusPacketCryoegg2023(BlockChildren):
+    """
+    To facilitate backwards compatability, when 2026 dataloggers receive a 2023 version packet from Cryoegg, the data is interpreted as a :py:class:`Block_M_MBusPacketCryoegg2023`.
+
+    Conversion of the :py:attr:`pressure` field requires prior knowledge of the minimum and maximum pressure values.
+    
+    :example: Convert raw temperature and pressure values from a 2023 format Cryoegg packet.
+
+        .. code-block:: python
+
+            # Read a Block_M_MBusPacketCryoegg2023 block
+            block = Block_M_MBusPacketCryoegg2023(...)
+
+            # Get the temperature value in celsius
+            temperature_degC = (block.temperature_keller.value >> 4) - 24 ) * 0.05 - 50.0
+
+            # Set the known minimum and maximum pressure values assuming it
+            # is a seal gauge sensor (zero at 1.0 bar absolute).
+            p_min = 0.0  # minimum pressure
+            p_max = 30.0 # maximum pressure
+
+            # Get the pressure value in bar
+            pressure_bar = (block.pressure.value - 16384) x (p_max - p_min) / 32768
+
+    :param UnsignedIntField channel_number: channel number (0 or 1) on which the packet was received.
+    :param UnsignedIntField c_field: control field in the MBus packet header.
+    :param UnsignedIntField m_field: manufacturer field in MBus packet header.
+    :param UnsignedIntField uid: unique identifier, used to identify CHIL instruments, i.e. `CE240001` or `CF230010`.
+    :param UnsignedIntField version: version field in the MBus packet header.
+    :param UnsignedIntField device: device field in the MBus packet header.
+    :param UnsignedIntField ci_field: control information field in the MBus packet header, used to discriminate between 2023 and 2026 packet formats.
+    :param UnsignedIntField conductivity: Uncalibrated conductivity sensor measurement in millivolts (mV). 
+    :param SignedIntField temperature_pt1000: Unused value from the PT1000 temperature sensor (deprecated).
+    :param PressureKellerField pressure: measured pressure value.
+    :param TemperatureKellerField temperature_keller: measured temperature value.
+    :param UnsignedIntField voltage_battery: Battery voltage of the instrument in millivolts (mV).
+    :param UnsignedIntField sequence_number: Sequence number of the transmitted packet increments by one after each transmission from 0 to 255 and then resets.
+    :param UnsignedIntField rssi: encoded received signal strength.
+    """
+    
     identifier     = b'M'
     level          = BlockLevel.L2
     header_class   = BlockHeader
+    """:meta private:"""
     channel_number = UnsignedIntField(field_order=0, byte_width=1)
     c_field  = UnsignedIntField(field_order=1, byte_width=1)
     m_field  = UnsignedIntField(field_order=2, byte_width=2, byte_order="big")
@@ -686,9 +985,59 @@ class Block_M_MBusPacketCryoegg2023(BlockChildren):
     rssi               = UnsignedIntField(field_order=13, byte_width=1)
 
 class Block_M_MBusPacketCryowurst2023(BlockChildren):
+    """
+    To facilitate backwards compatability, when 2026 dataloggers receive a 2023 version packet from Cryowurst, the data is interpreted as a :py:class:`Block_M_MBusPacketCryowurst2023`.
+
+    Conversion of the :py:attr:`pressure` field requires prior knowledge of the minimum and maximum pressure values.
+    
+    :example: Convert raw temperature and pressure values from a 2023 format Cryowurst packet.
+
+        .. code-block:: python
+
+            # Read a Block_M_MBusPacketCryowurst2023 block
+            block = Block_M_MBusPacketCryowurst2023(...)
+
+            # Get the temperature value in celsius
+            temperature_degC = (block.temperature_keller.value >> 4) - 24 ) * 0.05 - 50.0
+
+            # Set the known minimum and maximum pressure values assuming it
+            # is a seal gauge sensor (zero at 1.0 bar absolute).
+            p_min = 0.0  # minimum pressure
+            p_max = 30.0 # maximum pressure
+
+            # Get the pressure value in bar
+            pressure_bar = (block.pressure.value - 16384) x (p_max - p_min) / 32768
+
+    :param UnsignedIntField channel_number: channel number (0 or 1) on which the packet was received.
+    :param UnsignedIntField c_field: control field in the MBus packet header.
+    :param UnsignedIntField m_field: manufacturer field in MBus packet header.
+    :param UnsignedIntField uid: unique identifier, used to identify CHIL instruments, i.e. `CE240001` or `CF230010`.
+    :param UnsignedIntField version: version field in the MBus packet header.
+    :param UnsignedIntField device: device field in the MBus packet header.
+    :param UnsignedIntField ci_field: control information field in the MBus packet header, used to discriminate between 2023 and 2026 packet formats.
+    :param TemperatureTMP117Field temperature_tmp117: Raw temperature value from the TMP117 temperature sensor.
+        :param SignedIntField mag_x: x-axis component of the magnetometer sensor.
+    :param SignedIntField mag_y: y-axis component of the magnetometer sensor.
+    :param SignedIntField mag_z: z-axis component of the magnetometer sensor.
+    :param SignedIntField acc_x: x-axis component of the accelerometer sensor.
+    :param SignedIntField acc_y: y-axis component of the accelerometer sensor.
+    :param SignedIntField acc_z: z-axis component of the accelerometer sensor.
+    :param SignedIntField acc_tilt_x: x-axis component of the TILT-05 accelerometer sensor.
+    :param SignedIntField acc_tilt_y: y-axis component of the TILT-05 accelerometer sensor.
+    :param SignedIntField acc_tilt_z: z-axis component of the TILT-05 accelerometer sensor.
+    :param SignedIntField pitch_tenth_deg: pitch (angle) along x-axis of the TILT-05 sensor in tenths of a degree.
+    :param SignedIntField roll_tenth_deg: roll (angle) along y-axis of the TILT-05 sensor in tenths of a degree.
+    :param UnsignedIntField conductivity: Uncalibrated conductivity sensor measurement in millivolts (mV).
+    :param PressureKellerField pressure: measured pressure value.
+    :param TemperatureKellerField temperature_keller: measured temperature value.
+    :param UnsignedIntField voltage_battery: Battery voltage of the instrument in millivolts (mV).
+    :param UnsignedIntField sequence_number: Sequence number of the transmitted packet increments by one after each transmission from 0 to 255 and then resets.
+    :param UnsignedIntField rssi: encoded received signal strength.
+    """
     identifier     = b'M'
     level          = BlockLevel.L2
     header_class   = BlockHeader
+    """:meta private:"""
     legacy_payload_length = 11 # derived from below
     channel_number = UnsignedIntField(field_order=0, byte_width=1)
     c_field  = UnsignedIntField(field_order=1, byte_width=1)
@@ -698,7 +1047,7 @@ class Block_M_MBusPacketCryowurst2023(BlockChildren):
     device   = UnsignedIntField(field_order=5, byte_width=1)
     ci_field = UnsignedIntField(field_order=6, byte_width=1)
     # legacy payload start
-    temperature_tmp117 = SignedIntField(field_order=7, byte_width=2)
+    temperature_tmp117 = TemperatureTMP117Field(field_order=7, byte_width=2)
     mag_x = SignedIntField(field_order=8, byte_width=2)
     mag_y = SignedIntField(field_order=9, byte_width=2)
     mag_z = SignedIntField(field_order=10, byte_width=2)
@@ -719,33 +1068,135 @@ class Block_M_MBusPacketCryowurst2023(BlockChildren):
     rssi               = UnsignedIntField(field_order=24, byte_width=1)
 
 class Block_R_Receiver(BlockChildren):
+    """
+    Is an intermediate block which encapsulates :doc:`Level 1 blocks <level1>` associated with the receiver.
+    """
     identifier     = b'R'
     level          = BlockLevel.L2
     header_class   = BlockHeader
+    """:meta private:"""
     payload  = Payload(field_order=0)
     
 class Block_D_Datalogger(BlockChildren):
+    """
+    Stores data associated with reception of a data packet from CHIL instrument.
+
+    .. warning::
+
+        The :py:attr:`timestamp` field may be incorrect if the receiver does not have a valid Iridium connection and has reset since being programmed. 
+
+    .. example: convert the timestamp value to a Python datetime object
+
+        ..code:: python
+
+            # Get datalogger block
+            block = BlocK_D_Datalogger(...)
+
+            # Convert timestmap to datetime object
+            import datetime.datetime
+            timestamp = datetime.datetime.fromtimestamp(block.timestamp.value)
+
+    :param UnsignedIntField receiver_id: identifier associated with the receiver (as a 32-bit numeric value or 4-byte ASCII string).
+    :param UnsignedIntField timestamp: time at which the packet was received as a Unix timestamp (seconds since 1970-01-01 00:00:00).
+    :param UnsignedIntField sequence_number: Not currently implemented. Sequence number of the received packet, increments by one after each reception from 0 to 255 and then resets.
+    :param Payload payload: stores the received packet.
+    """
     identifier = b'D'
     level = BlockLevel.L3
     header_class = BlockHeaderL3
+    """:meta private:"""
     receiver_id     = UnsignedIntField(field_order=0, byte_width=4)
     timestamp       = UnsignedIntField(field_order=1, byte_width=4)
     sequence_number = UnsignedIntField(field_order=2, byte_width=1)
     payload         = Payload(field_order=3)
     
 class Block_H_Housekeeping(BlockChildren):
+    """
+    Otherwise identical to :py:class:`Block_D_Datalogger`, the housekeeping block is intended to be used for storage and transmission of 'housekeeping' data associated with the receiver (i.e. not data packets).
+
+    .. warning::
+
+        The :py:attr:`timestamp` field may be incorrect if the receiver does not have a valid Iridium connection and has reset since being programmed. 
+
+    .. example: convert the timestamp value to a Python datetime object
+
+        ..code:: python
+
+            # Get datalogger block
+            block = BlocK_D_Datalogger(...)
+
+            # Convert timestmap to datetime object
+            import datetime.datetime
+            timestamp = datetime.datetime.fromtimestamp(block.timestamp.value)
+
+    :param UnsignedIntField receiver_id: identifier associated with the receiver (as a 32-bit numeric value or 4-byte ASCII string).
+    :param UnsignedIntField timestamp: time at which the packet was received as a Unix timestamp (seconds since 1970-01-01 00:00:00).
+    :param UnsignedIntField sequence_number: Not currently implemented. Sequence number of the received packet, increments by one after each reception from 0 to 255 and then resets.
+    :param Payload payload: stores the received packet.
+    """
     identifier = b'H'
     level = BlockLevel.L3
     header_class = BlockHeaderL3
+    """:meta private:"""
     receiver_id     = UnsignedIntField(field_order=0, byte_width=4)
     timestamp       = UnsignedIntField(field_order=1, byte_width=4)
     sequence_number = UnsignedIntField(field_order=2, byte_width=1)
     payload         = Payload(field_order=3)
 
 class Block_C_Cryoegg(Block):
+    """
+    Represents a Cryoegg packet transmitted by a 2023 version of the CHIL datalogger.
+
+    The :py:class:`Block_C_Cryoegg` combines properties which are distributed across Level 1, 2 and 3 blocks in the new format. It contains measured values from the environmental sensors in the receiver in addition to the reported Cryoegg data. 2023 version Cryoegg instruments do not have accelerometers installed so this information is not available.
+
+    .. note::
+
+        See :py:class:`Block_M_MBusPacket` for hints on interpreting the MBus parameters:
+        
+        * ``c_field``, ``m_field``, ``uid``, ``version``, ``device``, ``ci_field`` and ``rssi``. 
+
+        See :py:class:`Block_M_MBusPacketCryoegg2023` for hints on interpreting the 2023 Cryoegg parameters:
+
+        * ``conductivity``, ``pressure``, ``temperature_keller``, ``battery_voltage`` and ``sequence_number``.
+    
+    :example: convert ``logger_voltage`` to a value in Volts
+
+        .. code-block:: python
+
+            # Load a Block_C_Cryoegg
+            block = Block_C_Cryoegg(...)
+
+            # Convert the raw logger voltage using a first-order polynomial
+            # V = m * raw + c
+            m = 0.0187
+            c = - 27.713 
+            battery_voltage_V = m * block.logger_voltage.value + c
+
+    :param UnsignedIntField timestamp: time at which the packet was received as a Unix timestamp (seconds since 1970-01-01 00:00:00).
+    :param IEEE754Float logger_pressure: Surface air pressure recorded by the datalogger in bar.
+    :param IEEE754Float logger_temperature: Internal air temperature of the datalogger in degrees celsius.
+    :param UnsignedIntField logger_voltage: Raw value representing the battery voltage at the receiver.
+    :param UnsignedIntField channel_number: The radio channel number (1 or 2) on which the packet was received.
+    :param UnsignedIntField length: The length of the MBus packet that follows this byte.
+    :param UnsignedIntField c_field: control field in the MBus packet header.
+    :param UnsignedIntField m_field: manufacturer field in MBus packet header.
+    :param UnsignedIntField uid: unique identifier, used to identify CHIL instruments, i.e. `CE240001` or `CF230010`.
+    :param UnsignedIntField version: version field in the MBus packet header.
+    :param UnsignedIntField device: device field in the MBus packet header.
+    :param UnsignedIntField ci_field: control information field in the MBus packet header, used to discriminate between 2023 and 2026 packet formats.
+    :param UnsignedIntField conductivity: Uncalibrated conductivity sensor measurement in millivolts (mV). 
+    :param SignedIntField temperature_pt1000: Unused value from the PT1000 temperature sensor (deprecated).
+    :param PressureKellerField pressure: measured pressure value.
+    :param TemperatureKellerField temperature_keller: measured temperature value.
+    :param UnsignedIntField voltage_battery: Battery voltage of the instrument in millivolts (mV).
+    :param UnsignedIntField sequence_number: Sequence number of the transmitted packet increments by one after each transmission from 0 to 255 and then resets.
+    :param UnsignedIntField rssi: encoded received signal strength.
+    """
+
     identifier = b'C'
     level = BlockLevel.L1
     header_class = BlockHeaderLegacy
+    """:meta private:"""
     # -----------------------------------------------------------------
     # Fields:
     # -----------------------------------------------------------------
@@ -763,7 +1214,7 @@ class Block_C_Cryoegg(Block):
     ci_field            = UnsignedIntField(field_order=11, byte_width=1)
     # legacy payload start ---------------------------------------------
     conductivity        = UnsignedIntField(field_order=12, byte_width=2)
-    temperature_pt100   = UnsignedIntField(field_order=13, byte_width=2)
+    temperature_pt1000  = UnsignedIntField(field_order=13, byte_width=2)
     pressure            = UnsignedIntField(field_order=14, byte_width=2)
     temperature_keller  = UnsignedIntField(field_order=15, byte_width=2)
     battery_voltage     = UnsignedIntField(field_order=16, byte_width=2)
@@ -772,10 +1223,76 @@ class Block_C_Cryoegg(Block):
     rssi                = UnsignedIntField(field_order=18, byte_width=1)
 
 class Block_W_Wurst(Block):
-    # Think about whether this is the right level for hte block, we could override the block length
+    """
+    Represents a Cryowurst packet transmitted by a 2023 version of the CHIL datalogger.
+
+    The :py:class:`Block_W_Wurst` combines properties which are distributed across Level 1, 2 and 3 blocks in the new format. It contains measured values from the environmental sensors in the receiver in addition to the reported Cyrowurst data. 2023 version Cyrowurst instruments do not have accelerometers installed so this information is not available.
+
+    .. note::
+
+        See :py:class:`Block_M_MBusPacket` for hints on interpreting the MBus parameters:
+        
+        * ``c_field``, ``m_field``, ``uid``, ``version``, ``device``, ``ci_field`` and ``rssi``.
+
+        See :py:class:`Block_M_MBusPacketCryowurst2023` for hints on interpreting the 2023 Cyrowurst parameters:
+        
+        * ``mag_``, ``acc_``, ``acc_tilt_``, ``pitch_tenth_deg``, ``roll_tenth_deg``, ``conductivity``, ``pressure``, ``temperature_keller``, ``battery_voltage`` and ``sequence_number``.
+    
+    :example: convert ``logger_voltage`` to a value in Volts
+
+        .. code-block:: python
+
+            # Load a Block_C_Cryoegg
+            block = Block_C_Cryoegg(...)
+
+            # Convert the raw logger voltage using a first-order polynomial
+            # V = m * raw + c
+            m = 0.0187
+            c = - 27.713 
+            battery_voltage_V = m * block.logger_voltage.value + c
+    
+    :param UnsignedIntField timestamp: time at which the packet was received as a Unix timestamp (seconds since 1970-01-01 00:00:00).
+    :param IEEE754Float logger_pressure: Surface air pressure recorded by the datalogger in bar.
+    :param IEEE754Float logger_temperature: Internal air temperature of the datalogger in degrees celsius.
+    :param UnsignedIntField logger_voltage: Raw value representing the battery voltage at the receiver.
+    :param UnsignedIntField channel_number: The radio channel number (1 or 2) on which the packet was received.
+    :param UnsignedIntField length: The length of the MBus packet that follows this byte.
+    :param UnsignedIntField c_field: control field in the MBus packet header.
+    :param UnsignedIntField m_field: manufacturer field in MBus packet header.
+    :param UnsignedIntField uid: unique identifier, used to identify CHIL instruments, i.e. `CE240001` or `CF230010`.
+    :param UnsignedIntField version: version field in the MBus packet header.
+    :param UnsignedIntField device: device field in the MBus packet header.
+    :param UnsignedIntField ci_field: control information field in the MBus packet header, used to discriminate between 2023 and 2026 packet formats.
+    :param UnsignedIntField conductivity: Uncalibrated conductivity sensor measurement in millivolts (mV). 
+    :param SignedIntField temperature_pt1000: Unused value from the PT1000 temperature sensor (deprecated).
+    :param PressureKellerField pressure: measured pressure value.
+    :param TemperatureKellerField temperature_keller: measured temperature value.
+    :param UnsignedIntField voltage_battery: Battery voltage of the instrument in millivolts (mV).
+    :param UnsignedIntField sequence_number: Sequence number of the transmitted packet increments by one after each transmission from 0 to 255 and then resets.
+    :param TemperatureTMP117Field temperature_tmp117: Raw temperature value from the TMP117 temperature sensor.
+    :param SignedIntField mag_x: x-axis component of the magnetometer sensor.
+    :param SignedIntField mag_y: y-axis component of the magnetometer sensor.
+    :param SignedIntField mag_z: z-axis component of the magnetometer sensor.
+    :param SignedIntField acc_x: x-axis component of the accelerometer sensor.
+    :param SignedIntField acc_y: y-axis component of the accelerometer sensor.
+    :param SignedIntField acc_z: z-axis component of the accelerometer sensor.
+    :param SignedIntField acc_tilt_x: x-axis component of the TILT-05 accelerometer sensor.
+    :param SignedIntField acc_tilt_y: y-axis component of the TILT-05 accelerometer sensor.
+    :param SignedIntField acc_tilt_z: z-axis component of the TILT-05 accelerometer sensor.
+    :param SignedIntField pitch_tenth_deg: pitch (angle) along x-axis of the TILT-05 sensor in tenths of a degree.
+    :param SignedIntField roll_tenth_deg: roll (angle) along y-axis of the TILT-05 sensor in tenths of a degree.
+    :param UnsignedIntField conductivity: Uncalibrated conductivity sensor measurement in millivolts (mV).
+    :param PressureKellerField pressure: measured pressure value.
+    :param TemperatureKellerField temperature_keller: measured temperature value.
+    :param UnsignedIntField voltage_battery: Battery voltage of the instrument in millivolts (mV).
+    :param UnsignedIntField sequence_number: Sequence number of the transmitted packet increments by one after each transmission from 0 to 255 and then resets.
+    :param UnsignedIntField rssi: encoded received signal strength.
+    """
+    
     identifier = b'W'
     level = BlockLevel.L1
     header_class = BlockHeaderLegacy
+    """:meta private:"""
     # -----------------------------------------------------------------
     # Fields:
     # -----------------------------------------------------------------

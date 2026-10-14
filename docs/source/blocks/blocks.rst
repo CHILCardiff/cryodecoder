@@ -13,6 +13,8 @@ Overview
 --------
 The packet definitions for CHIL instruments are split into three levels **L1**, **L2** and **L3** packets which describe sensor data, the data origin and where it was collated. This abstraction is designed to allow for an extensible and adaptive packet format which can be applied to the different types of instruments within the CHIL family.
 
+.. _level1:
+
 Level 1 (L1)
 ^^^^^^^^^^^^
 Level 1 data encompasses direct observations from sensors or system variables, for example the temperature observed with a `TMP117`_ temperature sensor or the acceleration and magnetic field strength recorded in the XYZ axes by an `LSM303AGR`_ eCompass chip.

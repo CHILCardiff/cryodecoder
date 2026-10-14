@@ -1,3 +1,10 @@
+"""
+
+Cloudloop API key
+------------------------------------
+Access to the Cloudloop API requires a key (token) which can be requested from Ground Control. To avoid needing to store this in source files, the API.
+"""
+
 import base64
 import datetime
 import logging

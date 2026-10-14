@@ -1031,41 +1031,52 @@ class SerialDecoder(CSVLogger):
         """
         :meta private:
         """
-        
-        while True:
+
+        running = True
+
+        while running:
             try:
                 byte = self._serial.read(1)
                 self.output_raw.write(f"{int.from_bytes(byte):02x}")
                 self.output_raw.flush()
 
                 while ((byte != b'') or not self._parser.complete()):
-                    # Bit of a hack here to deal with comments
-                    if (byte == b'#' and self._parser._state == Parser.state_readIdentifier):
-                        # Read until end of line
-                        decode_message = ""
-                        byte = self._serial.read(1)
-                        self.output_raw.write(f"{int.from_bytes(byte):02x}")
-                        self.output_raw.flush()
-
-                        while (byte != b'\n' and byte != b'\r'):
-                            decode_message += byte.decode("ascii")
+                    try:
+                        # Bit of a hack here to deal with comments
+                        if (byte == b'#' and self._parser._state == Parser.state_readIdentifier):
+                            # Read until end of line
+                            decode_message = ""
                             byte = self._serial.read(1)
                             self.output_raw.write(f"{int.from_bytes(byte):02x}")
                             self.output_raw.flush()
 
-                        byte = self._serial.read(1)
-                        
-                        self.output_raw.write(f"{int.from_bytes(byte):02x}")
-                        self.output_raw.flush()
-                        
-                        self.output_logger.log(logging.INFO, decode_message)
-                    else:
-                        # print(f"DBG - {byte.hex()} -> {byte.decode("ascii") if byte[0] < 128 and byte[0] > 32 else f"({byte[0]})"}")
-                        self._parser.push(byte)
-                        self._parser.update()
+                            while (byte != b'\n' and byte != b'\r'):
+                                try: 
+                                    decode_message += byte.decode("ascii")
+                                    byte = self._serial.read(1)
+                                    self.output_raw.write(f"{int.from_bytes(byte):02x}")
+                                    self.output_raw.flush()
+                                except KeyboardInterrupt:
+                                    print("CTRL+C pressed, quitting...")
+                                    running = False
 
-                    if self._parser.available():
-                        break
+                            byte = self._serial.read(1)
+                            
+                            self.output_raw.write(f"{int.from_bytes(byte):02x}")
+                            self.output_raw.flush()
+                            
+                            self.output_logger.log(logging.INFO, decode_message)
+                        else:
+                            # print(f"DBG - {byte.hex()} -> {byte.decode("ascii") if byte[0] < 128 and byte[0] > 32 else f"({byte[0]})"}")
+                            self._parser.push(byte)
+                            self._parser.update()
+
+                        if self._parser.available():
+                            break
+
+                    except KeyboardInterrupt:
+                        print("CTRL+C pressed, quitting...")
+                        running = False
 
                     byte = self._serial.read(1)
 
@@ -1076,6 +1087,8 @@ class SerialDecoder(CSVLogger):
                 continue
 
             except KeyboardInterrupt:
+                print("CTRL+C pressed, quitting...")
+                running = False
                 self._serial.close()
                 self.save()
                 return

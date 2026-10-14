@@ -23,7 +23,9 @@ The table below provides an overview of all of the valid L1 blocks.
     'V' (0x56),2,Power system status from battery voltage sensor.
     'V' (0x56),14,Power system status with addtional INA3221 sensor.
 
-:code:`A` - LSM303AGR eCompass data
+.. _block_a_lsm303:
+
+``A`` - LSM303AGR eCompass data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This block represents data from the integrated magnetometer and accelerometer in the LSM303AGR eCompass sensor.
 
@@ -46,6 +48,8 @@ The LSM303 block is represented by :py:class:`cryodecoder.blocks.Block_A_LSM303`
 
     TODO: Add reference to conversion formulas or methodology.
 
+.. _block_b_bma400:
+
 :code:`B` - BMA accelerometer data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This block represents data from the BMA400 accelerometer used on the datalogger receiver board.
@@ -61,6 +65,8 @@ The BMA400 block is represented by :py:class:`cryodecoder.blocks.Block_B_BMA400`
     2,Accelerometer X,"-32,768 to 32,767"
     2,Accelerometer Y,"-32,768 to 32,767"
     2,Accelerometer Z,"-32,768 to 32,767"
+
+.. _block_c_chil:
 
 :code:`C` - EC, Temp. and Battery
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -82,6 +88,8 @@ The CHIL block is represented by :py:class:`cryodecoder.blocks.Block_C_CHIL`.
 .. note::
 
     TODO: Add reference to conversion formulas.
+
+.. _block_e_environmental:
 
 :code:`E` - Receiver environmental data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -115,6 +123,8 @@ If an SHT30 sensor is available, the length of the block is modified and the tem
 
     TODO: Add reference to conversion formulas.
 
+.. _block_k_keller:
+
 :code:`K` - Keller pressure sensor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This block describes data from the Keller 4LD, 7LD and 7LHPD pressure sensors. As well as pressure, the block reports the temperature from the pressure sensor and the scaling values used to convert the digitised readings to physical values.
@@ -137,6 +147,8 @@ The Keller pressure sensor block is represented by :py:class:`cryodecoder.blocks
 
     TODO: Add reference to conversion and decoding formulas.
 
+.. _block_t_tilt:
+
 :code:`T` - CTi TILT-05 tilt sensor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This block reports data from the CTi TILT-05 tilt sensor.
@@ -156,6 +168,8 @@ The CTi TILT-05 block is represented by :py:class:`cryodecoder.blocks.Block_T_Ti
     2,Roll,-1800 to 1800
 
 Accelerometer X, Y and Z are reported in units of mg. Pitch and roll are reported in units of one tenth of a degree.
+
+.. _block_v_voltage:
 
 :code:`V` - Datalogger voltage status
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
