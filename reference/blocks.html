@@ -1,0 +1,1714 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>cryodecoder.blocks &#8212; cryodecoder 0.2 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=4418a689" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+
+    <script src="../_static/documentation_options.js?v=f6d3da1f"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/blocks';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="cryodecoder.cloudloop" href="cloudloop.html" />
+    <link rel="prev" title="API: cryodecoder" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo.png" class="logo__image only-light" alt="cryodecoder 0.2 documentation - Home"/>
+    <img src="../_static/logo.png" class="logo__image only-dark pst-js-only" alt="cryodecoder 0.2 documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../setup.html">Installation</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../serial.html">Serial decoding (USB)</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../csv/logfile.html">CSV format</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../file.html">Decoding *.log files</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../blocks/blocks.html">Instrument data protocol</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../blocks/level3.html">Level 3 blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../blocks/level2.html">Level 2 blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../blocks/level1.html">Level 1 blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../blocks/legacy.html">Legacy blocks</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">API (cryodecoder)</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">cryodecoder.blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cloudloop.html">cryodecoder.cloudloop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parser.html">cryodecoder.parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exceptions.html">cryodecoder.exceptions</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/reference/blocks.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>cryodecoder.blocks</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#blocks">Blocks</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fields">Fields</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Field"><code class="docutils literal notranslate"><span class="pre">Field</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Field.from_bytes"><code class="docutils literal notranslate"><span class="pre">Field.from_bytes()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Field.to_bytes"><code class="docutils literal notranslate"><span class="pre">Field.to_bytes()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Field.raw"><code class="docutils literal notranslate"><span class="pre">Field.raw</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Field.value"><code class="docutils literal notranslate"><span class="pre">Field.value</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Payload"><code class="docutils literal notranslate"><span class="pre">Payload</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Payload.from_bytes"><code class="docutils literal notranslate"><span class="pre">Payload.from_bytes()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Payload.to_bytes"><code class="docutils literal notranslate"><span class="pre">Payload.to_bytes()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Payload.raw"><code class="docutils literal notranslate"><span class="pre">Payload.raw</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Payload.value"><code class="docutils literal notranslate"><span class="pre">Payload.value</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.UnsignedIntField"><code class="docutils literal notranslate"><span class="pre">UnsignedIntField</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.UnsignedIntField.to_bytes"><code class="docutils literal notranslate"><span class="pre">UnsignedIntField.to_bytes()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.UnsignedIntField.from_bytes"><code class="docutils literal notranslate"><span class="pre">UnsignedIntField.from_bytes()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.SignedIntField"><code class="docutils literal notranslate"><span class="pre">SignedIntField</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.SignedIntField.to_bytes"><code class="docutils literal notranslate"><span class="pre">SignedIntField.to_bytes()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.SignedIntField.from_bytes"><code class="docutils literal notranslate"><span class="pre">SignedIntField.from_bytes()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.IEEE754Float"><code class="docutils literal notranslate"><span class="pre">IEEE754Float</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.IEEE754Float.to_bytes"><code class="docutils literal notranslate"><span class="pre">IEEE754Float.to_bytes()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.IEEE754Float.from_bytes"><code class="docutils literal notranslate"><span class="pre">IEEE754Float.from_bytes()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.TemperatureTMP117Field"><code class="docutils literal notranslate"><span class="pre">TemperatureTMP117Field</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.TemperatureTMP117Field.convertedValue"><code class="docutils literal notranslate"><span class="pre">TemperatureTMP117Field.convertedValue</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.TemperatureSHT30Field"><code class="docutils literal notranslate"><span class="pre">TemperatureSHT30Field</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.TemperatureSHT30Field.convertedValue"><code class="docutils literal notranslate"><span class="pre">TemperatureSHT30Field.convertedValue</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.RelativeHumiditySHT30Field"><code class="docutils literal notranslate"><span class="pre">RelativeHumiditySHT30Field</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.RelativeHumiditySHT30Field.convertedValue"><code class="docutils literal notranslate"><span class="pre">RelativeHumiditySHT30Field.convertedValue</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.TemperatureKellerField"><code class="docutils literal notranslate"><span class="pre">TemperatureKellerField</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.TemperatureKellerField.convertedValue"><code class="docutils literal notranslate"><span class="pre">TemperatureKellerField.convertedValue</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.PressureKellerField"><code class="docutils literal notranslate"><span class="pre">PressureKellerField</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.PressureKellerField.convertedValue"><code class="docutils literal notranslate"><span class="pre">PressureKellerField.convertedValue</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.BlockHeader"><code class="docutils literal notranslate"><span class="pre">BlockHeader</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.BlockHeader.to_bytes"><code class="docutils literal notranslate"><span class="pre">BlockHeader.to_bytes()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.BlockHeader.length"><code class="docutils literal notranslate"><span class="pre">BlockHeader.length()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.BlockHeaderL3"><code class="docutils literal notranslate"><span class="pre">BlockHeaderL3</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.BlockHeaderLegacy"><code class="docutils literal notranslate"><span class="pre">BlockHeaderLegacy</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.BlockHeaderLegacy.length"><code class="docutils literal notranslate"><span class="pre">BlockHeaderLegacy.length()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.BlockLevel"><code class="docutils literal notranslate"><span class="pre">BlockLevel</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block"><code class="docutils literal notranslate"><span class="pre">Block</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block.header_class"><code class="docutils literal notranslate"><span class="pre">Block.header_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.BlockChildren"><code class="docutils literal notranslate"><span class="pre">BlockChildren</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.BlockChildren.getChild"><code class="docutils literal notranslate"><span class="pre">BlockChildren.getChild()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_A_LSM303"><code class="docutils literal notranslate"><span class="pre">Block_A_LSM303</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_B_BMA400"><code class="docutils literal notranslate"><span class="pre">Block_B_BMA400</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_C_CHIL"><code class="docutils literal notranslate"><span class="pre">Block_C_CHIL</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_E_Environmental"><code class="docutils literal notranslate"><span class="pre">Block_E_Environmental</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_K_Keller"><code class="docutils literal notranslate"><span class="pre">Block_K_Keller</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_V_Voltage"><code class="docutils literal notranslate"><span class="pre">Block_V_Voltage</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_T_Tilt"><code class="docutils literal notranslate"><span class="pre">Block_T_Tilt</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_T_Tilt.header_class"><code class="docutils literal notranslate"><span class="pre">Block_T_Tilt.header_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_M_MBusPacket"><code class="docutils literal notranslate"><span class="pre">Block_M_MBusPacket</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_M_MBusPacketCryoegg2023"><code class="docutils literal notranslate"><span class="pre">Block_M_MBusPacketCryoegg2023</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_M_MBusPacketCryowurst2023"><code class="docutils literal notranslate"><span class="pre">Block_M_MBusPacketCryowurst2023</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_R_Receiver"><code class="docutils literal notranslate"><span class="pre">Block_R_Receiver</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_D_Datalogger"><code class="docutils literal notranslate"><span class="pre">Block_D_Datalogger</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_H_Housekeeping"><code class="docutils literal notranslate"><span class="pre">Block_H_Housekeeping</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_C_Cryoegg"><code class="docutils literal notranslate"><span class="pre">Block_C_Cryoegg</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_W_Wurst"><code class="docutils literal notranslate"><span class="pre">Block_W_Wurst</span></code></a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-cryodecoder.blocks">
+<span id="cryodecoder-blocks"></span><h1>cryodecoder.blocks<a class="headerlink" href="#module-cryodecoder.blocks" title="Link to this heading">#</a></h1>
+<p>This module provides the framework for defining blocks 
+as used in CHIL instruments, reading them from byte strings and converting interpreted values back to byte strings. More information on the blocks can be found <a class="reference internal" href="../blocks/blocks.html"><span class="doc">here</span></a>.</p>
+<section id="blocks">
+<h2>Blocks<a class="headerlink" href="#blocks" title="Link to this heading">#</a></h2>
+<p>Blocks correspond to the <a class="reference internal" href="../blocks/level1.html"><span class="doc">Level 1</span></a>, <a class="reference internal" href="../blocks/level2.html"><span class="doc">Level 2</span></a> or <a class="reference internal" href="../blocks/level3.html"><span class="doc">Level 3</span></a> data structures as defined by the 2026 CHIL instrument protocol. To ensure backwards compatability with the pre-2026 receiver packet formats, two formats of legacy block (<a class="reference internal" href="#cryodecoder.blocks.Block_C_Cryoegg" title="cryodecoder.blocks.Block_C_Cryoegg"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_C_Cryoegg</span></code></a> and <a class="reference internal" href="#cryodecoder.blocks.Block_W_Wurst" title="cryodecoder.blocks.Block_W_Wurst"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_W_Wurst</span></code></a>) are defined.</p>
+<p>Each block class extends the <a class="reference internal" href="#cryodecoder.blocks.Block" title="cryodecoder.blocks.Block"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block</span></code></a> abstract base class and is made up of a header (<a class="reference internal" href="#cryodecoder.blocks.BlockHeader" title="cryodecoder.blocks.BlockHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockHeader</span></code></a>) which describes the block type and length, and a number of fields (<a class="reference internal" href="#cryodecoder.blocks.Field" title="cryodecoder.blocks.Field"><code class="xref py py-class docutils literal notranslate"><span class="pre">Field</span></code></a>) which contain the data within the block.</p>
+<p>The <a class="reference internal" href="#module-cryodecoder.blocks" title="cryodecoder.blocks"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cryodecoder.blocks</span></code></a> module uses class definitions to describe the various blocks which make up the packet protocol.</p>
+</section>
+<section id="fields">
+<h2>Fields<a class="headerlink" href="#fields" title="Link to this heading">#</a></h2>
+<p>Each block definition contains a number of fields which are used to represent the binary encoding of data from the CHIL instruments. The <a class="reference internal" href="#cryodecoder.blocks.Field" title="cryodecoder.blocks.Field"><code class="xref py py-class docutils literal notranslate"><span class="pre">Field</span></code></a> objects is used to convert binary data to interpreted values (i.e. byte array to 16-bit signed integer), and vice versa (16-bit signed integer to byte array).</p>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Field">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">Field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.Field" title="Link to this definition">#</a></dt>
+<dd><p>Field defines a generic class which takes raw values in bytes and 
+provides an interface to convert the byte stream into an interpreted value.</p>
+<p>Field exposes .raw and .value properties which provide real-time conversion
+between byte and interpreted values (i.e. byte to float, byte to int).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field_order</strong> – order in which the field appears in a block (zero-index)</p></li>
+<li><p><strong>byte_width</strong> – width of the field in bytes</p></li>
+<li><p><strong>value_default</strong> – default value of the field when initialised</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Field.from_bytes">
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.Field.from_bytes" title="Link to this definition">#</a></dt>
+<dd><p>derive the interpreted value of the field from byte(s)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bytes</strong> – the bytes to be converted to an interpreted value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Field.to_bytes">
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">to_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#cryodecoder.blocks.Field.to_bytes" title="Link to this definition">#</a></dt>
+<dd><p>derive the byte representation of the interpreted value</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> – the interpreted value to be converted to bytes</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the value encoded in a byte string</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bytes</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Field.raw">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">raw</span></span><a class="headerlink" href="#cryodecoder.blocks.Field.raw" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the binary representation of the field</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bytes</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Field.value">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">value</span></span><a class="headerlink" href="#cryodecoder.blocks.Field.value" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the interpreted value of the field</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Payload">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">Payload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field_order</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.Payload" title="Link to this definition">#</a></dt>
+<dd><p>Represents a ‘special’ field which allows for lower-level blocks to be 
+embedded in the middle of the current block (i.e. the higher level MBus 
+RSSI byte is appended after the ‘payload’ block).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field_order</strong> – order in which the field appears in a block (zero-index)</p></li>
+<li><p><strong>byte_width</strong> – width of the field in bytes</p></li>
+<li><p><strong>value_default</strong> – default value of the field when initialised</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Payload.from_bytes">
+<span class="sig-name descname"><span class="pre">from_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.Payload.from_bytes" title="Link to this definition">#</a></dt>
+<dd><p>derive the interpreted value of the field from byte(s)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bytes</strong> – the bytes to be converted to an interpreted value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Payload.to_bytes">
+<span class="sig-name descname"><span class="pre">to_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.Payload.to_bytes" title="Link to this definition">#</a></dt>
+<dd><p>derive the byte representation of the interpreted value</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> – the interpreted value to be converted to bytes</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the value encoded in a byte string</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bytes</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Payload.raw">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">raw</span></span><a class="headerlink" href="#cryodecoder.blocks.Payload.raw" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the binary representation of the field</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bytes</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Payload.value">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">value</span></span><a class="headerlink" href="#cryodecoder.blocks.Payload.value" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the interpreted value of the field</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.UnsignedIntField">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">UnsignedIntField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'little'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'big'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'little'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.UnsignedIntField" title="Link to this definition">#</a></dt>
+<dd><p>Represents a variable-width unsigned integer in binary and interpreted form.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field_order</strong> (<em>int</em>) – zero-index order within the block at which this field occurs</p></li>
+<li><p><strong>byte_width</strong> (<em>int</em>) – number of bytes occupied by the integer</p></li>
+<li><p><strong>byte_order</strong> (<em>str</em>) – endianness of the binary representation (”<em>little</em>” or “<em>big</em>”)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.blocks.UnsignedIntField.to_bytes">
+<span class="sig-name descname"><span class="pre">to_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#cryodecoder.blocks.UnsignedIntField.to_bytes" title="Link to this definition">#</a></dt>
+<dd><p>converts the unsigned integer to its binary representation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.blocks.UnsignedIntField.from_bytes">
+<span class="sig-name descname"><span class="pre">from_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#cryodecoder.blocks.UnsignedIntField.from_bytes" title="Link to this definition">#</a></dt>
+<dd><p>converts a byte string to an unsigned integer</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.SignedIntField">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">SignedIntField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'little'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'big'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'little'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.SignedIntField" title="Link to this definition">#</a></dt>
+<dd><p>Represents a variable-width signed integer in binary and interpreted form.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field_order</strong> (<em>int</em>) – zero-index order within the block at which this field occurs</p></li>
+<li><p><strong>byte_width</strong> (<em>int</em>) – number of bytes occupied by the integer</p></li>
+<li><p><strong>byte_order</strong> (<em>str</em>) – endianness of the binary representation (”<em>little</em>” or “<em>big</em>”)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.blocks.SignedIntField.to_bytes">
+<span class="sig-name descname"><span class="pre">to_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.SignedIntField.to_bytes" title="Link to this definition">#</a></dt>
+<dd><p>converts the signed integer to its binary representation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.blocks.SignedIntField.from_bytes">
+<span class="sig-name descname"><span class="pre">from_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.SignedIntField.from_bytes" title="Link to this definition">#</a></dt>
+<dd><p>converts a byte string to an signed integer</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.IEEE754Float">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">IEEE754Float</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field_order</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.IEEE754Float" title="Link to this definition">#</a></dt>
+<dd><p>Represents a 4-byte <a class="reference external" href="https://en.wikipedia.org/wiki/IEEE_754">IEEE 754</a> floating point number in binary and interpeted 
+form.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>field_order</strong> (<em>int</em>) – zero-index order within the block at which this field occurs</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.blocks.IEEE754Float.to_bytes">
+<span class="sig-name descname"><span class="pre">to_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#cryodecoder.blocks.IEEE754Float.to_bytes" title="Link to this definition">#</a></dt>
+<dd><p>converts a floating point number to its IEEE 754 floating point representation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.blocks.IEEE754Float.from_bytes">
+<span class="sig-name descname"><span class="pre">from_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#cryodecoder.blocks.IEEE754Float.from_bytes" title="Link to this definition">#</a></dt>
+<dd><p>converts a byte string to floating point number
+:rtype: float</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.TemperatureTMP117Field">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">TemperatureTMP117Field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'little'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'big'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'little'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.TemperatureTMP117Field" title="Link to this definition">#</a></dt>
+<dd><p>Reported temperature from a <a class="reference external" href="https://www.ti.com/lit/ds/symlink/tmp117.pdf?">TMP117</a> digital temperature sensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field_order</strong> (<em>int</em>) – zero-index order within the block at which this field occurs</p></li>
+<li><p><strong>byte_width</strong> (<em>int</em>) – number of bytes occupied by the integer</p></li>
+<li><p><strong>byte_order</strong> (<em>str</em>) – endianness of the binary representation (”<em>little</em>” or “<em>big</em>”)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="cryodecoder.blocks.TemperatureTMP117Field.convertedValue">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">convertedValue</span></span><a class="headerlink" href="#cryodecoder.blocks.TemperatureTMP117Field.convertedValue" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the reported temperature value in degrees Celsius.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.TemperatureSHT30Field">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">TemperatureSHT30Field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'little'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'big'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'little'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.TemperatureSHT30Field" title="Link to this definition">#</a></dt>
+<dd><p>Reported temperature from an <a class="reference external" href="https://thepihut.com/products/sht-30-mesh-protected-weather-proof-temperature-humidity-sensor">SHT30</a> temperature and humidity probe.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field_order</strong> (<em>int</em>) – zero-index order within the block at which this field occurs</p></li>
+<li><p><strong>byte_width</strong> (<em>int</em>) – number of bytes occupied by the integer</p></li>
+<li><p><strong>byte_order</strong> (<em>str</em>) – endianness of the binary representation (”<em>little</em>” or “<em>big</em>”)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="cryodecoder.blocks.TemperatureSHT30Field.convertedValue">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">convertedValue</span></span><a class="headerlink" href="#cryodecoder.blocks.TemperatureSHT30Field.convertedValue" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the reported temperature value in degrees Celsius.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.RelativeHumiditySHT30Field">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">RelativeHumiditySHT30Field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'little'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'big'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'little'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.RelativeHumiditySHT30Field" title="Link to this definition">#</a></dt>
+<dd><p>Reported relative humidity from an <a class="reference external" href="https://thepihut.com/products/sht-30-mesh-protected-weather-proof-temperature-humidity-sensor">SHT30</a> temperature and humidity probe.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field_order</strong> (<em>int</em>) – zero-index order within the block at which this field occurs</p></li>
+<li><p><strong>byte_width</strong> (<em>int</em>) – number of bytes occupied by the integer</p></li>
+<li><p><strong>byte_order</strong> (<em>str</em>) – endianness of the binary representation (”<em>little</em>” or “<em>big</em>”)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="cryodecoder.blocks.RelativeHumiditySHT30Field.convertedValue">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">convertedValue</span></span><a class="headerlink" href="#cryodecoder.blocks.RelativeHumiditySHT30Field.convertedValue" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the reported relative humidity (as a percentage).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.TemperatureKellerField">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">TemperatureKellerField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'little'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'big'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'little'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.TemperatureKellerField" title="Link to this definition">#</a></dt>
+<dd><p>Reported temperature from an <a class="reference external" href="https://keller-pressure.com/en/products/pressure-transmitters/oem-pressure-transmitters/series-7ld">Keller 7L(HP)D</a> pressure sensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field_order</strong> (<em>int</em>) – zero-index order within the block at which this field occurs</p></li>
+<li><p><strong>byte_width</strong> (<em>int</em>) – number of bytes occupied by the integer</p></li>
+<li><p><strong>byte_order</strong> (<em>str</em>) – endianness of the binary representation (”<em>little</em>” or “<em>big</em>”)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="cryodecoder.blocks.TemperatureKellerField.convertedValue">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">convertedValue</span></span><a class="headerlink" href="#cryodecoder.blocks.TemperatureKellerField.convertedValue" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the reported temperature value in degrees Celsius.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.PressureKellerField">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">PressureKellerField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'little'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'big'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'little'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.PressureKellerField" title="Link to this definition">#</a></dt>
+<dd><p>Reported pressure in bar from an <a class="reference external" href="https://keller-pressure.com/en/products/pressure-transmitters/oem-pressure-transmitters/series-7ld">Keller 7L(HP)D</a> pressure sensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field_order</strong> (<em>int</em>) – zero-index order within the block at which this field occurs</p></li>
+<li><p><strong>byte_width</strong> (<em>int</em>) – number of bytes occupied by the integer</p></li>
+<li><p><strong>byte_order</strong> (<em>str</em>) – endianness of the binary representation (”<em>little</em>” or “<em>big</em>”)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="cryodecoder.blocks.PressureKellerField.convertedValue">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">convertedValue</span></span><a class="headerlink" href="#cryodecoder.blocks.PressureKellerField.convertedValue" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the reported pressure value in bar.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.BlockHeader">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">BlockHeader</span></span><a class="headerlink" href="#cryodecoder.blocks.BlockHeader" title="Link to this definition">#</a></dt>
+<dd><p>Base class for the header section of CHIL blocks.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.blocks.BlockHeader.to_bytes">
+<span class="sig-name descname"><span class="pre">to_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#cryodecoder.blocks.BlockHeader.to_bytes" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>block</strong> (<a class="reference internal" href="#cryodecoder.blocks.Block" title="cryodecoder.blocks.Block"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block</span></code></a>) – parent block of the BlockHeader to be used in calculating total block length</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>byte representation of the header</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bytes</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.blocks.BlockHeader.length">
+<span class="sig-name descname"><span class="pre">length</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#cryodecoder.blocks.BlockHeader.length" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>length of the header in bytes</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.BlockHeaderL3">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">BlockHeaderL3</span></span><a class="headerlink" href="#cryodecoder.blocks.BlockHeaderL3" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.BlockHeaderLegacy">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">BlockHeaderLegacy</span></span><a class="headerlink" href="#cryodecoder.blocks.BlockHeaderLegacy" title="Link to this definition">#</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.blocks.BlockHeaderLegacy.length">
+<span class="sig-name descname"><span class="pre">length</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.BlockHeaderLegacy.length" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>length of the header in bytes</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.BlockLevel">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">BlockLevel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.BlockLevel" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Block">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">Block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.Block" title="Link to this definition">#</a></dt>
+<dd><p>An abstract base class for defining different block types.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Block.header_class">
+<span class="sig-name descname"><span class="pre">header_class</span></span><a class="headerlink" href="#cryodecoder.blocks.Block.header_class" title="Link to this definition">#</a></dt>
+<dd><p>alias of <a class="reference internal" href="#cryodecoder.blocks.BlockHeader" title="cryodecoder.blocks.BlockHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockHeader</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.BlockChildren">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">BlockChildren</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.BlockChildren" title="Link to this definition">#</a></dt>
+<dd><p>Adds an interface for associating sub-blocks within this block which 
+is used to implement L2 and L3 blocks (Origin and Context)</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="cryodecoder.blocks.BlockChildren.getChild">
+<span class="sig-name descname"><span class="pre">getChild</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">type</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">type</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#cryodecoder.blocks.Block" title="cryodecoder.blocks.Block"><span class="pre">Block</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#cryodecoder.blocks.BlockChildren.getChild" title="Link to this definition">#</a></dt>
+<dd><p>returns the child block of type <code class="docutils literal notranslate"><span class="pre">block_type</span></code>, if it exists, used for extracting L2 and L1 blocks from their parents.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>block_type</strong> (<em>Union</em><em>[</em><em>type</em><em>, </em><em>tuple</em><em>[</em><em>type</em><em>]</em><em>]</em>) – type (or tuple of types) of blocks to extract.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>if it exists, a block of type <cite>block_type</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#cryodecoder.blocks.Block" title="cryodecoder.blocks.Block"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block</span></code></a> or <cite>None</cite></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Block_A_LSM303">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">Block_A_LSM303</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.Block_A_LSM303" title="Link to this definition">#</a></dt>
+<dd><p>Stores magnetometer and accelerometer data from the <a class="reference external" href="https://www.st.com/en/mems-and-sensors/lsm303agr.html">LSM303AGR</a> 
+sensor used in CHIL instrumentation. More details on the LSM303 block format are available <a class="reference internal" href="../blocks/level1.html#block-a-lsm303"><span class="std std-ref">here</span></a>.</p>
+<p>Magnetometer data are signed 16-bit values which have a code range from -32,768 to 32,767 corresponding to sensor values of ±50 Gauss.</p>
+<p>Accelerometer data are signed 16-bit values which have a code range from -32,768 to 32,767 corresponding to sensor values of ±2g (19.61 m/s<sup>2</sup>).</p>
+<dl class="field-list">
+<dt class="field-odd">Example<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Converting magnetometer data to physical values:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load an LSM303 dataset</span>
+<span class="n">block</span> <span class="o">=</span> <span class="n">Block_A_LSM303</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="c1"># Convert the magnetometer sensor to its physical value in Gauss</span>
+<span class="n">mag_x_gauss</span> <span class="o">=</span> <span class="mi">50</span> <span class="o">*</span> <span class="n">block</span><span class="o">.</span><span class="n">mag_x</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="mi">32768</span>
+</pre></div>
+</div>
+</dd>
+<dt class="field-even">Example<span class="colon">:</span></dt>
+<dd class="field-even"><p>Converting accelerometer data to physical values:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load an LSM303 dataset</span>
+<span class="n">block</span> <span class="o">=</span> <span class="n">Block_A_LSM303</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="c1"># Convert the acceleration sensor to its physical value in g</span>
+<span class="n">acc_x_gauss</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">block</span><span class="o">.</span><span class="n">acc_x</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="mi">32768</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>TODO:</strong> Add reference to Cryowurst and Cryoegg for acc/mag vector orientation.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mag_x</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – x-axis component of the magnetometer sensor.</p></li>
+<li><p><strong>mag_y</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – y-axis component of the magnetometer sensor.</p></li>
+<li><p><strong>mag_z</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – z-axis component of the magnetometer sensor.</p></li>
+<li><p><strong>acc_x</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – x-axis component of the accelerometer sensor.</p></li>
+<li><p><strong>acc_y</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – y-axis component of the accelerometer sensor.</p></li>
+<li><p><strong>acc_z</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – z-axis component of the accelerometer sensor.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Block_B_BMA400">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">Block_B_BMA400</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.Block_B_BMA400" title="Link to this definition">#</a></dt>
+<dd><p>Stores accelerometer data from the <a class="reference external" href="https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bma400-ds000.pdf">BMA400</a> accelerometer used on the CHIL receiver. More details on the BMA400 block format are available <a class="reference internal" href="../blocks/level1.html#block-b-bma400"><span class="std std-ref">here</span></a>.</p>
+<p>Accelerometer data are signed 12-bit values which have a code range from -2048 to +2047 corresponding to sensor values of ±2g (19.61 m/s<sup>2</sup>).</p>
+<dl class="field-list">
+<dt class="field-odd">Example<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Converting acceleration data to physical values:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load a BMA400 dataset</span>
+<span class="n">block</span> <span class="o">=</span> <span class="n">Block_B_BMA400</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="c1"># Convert the acceleration to its physical value in g (m/s^2)</span>
+<span class="n">acc_x_g</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">block</span><span class="o">.</span><span class="n">acc_x</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="mi">2048</span>
+</pre></div>
+</div>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>acc_x</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – x-axis component of the accelerometer sensor.</p></li>
+<li><p><strong>acc_y</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – y-axis component of the accelerometer sensor.</p></li>
+<li><p><strong>acc_z</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – z-axis component of the accelerometer sensor.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Block_C_CHIL">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">Block_C_CHIL</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.Block_C_CHIL" title="Link to this definition">#</a></dt>
+<dd><p>Stores instrument battery voltage, packet metadata, temperature and conductivity measurements. The origin of the temperature measurement can with the instrument type but is typically a <a class="reference external" href="https://www.ti.com/lit/ds/symlink/tmp117.pdf?">TMP117</a> sensor. More details on the CHIL block format are available <a class="reference internal" href="../blocks/level1.html#block-c-chil"><span class="std std-ref">here</span></a>.</p>
+<dl class="field-list">
+<dt class="field-odd">Example<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Get measured temperature value from the TMP117 sensor.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load a CHIL sensor dataset</span>
+<span class="n">block</span> <span class="o">=</span> <span class="n">Block_C_CHIL</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="c1"># Convert the raw temperature value to degrees celsius.</span>
+<span class="n">temp_raw_to_degC</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">temperature_tmp117</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="mf">128.0</span>
+
+<span class="c1"># or use the built in .convertedValue to do the same</span>
+<span class="k">assert</span> <span class="n">temp_raw_to_degC</span> <span class="o">==</span> <span class="n">block</span><span class="o">.</span><span class="n">temperature_tmp117</span><span class="o">.</span><span class="n">convertedValue</span>
+</pre></div>
+</div>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>sequence_number</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – Sequence number of the transmitted packet increments by one after each transmission from 0 to 255 and then resets.</p></li>
+<li><p><strong>voltage_battery</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – Battery voltage of the instrument in millivolts (mV).</p></li>
+<li><p><strong>conductivity</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – Uncalibrated conductivity sensor measurement in millivolts (mV).</p></li>
+<li><p><strong>temperature_tmp117</strong> (<a class="reference internal" href="#cryodecoder.blocks.TemperatureTMP117Field" title="cryodecoder.blocks.TemperatureTMP117Field"><em>TemperatureTMP117Field</em></a>) – Raw temperature value from the TMP117 temperature sensor.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Block_E_Environmental">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">Block_E_Environmental</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.Block_E_Environmental" title="Link to this definition">#</a></dt>
+<dd><p>Stores the environmental data (temperature, pressure, relative humidity) from the receiver. More details on the environmental block format are available <a class="reference internal" href="../blocks/level1.html#block-e-environmental"><span class="std std-ref">here</span></a>.</p>
+<p>All dataloggers contain the <a class="reference external" href="https://www.te.com/en/product-MS560702BA03-50.html">MS5607</a> pressure and temperature sensor. There is the option to install an external <a class="reference external" href="https://thepihut.com/products/sht-30-mesh-protected-weather-proof-temperature-humidity-sensor">SHT30</a> temperature and relative humidity sensor.</p>
+<dl class="field-list">
+<dt class="field-odd">Example<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Get measured temperature and pressure values from the MS5607.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load a receiver environmental sensor dataset</span>
+<span class="n">block</span> <span class="o">=</span> <span class="n">Block_E_Environmental</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="c1"># Get the air temperature in degrees celsius.</span>
+<span class="n">temperature</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">temperature_ms5607</span><span class="o">.</span><span class="n">value</span>
+
+<span class="c1"># Get the air pressure in bar.</span>
+<span class="n">temperature</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">pressure_ms5607</span><span class="o">.</span><span class="n">value</span>
+</pre></div>
+</div>
+</dd>
+<dt class="field-even">Example<span class="colon">:</span></dt>
+<dd class="field-even"><p>Get measured temperature and relative humdidity from the SHT30.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load a receiver environmental sensor dataset</span>
+<span class="n">block</span> <span class="o">=</span> <span class="n">Block_E_Environmental</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="c1"># Get the air temperature in degrees celsius.</span>
+<span class="n">temperature</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">temperature_sht30</span><span class="o">.</span><span class="n">convertedValue</span>
+
+<span class="c1"># Get the relative humditiy in percent</span>
+<span class="c1"># ...requires temperature from SHT30...</span>
+<span class="n">rel_humidity</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">humidity_sht30</span><span class="o">.</span><span class="n">convertedValue</span><span class="p">(</span>
+    <span class="n">block</span><span class="o">.</span><span class="n">temperature_sht30</span><span class="o">.</span><span class="n">value</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pressure_ms5607</strong> (<a class="reference internal" href="#cryodecoder.blocks.IEEE754Float" title="cryodecoder.blocks.IEEE754Float"><em>IEEE754Float</em></a>) – Surface air pressure recorded by the datalogger in bar.</p></li>
+<li><p><strong>temperature_ms5607</strong> (<a class="reference internal" href="#cryodecoder.blocks.IEEE754Float" title="cryodecoder.blocks.IEEE754Float"><em>IEEE754Float</em></a>) – Internal air temperature of the datalogger in degrees celsius.</p></li>
+<li><p><strong>temperature_sht30</strong> (<a class="reference internal" href="#cryodecoder.blocks.TemperatureSHT30Field" title="cryodecoder.blocks.TemperatureSHT30Field"><em>TemperatureSHT30Field</em></a>) – <em>(Optional)</em> External air temperature recorded by the datalogger using an SHT30 sensor.</p></li>
+<li><p><strong>humidity_sht30</strong> (<a class="reference internal" href="#cryodecoder.blocks.RelativeHumiditySHT30Field" title="cryodecoder.blocks.RelativeHumiditySHT30Field"><em>RelativeHumiditySHT30Field</em></a>) – <em>(Optional)</em> External relative humidity recorded by the datalogger using an SHT30 sensor.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Block_K_Keller">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">Block_K_Keller</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.Block_K_Keller" title="Link to this definition">#</a></dt>
+<dd><p>Stores the temperature and pressure data from a Keller <a href="#id2"><span class="problematic" id="id3">`7LD`_</span></a> or <a href="#id4"><span class="problematic" id="id5">`7LHPD`_</span></a> pressure sensor. More details on the Keller block format are available <a class="reference internal" href="../blocks/level1.html#block-k-keller"><span class="std std-ref">here</span></a>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If the <code class="docutils literal notranslate"><span class="pre">pressure_min</span></code> or <code class="docutils literal notranslate"><span class="pre">pressure_max</span></code> are invalid, it can cause the <code class="docutils literal notranslate"><span class="pre">pressure.convertedValue</span></code> field to be incorrectly converted. If values from the pressure sensor do not look valid, make sure to check  <code class="docutils literal notranslate"><span class="pre">pressure.value</span></code>.</p>
+</div>
+<dl class="field-list">
+<dt class="field-odd">Example<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Read the temperature and pressure from a Keller sensor</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Read a Block_K_Keller block</span>
+<span class="n">block</span> <span class="o">=</span> <span class="n">Block_K_Keller</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="c1"># Get the temperature value in celsius</span>
+<span class="n">temperature_degC</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">temperature</span><span class="o">.</span><span class="n">convertedValue</span>
+
+<span class="c1"># Get the pressure value in bar</span>
+<span class="n">pressure_bar</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">pressure</span><span class="o">.</span><span class="n">convertedValue</span>
+</pre></div>
+</div>
+</dd>
+<dt class="field-even">Example<span class="colon">:</span></dt>
+<dd class="field-even"><p>Convert raw temperature and pressure values from a Keller sensor, if the minimum and maximum pressure are known</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Read a Block_K_Keller block</span>
+<span class="n">block</span> <span class="o">=</span> <span class="n">Block_K_Keller</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="c1"># Get the temperature value in celsius</span>
+<span class="n">temperature_degC</span> <span class="o">=</span> <span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">temperature</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;&gt;</span> <span class="mi">4</span><span class="p">)</span> <span class="o">-</span> <span class="mi">24</span> <span class="p">)</span> <span class="o">*</span> <span class="mf">0.05</span> <span class="o">-</span> <span class="mf">50.0</span>
+
+<span class="c1"># Set the known minimum and maximum pressure values assuming it</span>
+<span class="c1"># is a seal gauge sensor (zero at 1.0 bar absolute).</span>
+<span class="n">p_min</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># minimum pressure</span>
+<span class="n">p_max</span> <span class="o">=</span> <span class="mf">30.0</span> <span class="c1"># maximum pressure</span>
+
+<span class="c1"># Get the pressure value in bar</span>
+<span class="n">pressure_bar</span> <span class="o">=</span> <span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">pressure</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="mi">16384</span><span class="p">)</span> <span class="n">x</span> <span class="p">(</span><span class="n">p_max</span> <span class="o">-</span> <span class="n">p_min</span><span class="p">)</span> <span class="o">/</span> <span class="mi">32768</span>
+</pre></div>
+</div>
+</dd>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pressure</strong> (<a class="reference internal" href="#cryodecoder.blocks.PressureKellerField" title="cryodecoder.blocks.PressureKellerField"><em>PressureKellerField</em></a>) – measured pressure value.</p></li>
+<li><p><strong>temperature</strong> (<a class="reference internal" href="#cryodecoder.blocks.TemperatureKellerField" title="cryodecoder.blocks.TemperatureKellerField"><em>TemperatureKellerField</em></a>) – measured temperature value.</p></li>
+<li><p><strong>date_code</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>)</p></li>
+<li><p><strong>pressure_min</strong> (<a class="reference internal" href="#cryodecoder.blocks.IEEE754Float" title="cryodecoder.blocks.IEEE754Float"><em>IEEE754Float</em></a>) – Minimum rated pressure value (corresponding to a raw value of 16,384)</p></li>
+<li><p><strong>pressure_max</strong> (<a class="reference internal" href="#cryodecoder.blocks.IEEE754Float" title="cryodecoder.blocks.IEEE754Float"><em>IEEE754Float</em></a>) – Maximum rated pressure value (corresponding to a raw value of 49,152).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Block_V_Voltage">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">Block_V_Voltage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.Block_V_Voltage" title="Link to this definition">#</a></dt>
+<dd><p>Stores the receiver power system data from the voltage divider input voltage monitor and power sensing <a class="reference external" href="https://www.ti.com/lit/ds/symlink/ina3221.pdf">INA3221</a> sensor. More details on the Keller block format are available <a class="reference internal" href="../blocks/level1.html#block-v-voltage"><span class="std std-ref">here</span></a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The input voltage divider circuit on newer dataloggers appears to have a very non-linear characteristic which requires further investigation.</p>
+</div>
+<p>Shunt resistors for the INA3321 are 0.1 Ohms, which means that the current flowing through them can be calculated from the shunt voltage divided by resistance.</p>
+<p>The shunt voltage and bus voltage fields from the INA3221 are 13 bits long and left-shifted into a 16-bit field. To convert the raw shunt voltage value to volts, multiply by 5e-6. To convert the raw bus voltage value to volts, multiply by 1e-3.</p>
+<dl class="field-list">
+<dt class="field-odd">Example<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Calculate power from solar panel.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Read a Block_V_Voltage block</span>
+<span class="n">block</span> <span class="o">=</span> <span class="n">Block_V_Voltage</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="c1"># Calculate current</span>
+<span class="n">R_shunt</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="c1"># Ohms</span>
+<span class="n">current_ch1_amps</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">voltage_shunt_ch1</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="mf">5e-6</span> <span class="o">/</span> <span class="n">R_shunt</span>
+
+<span class="c1"># Calculate voltage</span>
+<span class="n">voltage_ch1_volts</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">voltage_bus_ch1</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="mf">1e-3</span>
+
+<span class="c1"># Calculate power</span>
+<span class="n">power_ch1_watts</span> <span class="o">=</span> <span class="n">current_ch1_amps</span> <span class="o">*</span> <span class="n">voltage_ch1_volts</span>
+</pre></div>
+</div>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>voltage_battery</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – raw output from the voltage divider input voltage monitor.</p></li>
+<li><p><strong>voltage_shunt_ch1</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – shunt voltage from the solar panel (channel 1), used to calculate the current.</p></li>
+<li><p><strong>voltage_bus_ch1</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – bus voltage from the solar panel (channel 1), used to derive total power.</p></li>
+<li><p><strong>voltage_shunt_ch2</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – shunt voltage from the solar regulator (channel 2), used to calculate the current.</p></li>
+<li><p><strong>voltage_bus_ch2</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – bus voltage from the solar regulator (channel 3), used to derive total power.</p></li>
+<li><p><strong>voltage_shunt_ch3</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – shunt voltage to the datalogger (channel 3), used to calculate the current.</p></li>
+<li><p><strong>voltage_bus_ch3</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – input voltage at the datalogger (channel 3), used to derive total power.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Block_T_Tilt">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">Block_T_Tilt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.Block_T_Tilt" title="Link to this definition">#</a></dt>
+<dd><p>Stores data from the CTi <a class="reference external" href="https://ctisensors.com/Documents/TILT-05-Datasheet.pdf">TILT-05</a> accelerometer and orientation sensor. More details on the Keller block format are available <a class="reference internal" href="../blocks/level1.html#block-t-tilt"><span class="std std-ref">here</span></a>.</p>
+<p>Accelerometer data are signed 16-bit values are return acceleration values in units of milli-g. To convert to g (m<sup>2</sup>), divide by 1,000.</p>
+<dl class="field-list">
+<dt class="field-odd">Example<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Convert pitch and roll to units of degrees</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Read a Block_T_Tilt block</span>
+<span class="n">block</span> <span class="o">=</span> <span class="n">Block_T_Tilt</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="c1"># Convert pitch and roll to degrees</span>
+<span class="n">pitch_degress</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">pitch_tenth_deg</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="mi">10</span>
+<span class="n">roll_degrees</span>  <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">roll_tenth_deg</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="mi">10</span>
+</pre></div>
+</div>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>acc_x</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – x-axis component of the accelerometer sensor.</p></li>
+<li><p><strong>acc_y</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – y-axis component of the accelerometer sensor.</p></li>
+<li><p><strong>acc_z</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – z-axis component of the accelerometer sensor.</p></li>
+<li><p><strong>pitch_tenth_deg</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – pitch (angle) along x-axis in tenths of a degree.</p></li>
+<li><p><strong>roll_tenth_deg</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – roll (angle) along y-axis in tenths of a degree.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Block_T_Tilt.header_class">
+<span class="sig-name descname"><span class="pre">header_class</span></span><a class="headerlink" href="#cryodecoder.blocks.Block_T_Tilt.header_class" title="Link to this definition">#</a></dt>
+<dd><p>alias of <a class="reference internal" href="#cryodecoder.blocks.BlockHeader" title="cryodecoder.blocks.BlockHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockHeader</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Block_M_MBusPacket">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">Block_M_MBusPacket</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.Block_M_MBusPacket" title="Link to this definition">#</a></dt>
+<dd><p>Mirrors the format of the Radiocrafts UART interface <a class="reference external" href="https://radiocrafts.com/uploads/MBUS_User_Manual.pdf">packet format</a>, acting as a transport layer for the CHIL packet contained within <a class="reference internal" href="#cryodecoder.blocks.Payload" title="cryodecoder.blocks.Payload"><code class="xref py py-class docutils literal notranslate"><span class="pre">Payload</span></code></a>. More details on the Keller block format are available <a class="reference internal" href="../blocks/level1.html#block-t-tilt"><span class="std std-ref">here</span></a>.</p>
+<p>The received signal strength (<code class="docutils literal notranslate"><span class="pre">rssi</span></code>) can be converted to units of RSSI by multiplying with -1 and dividing by 2.</p>
+<dl class="field-list">
+<dt class="field-odd">Example<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Convert received signal strength to dBm</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Read a Block_M_MBus block</span>
+<span class="n">block</span> <span class="o">=</span> <span class="n">Block_M_MBus</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="c1"># Convert RSSI to dBm</span>
+<span class="n">rssi_dBm</span> <span class="o">=</span> <span class="o">-</span><span class="n">block</span><span class="o">.</span><span class="n">rssi</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="mi">2</span>
+</pre></div>
+</div>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>channel_number</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – channel number (1 or 2) on which the packet was received.</p></li>
+<li><p><strong>c_field</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – control field in the MBus packet header.</p></li>
+<li><p><strong>m_field</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – manufacturer field in MBus packet header.</p></li>
+<li><p><strong>uid</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – unique identifier, used to identify CHIL instruments, i.e. <cite>CE240001</cite> or <cite>CF230010</cite>.</p></li>
+<li><p><strong>version</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – version field in the MBus packet header.</p></li>
+<li><p><strong>device</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – device field in the MBus packet header.</p></li>
+<li><p><strong>ci_field</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – control information field in the MBus packet header, used to discriminate between 2023 and 2026 packet formats.</p></li>
+<li><p><strong>payload</strong> (<a class="reference internal" href="#cryodecoder.blocks.Payload" title="cryodecoder.blocks.Payload"><em>Payload</em></a>) – contents of the MBus packet.</p></li>
+<li><p><strong>rssi</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – encoded received signal strength.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Block_M_MBusPacketCryoegg2023">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">Block_M_MBusPacketCryoegg2023</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.Block_M_MBusPacketCryoegg2023" title="Link to this definition">#</a></dt>
+<dd><p>To facilitate backwards compatability, when 2026 dataloggers receive a 2023 version packet from Cryoegg, the data is interpreted as a <a class="reference internal" href="#cryodecoder.blocks.Block_M_MBusPacketCryoegg2023" title="cryodecoder.blocks.Block_M_MBusPacketCryoegg2023"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_M_MBusPacketCryoegg2023</span></code></a>.</p>
+<p>Conversion of the <code class="xref py py-attr docutils literal notranslate"><span class="pre">pressure</span></code> field requires prior knowledge of the minimum and maximum pressure values.</p>
+<dl class="field-list">
+<dt class="field-odd">Example<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Convert raw temperature and pressure values from a 2023 format Cryoegg packet.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Read a Block_M_MBusPacketCryoegg2023 block</span>
+<span class="n">block</span> <span class="o">=</span> <span class="n">Block_M_MBusPacketCryoegg2023</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="c1"># Get the temperature value in celsius</span>
+<span class="n">temperature_degC</span> <span class="o">=</span> <span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">temperature_keller</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;&gt;</span> <span class="mi">4</span><span class="p">)</span> <span class="o">-</span> <span class="mi">24</span> <span class="p">)</span> <span class="o">*</span> <span class="mf">0.05</span> <span class="o">-</span> <span class="mf">50.0</span>
+
+<span class="c1"># Set the known minimum and maximum pressure values assuming it</span>
+<span class="c1"># is a seal gauge sensor (zero at 1.0 bar absolute).</span>
+<span class="n">p_min</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># minimum pressure</span>
+<span class="n">p_max</span> <span class="o">=</span> <span class="mf">30.0</span> <span class="c1"># maximum pressure</span>
+
+<span class="c1"># Get the pressure value in bar</span>
+<span class="n">pressure_bar</span> <span class="o">=</span> <span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">pressure</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="mi">16384</span><span class="p">)</span> <span class="n">x</span> <span class="p">(</span><span class="n">p_max</span> <span class="o">-</span> <span class="n">p_min</span><span class="p">)</span> <span class="o">/</span> <span class="mi">32768</span>
+</pre></div>
+</div>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>channel_number</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – channel number (0 or 1) on which the packet was received.</p></li>
+<li><p><strong>c_field</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – control field in the MBus packet header.</p></li>
+<li><p><strong>m_field</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – manufacturer field in MBus packet header.</p></li>
+<li><p><strong>uid</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – unique identifier, used to identify CHIL instruments, i.e. <cite>CE240001</cite> or <cite>CF230010</cite>.</p></li>
+<li><p><strong>version</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – version field in the MBus packet header.</p></li>
+<li><p><strong>device</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – device field in the MBus packet header.</p></li>
+<li><p><strong>ci_field</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – control information field in the MBus packet header, used to discriminate between 2023 and 2026 packet formats.</p></li>
+<li><p><strong>conductivity</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – Uncalibrated conductivity sensor measurement in millivolts (mV).</p></li>
+<li><p><strong>temperature_pt1000</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – Unused value from the PT1000 temperature sensor (deprecated).</p></li>
+<li><p><strong>pressure</strong> (<a class="reference internal" href="#cryodecoder.blocks.PressureKellerField" title="cryodecoder.blocks.PressureKellerField"><em>PressureKellerField</em></a>) – measured pressure value.</p></li>
+<li><p><strong>temperature_keller</strong> (<a class="reference internal" href="#cryodecoder.blocks.TemperatureKellerField" title="cryodecoder.blocks.TemperatureKellerField"><em>TemperatureKellerField</em></a>) – measured temperature value.</p></li>
+<li><p><strong>voltage_battery</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – Battery voltage of the instrument in millivolts (mV).</p></li>
+<li><p><strong>sequence_number</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – Sequence number of the transmitted packet increments by one after each transmission from 0 to 255 and then resets.</p></li>
+<li><p><strong>rssi</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – encoded received signal strength.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Block_M_MBusPacketCryowurst2023">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">Block_M_MBusPacketCryowurst2023</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.Block_M_MBusPacketCryowurst2023" title="Link to this definition">#</a></dt>
+<dd><p>To facilitate backwards compatability, when 2026 dataloggers receive a 2023 version packet from Cryowurst, the data is interpreted as a <a class="reference internal" href="#cryodecoder.blocks.Block_M_MBusPacketCryowurst2023" title="cryodecoder.blocks.Block_M_MBusPacketCryowurst2023"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_M_MBusPacketCryowurst2023</span></code></a>.</p>
+<p>Conversion of the <code class="xref py py-attr docutils literal notranslate"><span class="pre">pressure</span></code> field requires prior knowledge of the minimum and maximum pressure values.</p>
+<dl class="field-list">
+<dt class="field-odd">Example<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Convert raw temperature and pressure values from a 2023 format Cryowurst packet.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Read a Block_M_MBusPacketCryowurst2023 block</span>
+<span class="n">block</span> <span class="o">=</span> <span class="n">Block_M_MBusPacketCryowurst2023</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="c1"># Get the temperature value in celsius</span>
+<span class="n">temperature_degC</span> <span class="o">=</span> <span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">temperature_keller</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;&gt;</span> <span class="mi">4</span><span class="p">)</span> <span class="o">-</span> <span class="mi">24</span> <span class="p">)</span> <span class="o">*</span> <span class="mf">0.05</span> <span class="o">-</span> <span class="mf">50.0</span>
+
+<span class="c1"># Set the known minimum and maximum pressure values assuming it</span>
+<span class="c1"># is a seal gauge sensor (zero at 1.0 bar absolute).</span>
+<span class="n">p_min</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># minimum pressure</span>
+<span class="n">p_max</span> <span class="o">=</span> <span class="mf">30.0</span> <span class="c1"># maximum pressure</span>
+
+<span class="c1"># Get the pressure value in bar</span>
+<span class="n">pressure_bar</span> <span class="o">=</span> <span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">pressure</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="mi">16384</span><span class="p">)</span> <span class="n">x</span> <span class="p">(</span><span class="n">p_max</span> <span class="o">-</span> <span class="n">p_min</span><span class="p">)</span> <span class="o">/</span> <span class="mi">32768</span>
+</pre></div>
+</div>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>channel_number</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – channel number (0 or 1) on which the packet was received.</p></li>
+<li><p><strong>c_field</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – control field in the MBus packet header.</p></li>
+<li><p><strong>m_field</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – manufacturer field in MBus packet header.</p></li>
+<li><p><strong>uid</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – unique identifier, used to identify CHIL instruments, i.e. <cite>CE240001</cite> or <cite>CF230010</cite>.</p></li>
+<li><p><strong>version</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – version field in the MBus packet header.</p></li>
+<li><p><strong>device</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – device field in the MBus packet header.</p></li>
+<li><p><strong>ci_field</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – control information field in the MBus packet header, used to discriminate between 2023 and 2026 packet formats.</p></li>
+<li><p><strong>temperature_tmp117</strong> (<a class="reference internal" href="#cryodecoder.blocks.TemperatureTMP117Field" title="cryodecoder.blocks.TemperatureTMP117Field"><em>TemperatureTMP117Field</em></a>) – Raw temperature value from the TMP117 temperature sensor.
+:param SignedIntField mag_x: x-axis component of the magnetometer sensor.</p></li>
+<li><p><strong>mag_y</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – y-axis component of the magnetometer sensor.</p></li>
+<li><p><strong>mag_z</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – z-axis component of the magnetometer sensor.</p></li>
+<li><p><strong>acc_x</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – x-axis component of the accelerometer sensor.</p></li>
+<li><p><strong>acc_y</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – y-axis component of the accelerometer sensor.</p></li>
+<li><p><strong>acc_z</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – z-axis component of the accelerometer sensor.</p></li>
+<li><p><strong>acc_tilt_x</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – x-axis component of the TILT-05 accelerometer sensor.</p></li>
+<li><p><strong>acc_tilt_y</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – y-axis component of the TILT-05 accelerometer sensor.</p></li>
+<li><p><strong>acc_tilt_z</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – z-axis component of the TILT-05 accelerometer sensor.</p></li>
+<li><p><strong>pitch_tenth_deg</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – pitch (angle) along x-axis of the TILT-05 sensor in tenths of a degree.</p></li>
+<li><p><strong>roll_tenth_deg</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – roll (angle) along y-axis of the TILT-05 sensor in tenths of a degree.</p></li>
+<li><p><strong>conductivity</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – Uncalibrated conductivity sensor measurement in millivolts (mV).</p></li>
+<li><p><strong>pressure</strong> (<a class="reference internal" href="#cryodecoder.blocks.PressureKellerField" title="cryodecoder.blocks.PressureKellerField"><em>PressureKellerField</em></a>) – measured pressure value.</p></li>
+<li><p><strong>temperature_keller</strong> (<a class="reference internal" href="#cryodecoder.blocks.TemperatureKellerField" title="cryodecoder.blocks.TemperatureKellerField"><em>TemperatureKellerField</em></a>) – measured temperature value.</p></li>
+<li><p><strong>voltage_battery</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – Battery voltage of the instrument in millivolts (mV).</p></li>
+<li><p><strong>sequence_number</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – Sequence number of the transmitted packet increments by one after each transmission from 0 to 255 and then resets.</p></li>
+<li><p><strong>rssi</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – encoded received signal strength.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Block_R_Receiver">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">Block_R_Receiver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.Block_R_Receiver" title="Link to this definition">#</a></dt>
+<dd><p>Is an intermediate block which encapsulates <span class="xref std std-doc">Level 1 blocks</span> associated with the receiver.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Block_D_Datalogger">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">Block_D_Datalogger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.Block_D_Datalogger" title="Link to this definition">#</a></dt>
+<dd><p>Stores data associated with reception of a data packet from CHIL instrument.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The <code class="xref py py-attr docutils literal notranslate"><span class="pre">timestamp</span></code> field may be incorrect if the receiver does not have a valid Iridium connection and has reset since being programmed.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>receiver_id</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – identifier associated with the receiver (as a 32-bit numeric value or 4-byte ASCII string).</p></li>
+<li><p><strong>timestamp</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – time at which the packet was received as a Unix timestamp (seconds since 1970-01-01 00:00:00).</p></li>
+<li><p><strong>sequence_number</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – Not currently implemented. Sequence number of the received packet, increments by one after each reception from 0 to 255 and then resets.</p></li>
+<li><p><strong>payload</strong> (<a class="reference internal" href="#cryodecoder.blocks.Payload" title="cryodecoder.blocks.Payload"><em>Payload</em></a>) – stores the received packet.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Block_H_Housekeeping">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">Block_H_Housekeeping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.Block_H_Housekeeping" title="Link to this definition">#</a></dt>
+<dd><p>Otherwise identical to <a class="reference internal" href="#cryodecoder.blocks.Block_D_Datalogger" title="cryodecoder.blocks.Block_D_Datalogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_D_Datalogger</span></code></a>, the housekeeping block is intended to be used for storage and transmission of ‘housekeeping’ data associated with the receiver (i.e. not data packets).</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The <code class="xref py py-attr docutils literal notranslate"><span class="pre">timestamp</span></code> field may be incorrect if the receiver does not have a valid Iridium connection and has reset since being programmed.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>receiver_id</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – identifier associated with the receiver (as a 32-bit numeric value or 4-byte ASCII string).</p></li>
+<li><p><strong>timestamp</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – time at which the packet was received as a Unix timestamp (seconds since 1970-01-01 00:00:00).</p></li>
+<li><p><strong>sequence_number</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – Not currently implemented. Sequence number of the received packet, increments by one after each reception from 0 to 255 and then resets.</p></li>
+<li><p><strong>payload</strong> (<a class="reference internal" href="#cryodecoder.blocks.Payload" title="cryodecoder.blocks.Payload"><em>Payload</em></a>) – stores the received packet.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Block_C_Cryoegg">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">Block_C_Cryoegg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.Block_C_Cryoegg" title="Link to this definition">#</a></dt>
+<dd><p>Represents a Cryoegg packet transmitted by a 2023 version of the CHIL datalogger.</p>
+<p>The <a class="reference internal" href="#cryodecoder.blocks.Block_C_Cryoegg" title="cryodecoder.blocks.Block_C_Cryoegg"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_C_Cryoegg</span></code></a> combines properties which are distributed across Level 1, 2 and 3 blocks in the new format. It contains measured values from the environmental sensors in the receiver in addition to the reported Cryoegg data. 2023 version Cryoegg instruments do not have accelerometers installed so this information is not available.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>See <a class="reference internal" href="#cryodecoder.blocks.Block_M_MBusPacket" title="cryodecoder.blocks.Block_M_MBusPacket"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_M_MBusPacket</span></code></a> for hints on interpreting the MBus parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">c_field</span></code>, <code class="docutils literal notranslate"><span class="pre">m_field</span></code>, <code class="docutils literal notranslate"><span class="pre">uid</span></code>, <code class="docutils literal notranslate"><span class="pre">version</span></code>, <code class="docutils literal notranslate"><span class="pre">device</span></code>, <code class="docutils literal notranslate"><span class="pre">ci_field</span></code> and <code class="docutils literal notranslate"><span class="pre">rssi</span></code>.</p></li>
+</ul>
+<p>See <a class="reference internal" href="#cryodecoder.blocks.Block_M_MBusPacketCryoegg2023" title="cryodecoder.blocks.Block_M_MBusPacketCryoegg2023"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_M_MBusPacketCryoegg2023</span></code></a> for hints on interpreting the 2023 Cryoegg parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">conductivity</span></code>, <code class="docutils literal notranslate"><span class="pre">pressure</span></code>, <code class="docutils literal notranslate"><span class="pre">temperature_keller</span></code>, <code class="docutils literal notranslate"><span class="pre">battery_voltage</span></code> and <code class="docutils literal notranslate"><span class="pre">sequence_number</span></code>.</p></li>
+</ul>
+</div>
+<dl class="field-list">
+<dt class="field-odd">Example<span class="colon">:</span></dt>
+<dd class="field-odd"><p>convert <code class="docutils literal notranslate"><span class="pre">logger_voltage</span></code> to a value in Volts</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load a Block_C_Cryoegg</span>
+<span class="n">block</span> <span class="o">=</span> <span class="n">Block_C_Cryoegg</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="c1"># Convert the raw logger voltage using a first-order polynomial</span>
+<span class="c1"># V = m * raw + c</span>
+<span class="n">m</span> <span class="o">=</span> <span class="mf">0.0187</span>
+<span class="n">c</span> <span class="o">=</span> <span class="o">-</span> <span class="mf">27.713</span> 
+<span class="n">battery_voltage_V</span> <span class="o">=</span> <span class="n">m</span> <span class="o">*</span> <span class="n">block</span><span class="o">.</span><span class="n">logger_voltage</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">c</span>
+</pre></div>
+</div>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>timestamp</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – time at which the packet was received as a Unix timestamp (seconds since 1970-01-01 00:00:00).</p></li>
+<li><p><strong>logger_pressure</strong> (<a class="reference internal" href="#cryodecoder.blocks.IEEE754Float" title="cryodecoder.blocks.IEEE754Float"><em>IEEE754Float</em></a>) – Surface air pressure recorded by the datalogger in bar.</p></li>
+<li><p><strong>logger_temperature</strong> (<a class="reference internal" href="#cryodecoder.blocks.IEEE754Float" title="cryodecoder.blocks.IEEE754Float"><em>IEEE754Float</em></a>) – Internal air temperature of the datalogger in degrees celsius.</p></li>
+<li><p><strong>logger_voltage</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – Raw value representing the battery voltage at the receiver.</p></li>
+<li><p><strong>channel_number</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – The radio channel number (1 or 2) on which the packet was received.</p></li>
+<li><p><strong>length</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – The length of the MBus packet that follows this byte.</p></li>
+<li><p><strong>c_field</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – control field in the MBus packet header.</p></li>
+<li><p><strong>m_field</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – manufacturer field in MBus packet header.</p></li>
+<li><p><strong>uid</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – unique identifier, used to identify CHIL instruments, i.e. <cite>CE240001</cite> or <cite>CF230010</cite>.</p></li>
+<li><p><strong>version</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – version field in the MBus packet header.</p></li>
+<li><p><strong>device</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – device field in the MBus packet header.</p></li>
+<li><p><strong>ci_field</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – control information field in the MBus packet header, used to discriminate between 2023 and 2026 packet formats.</p></li>
+<li><p><strong>conductivity</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – Uncalibrated conductivity sensor measurement in millivolts (mV).</p></li>
+<li><p><strong>temperature_pt1000</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – Unused value from the PT1000 temperature sensor (deprecated).</p></li>
+<li><p><strong>pressure</strong> (<a class="reference internal" href="#cryodecoder.blocks.PressureKellerField" title="cryodecoder.blocks.PressureKellerField"><em>PressureKellerField</em></a>) – measured pressure value.</p></li>
+<li><p><strong>temperature_keller</strong> (<a class="reference internal" href="#cryodecoder.blocks.TemperatureKellerField" title="cryodecoder.blocks.TemperatureKellerField"><em>TemperatureKellerField</em></a>) – measured temperature value.</p></li>
+<li><p><strong>voltage_battery</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – Battery voltage of the instrument in millivolts (mV).</p></li>
+<li><p><strong>sequence_number</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – Sequence number of the transmitted packet increments by one after each transmission from 0 to 255 and then resets.</p></li>
+<li><p><strong>rssi</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – encoded received signal strength.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cryodecoder.blocks.Block_W_Wurst">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">cryodecoder.blocks.</span></span><span class="sig-name descname"><span class="pre">Block_W_Wurst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cryodecoder.blocks.Block_W_Wurst" title="Link to this definition">#</a></dt>
+<dd><p>Represents a Cryowurst packet transmitted by a 2023 version of the CHIL datalogger.</p>
+<p>The <a class="reference internal" href="#cryodecoder.blocks.Block_W_Wurst" title="cryodecoder.blocks.Block_W_Wurst"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_W_Wurst</span></code></a> combines properties which are distributed across Level 1, 2 and 3 blocks in the new format. It contains measured values from the environmental sensors in the receiver in addition to the reported Cyrowurst data. 2023 version Cyrowurst instruments do not have accelerometers installed so this information is not available.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>See <a class="reference internal" href="#cryodecoder.blocks.Block_M_MBusPacket" title="cryodecoder.blocks.Block_M_MBusPacket"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_M_MBusPacket</span></code></a> for hints on interpreting the MBus parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">c_field</span></code>, <code class="docutils literal notranslate"><span class="pre">m_field</span></code>, <code class="docutils literal notranslate"><span class="pre">uid</span></code>, <code class="docutils literal notranslate"><span class="pre">version</span></code>, <code class="docutils literal notranslate"><span class="pre">device</span></code>, <code class="docutils literal notranslate"><span class="pre">ci_field</span></code> and <code class="docutils literal notranslate"><span class="pre">rssi</span></code>.</p></li>
+</ul>
+<p>See <a class="reference internal" href="#cryodecoder.blocks.Block_M_MBusPacketCryowurst2023" title="cryodecoder.blocks.Block_M_MBusPacketCryowurst2023"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_M_MBusPacketCryowurst2023</span></code></a> for hints on interpreting the 2023 Cyrowurst parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">mag_</span></code>, <code class="docutils literal notranslate"><span class="pre">acc_</span></code>, <code class="docutils literal notranslate"><span class="pre">acc_tilt_</span></code>, <code class="docutils literal notranslate"><span class="pre">pitch_tenth_deg</span></code>, <code class="docutils literal notranslate"><span class="pre">roll_tenth_deg</span></code>, <code class="docutils literal notranslate"><span class="pre">conductivity</span></code>, <code class="docutils literal notranslate"><span class="pre">pressure</span></code>, <code class="docutils literal notranslate"><span class="pre">temperature_keller</span></code>, <code class="docutils literal notranslate"><span class="pre">battery_voltage</span></code> and <code class="docutils literal notranslate"><span class="pre">sequence_number</span></code>.</p></li>
+</ul>
+</div>
+<dl class="field-list">
+<dt class="field-odd">Example<span class="colon">:</span></dt>
+<dd class="field-odd"><p>convert <code class="docutils literal notranslate"><span class="pre">logger_voltage</span></code> to a value in Volts</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load a Block_C_Cryoegg</span>
+<span class="n">block</span> <span class="o">=</span> <span class="n">Block_C_Cryoegg</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="c1"># Convert the raw logger voltage using a first-order polynomial</span>
+<span class="c1"># V = m * raw + c</span>
+<span class="n">m</span> <span class="o">=</span> <span class="mf">0.0187</span>
+<span class="n">c</span> <span class="o">=</span> <span class="o">-</span> <span class="mf">27.713</span> 
+<span class="n">battery_voltage_V</span> <span class="o">=</span> <span class="n">m</span> <span class="o">*</span> <span class="n">block</span><span class="o">.</span><span class="n">logger_voltage</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">c</span>
+</pre></div>
+</div>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>timestamp</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – time at which the packet was received as a Unix timestamp (seconds since 1970-01-01 00:00:00).</p></li>
+<li><p><strong>logger_pressure</strong> (<a class="reference internal" href="#cryodecoder.blocks.IEEE754Float" title="cryodecoder.blocks.IEEE754Float"><em>IEEE754Float</em></a>) – Surface air pressure recorded by the datalogger in bar.</p></li>
+<li><p><strong>logger_temperature</strong> (<a class="reference internal" href="#cryodecoder.blocks.IEEE754Float" title="cryodecoder.blocks.IEEE754Float"><em>IEEE754Float</em></a>) – Internal air temperature of the datalogger in degrees celsius.</p></li>
+<li><p><strong>logger_voltage</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – Raw value representing the battery voltage at the receiver.</p></li>
+<li><p><strong>channel_number</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – The radio channel number (1 or 2) on which the packet was received.</p></li>
+<li><p><strong>length</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – The length of the MBus packet that follows this byte.</p></li>
+<li><p><strong>c_field</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – control field in the MBus packet header.</p></li>
+<li><p><strong>m_field</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – manufacturer field in MBus packet header.</p></li>
+<li><p><strong>uid</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – unique identifier, used to identify CHIL instruments, i.e. <cite>CE240001</cite> or <cite>CF230010</cite>.</p></li>
+<li><p><strong>version</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – version field in the MBus packet header.</p></li>
+<li><p><strong>device</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – device field in the MBus packet header.</p></li>
+<li><p><strong>ci_field</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – control information field in the MBus packet header, used to discriminate between 2023 and 2026 packet formats.</p></li>
+<li><p><strong>conductivity</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – Uncalibrated conductivity sensor measurement in millivolts (mV).</p></li>
+<li><p><strong>temperature_pt1000</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – Unused value from the PT1000 temperature sensor (deprecated).</p></li>
+<li><p><strong>pressure</strong> (<a class="reference internal" href="#cryodecoder.blocks.PressureKellerField" title="cryodecoder.blocks.PressureKellerField"><em>PressureKellerField</em></a>) – measured pressure value.</p></li>
+<li><p><strong>temperature_keller</strong> (<a class="reference internal" href="#cryodecoder.blocks.TemperatureKellerField" title="cryodecoder.blocks.TemperatureKellerField"><em>TemperatureKellerField</em></a>) – measured temperature value.</p></li>
+<li><p><strong>voltage_battery</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – Battery voltage of the instrument in millivolts (mV).</p></li>
+<li><p><strong>sequence_number</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – Sequence number of the transmitted packet increments by one after each transmission from 0 to 255 and then resets.</p></li>
+<li><p><strong>temperature_tmp117</strong> (<a class="reference internal" href="#cryodecoder.blocks.TemperatureTMP117Field" title="cryodecoder.blocks.TemperatureTMP117Field"><em>TemperatureTMP117Field</em></a>) – Raw temperature value from the TMP117 temperature sensor.</p></li>
+<li><p><strong>mag_x</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – x-axis component of the magnetometer sensor.</p></li>
+<li><p><strong>mag_y</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – y-axis component of the magnetometer sensor.</p></li>
+<li><p><strong>mag_z</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – z-axis component of the magnetometer sensor.</p></li>
+<li><p><strong>acc_x</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – x-axis component of the accelerometer sensor.</p></li>
+<li><p><strong>acc_y</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – y-axis component of the accelerometer sensor.</p></li>
+<li><p><strong>acc_z</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – z-axis component of the accelerometer sensor.</p></li>
+<li><p><strong>acc_tilt_x</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – x-axis component of the TILT-05 accelerometer sensor.</p></li>
+<li><p><strong>acc_tilt_y</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – y-axis component of the TILT-05 accelerometer sensor.</p></li>
+<li><p><strong>acc_tilt_z</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – z-axis component of the TILT-05 accelerometer sensor.</p></li>
+<li><p><strong>pitch_tenth_deg</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – pitch (angle) along x-axis of the TILT-05 sensor in tenths of a degree.</p></li>
+<li><p><strong>roll_tenth_deg</strong> (<a class="reference internal" href="#cryodecoder.blocks.SignedIntField" title="cryodecoder.blocks.SignedIntField"><em>SignedIntField</em></a>) – roll (angle) along y-axis of the TILT-05 sensor in tenths of a degree.</p></li>
+<li><p><strong>conductivity</strong> – Uncalibrated conductivity sensor measurement in millivolts (mV).</p></li>
+<li><p><strong>pressure</strong> – measured pressure value.</p></li>
+<li><p><strong>temperature_keller</strong> – measured temperature value.</p></li>
+<li><p><strong>voltage_battery</strong> – Battery voltage of the instrument in millivolts (mV).</p></li>
+<li><p><strong>sequence_number</strong> – Sequence number of the transmitted packet increments by one after each transmission from 0 to 255 and then resets.</p></li>
+<li><p><strong>rssi</strong> (<a class="reference internal" href="#cryodecoder.blocks.UnsignedIntField" title="cryodecoder.blocks.UnsignedIntField"><em>UnsignedIntField</em></a>) – encoded received signal strength.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">API: cryodecoder</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="cloudloop.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">cryodecoder.cloudloop</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#blocks">Blocks</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fields">Fields</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Field"><code class="docutils literal notranslate"><span class="pre">Field</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Field.from_bytes"><code class="docutils literal notranslate"><span class="pre">Field.from_bytes()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Field.to_bytes"><code class="docutils literal notranslate"><span class="pre">Field.to_bytes()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Field.raw"><code class="docutils literal notranslate"><span class="pre">Field.raw</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Field.value"><code class="docutils literal notranslate"><span class="pre">Field.value</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Payload"><code class="docutils literal notranslate"><span class="pre">Payload</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Payload.from_bytes"><code class="docutils literal notranslate"><span class="pre">Payload.from_bytes()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Payload.to_bytes"><code class="docutils literal notranslate"><span class="pre">Payload.to_bytes()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Payload.raw"><code class="docutils literal notranslate"><span class="pre">Payload.raw</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Payload.value"><code class="docutils literal notranslate"><span class="pre">Payload.value</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.UnsignedIntField"><code class="docutils literal notranslate"><span class="pre">UnsignedIntField</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.UnsignedIntField.to_bytes"><code class="docutils literal notranslate"><span class="pre">UnsignedIntField.to_bytes()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.UnsignedIntField.from_bytes"><code class="docutils literal notranslate"><span class="pre">UnsignedIntField.from_bytes()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.SignedIntField"><code class="docutils literal notranslate"><span class="pre">SignedIntField</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.SignedIntField.to_bytes"><code class="docutils literal notranslate"><span class="pre">SignedIntField.to_bytes()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.SignedIntField.from_bytes"><code class="docutils literal notranslate"><span class="pre">SignedIntField.from_bytes()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.IEEE754Float"><code class="docutils literal notranslate"><span class="pre">IEEE754Float</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.IEEE754Float.to_bytes"><code class="docutils literal notranslate"><span class="pre">IEEE754Float.to_bytes()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.IEEE754Float.from_bytes"><code class="docutils literal notranslate"><span class="pre">IEEE754Float.from_bytes()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.TemperatureTMP117Field"><code class="docutils literal notranslate"><span class="pre">TemperatureTMP117Field</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.TemperatureTMP117Field.convertedValue"><code class="docutils literal notranslate"><span class="pre">TemperatureTMP117Field.convertedValue</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.TemperatureSHT30Field"><code class="docutils literal notranslate"><span class="pre">TemperatureSHT30Field</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.TemperatureSHT30Field.convertedValue"><code class="docutils literal notranslate"><span class="pre">TemperatureSHT30Field.convertedValue</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.RelativeHumiditySHT30Field"><code class="docutils literal notranslate"><span class="pre">RelativeHumiditySHT30Field</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.RelativeHumiditySHT30Field.convertedValue"><code class="docutils literal notranslate"><span class="pre">RelativeHumiditySHT30Field.convertedValue</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.TemperatureKellerField"><code class="docutils literal notranslate"><span class="pre">TemperatureKellerField</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.TemperatureKellerField.convertedValue"><code class="docutils literal notranslate"><span class="pre">TemperatureKellerField.convertedValue</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.PressureKellerField"><code class="docutils literal notranslate"><span class="pre">PressureKellerField</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.PressureKellerField.convertedValue"><code class="docutils literal notranslate"><span class="pre">PressureKellerField.convertedValue</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.BlockHeader"><code class="docutils literal notranslate"><span class="pre">BlockHeader</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.BlockHeader.to_bytes"><code class="docutils literal notranslate"><span class="pre">BlockHeader.to_bytes()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.BlockHeader.length"><code class="docutils literal notranslate"><span class="pre">BlockHeader.length()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.BlockHeaderL3"><code class="docutils literal notranslate"><span class="pre">BlockHeaderL3</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.BlockHeaderLegacy"><code class="docutils literal notranslate"><span class="pre">BlockHeaderLegacy</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.BlockHeaderLegacy.length"><code class="docutils literal notranslate"><span class="pre">BlockHeaderLegacy.length()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.BlockLevel"><code class="docutils literal notranslate"><span class="pre">BlockLevel</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block"><code class="docutils literal notranslate"><span class="pre">Block</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block.header_class"><code class="docutils literal notranslate"><span class="pre">Block.header_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.BlockChildren"><code class="docutils literal notranslate"><span class="pre">BlockChildren</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.BlockChildren.getChild"><code class="docutils literal notranslate"><span class="pre">BlockChildren.getChild()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_A_LSM303"><code class="docutils literal notranslate"><span class="pre">Block_A_LSM303</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_B_BMA400"><code class="docutils literal notranslate"><span class="pre">Block_B_BMA400</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_C_CHIL"><code class="docutils literal notranslate"><span class="pre">Block_C_CHIL</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_E_Environmental"><code class="docutils literal notranslate"><span class="pre">Block_E_Environmental</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_K_Keller"><code class="docutils literal notranslate"><span class="pre">Block_K_Keller</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_V_Voltage"><code class="docutils literal notranslate"><span class="pre">Block_V_Voltage</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_T_Tilt"><code class="docutils literal notranslate"><span class="pre">Block_T_Tilt</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_T_Tilt.header_class"><code class="docutils literal notranslate"><span class="pre">Block_T_Tilt.header_class</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_M_MBusPacket"><code class="docutils literal notranslate"><span class="pre">Block_M_MBusPacket</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_M_MBusPacketCryoegg2023"><code class="docutils literal notranslate"><span class="pre">Block_M_MBusPacketCryoegg2023</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_M_MBusPacketCryowurst2023"><code class="docutils literal notranslate"><span class="pre">Block_M_MBusPacketCryowurst2023</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_R_Receiver"><code class="docutils literal notranslate"><span class="pre">Block_R_Receiver</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_D_Datalogger"><code class="docutils literal notranslate"><span class="pre">Block_D_Datalogger</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_H_Housekeeping"><code class="docutils literal notranslate"><span class="pre">Block_H_Housekeeping</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_C_Cryoegg"><code class="docutils literal notranslate"><span class="pre">Block_C_Cryoegg</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryodecoder.blocks.Block_W_Wurst"><code class="docutils literal notranslate"><span class="pre">Block_W_Wurst</span></code></a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By J. D. Hawkins, L. Craw, M. R. Prior-Jones, P. Biggs
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, CHIL (Cryospheric and Hydrological Instrumentation Laboratory), Cardiff University.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
