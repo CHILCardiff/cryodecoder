@@ -359,7 +359,7 @@ class BlockHeaderLegacy(BlockHeader):
 
     def get_bytes_remaining(self, identifier, classifier):
         if identifier == b'W':
-            if classifier == b'1':
+            if classifier == b'1' or classifier == b'\x00':
                 return 52
             elif classifier == b'2':
                 return 58
@@ -1062,7 +1062,7 @@ class Block_M_MBusPacketCryowurst2023(BlockChildren):
     conductivity = UnsignedIntField(field_order=19, byte_width=2)
     pressure = UnsignedIntField(field_order=20, byte_width=2)
     temperature_keller = UnsignedIntField(field_order=21, byte_width=2)
-    battery_voltage = UnsignedIntField(field_order=22, byte_width=2)
+    voltage_battery = UnsignedIntField(field_order=22, byte_width=2)
     sequence_number = UnsignedIntField(field_order=23, byte_width=1)
     # legacy payload end
     rssi               = UnsignedIntField(field_order=24, byte_width=1)
@@ -1344,6 +1344,6 @@ blocks : dict[bytes,type[Block]] = {
         Block_T_Tilt,
         Block_V_Voltage,
         # Legacy
-        Block_W_Wurst
+        # Block_W_Wurst
     ]
 }

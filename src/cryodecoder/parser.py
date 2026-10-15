@@ -12,6 +12,8 @@ import cryodecoder
 import cryodecoder.blocks
 import cryodecoder.exceptions
 
+cryodecoder_logger = logging.getLogger(__name__)
+
 # Define a decorator for the parser stack
 def _parserstackfunction(method):
     def stackmethod(self, index=None):
@@ -159,11 +161,11 @@ class Parser:
 
     def state_readIdentifier(self):
 
-        # print(f"DBG - [rI | fields({self._fields_remaining}), bytes({self._bytes_remaining})]")
+        cryodecoder_logger.log(logging.DEBUG, f"DBG - [rI | fields({self._fields_remaining}), bytes({self._bytes_remaining})]")
 
         # Invalid block
         if not self._buffer[0:1] in cryodecoder.blocks.blocks:
-            # print(f"DBG - [rI] Invalid identifier {self._buffer[0:1]}, {self._fields_remaining[self._stack]}, {self._bytes_remaining[self._stack]}")
+            cryodecoder_logger.log(logging.DEBUG, f"DBG - [rI] Invalid identifier {self._buffer[0:1]}, {self._fields_remaining[self._stack]}, {self._bytes_remaining[self._stack]}")
             
             # We might have come from the end of a block with an extra field
             if self._fields_remaining[self._stack] is not None and \
@@ -174,6 +176,7 @@ class Parser:
                 return
             # Otherwise, it's simply and invalid identifier
             else:
+                
                 self.pop()
                 return
             
@@ -193,7 +196,7 @@ class Parser:
         
         # Get block type
         block_type = cryodecoder.blocks.blocks[self._buffer[0:1]]
-        # print(f"DBG - [rI] Valid identifier {self._buffer[0:1]}")
+        cryodecoder_logger.log(logging.DEBUG, f"DBG - [rI] Valid identifier {self._buffer[0:1]}")
         
         # If we haven't initialised then 
         if self._init_level is None:
@@ -205,11 +208,11 @@ class Parser:
         if block_type.level.value - 1 <= self._stack:
             self._stack = block_type.level.value - 1
         else:
-            # print(f"DBG - Invalid level {block_type.level.value} (stack={self._stack + 1})")
+            cryodecoder_logger.log(logging.DEBUG, f"DBG - Invalid level {block_type.level.value} (stack={self._stack + 1})")
             self.pop()
             return
         
-        # print(f"DBG - Setting stack to {self._stack}")
+        cryodecoder_logger.log(logging.DEBUG, f"DBG - Setting stack to {self._stack}")
 
         # Assign block type
         self._block[self._stack] = block_type()
@@ -229,7 +232,7 @@ class Parser:
 
     def state_readLength(self):
 
-        # print(f"DBG - [rL | fields({self._fields_remaining}), bytes({self._bytes_remaining})]")
+        cryodecoder_logger.log(logging.DEBUG, f"DBG - [rL | fields({self._fields_remaining}), bytes({self._bytes_remaining})]")
 
         length_bytes = self._block[self._stack].header.length_byte_width
         # Check if we don't have enough bytes to read in a full block
@@ -255,7 +258,7 @@ class Parser:
             self._bytes_remaining[self._stack] = legacy_byte_length
             self._block_length[self._stack] = legacy_byte_length
         else:
-            # print(f"DBG - Reading {length_bytes} bytes as length={length}")
+            cryodecoder_logger.log(logging.DEBUG, f"DBG - Reading {length_bytes} bytes as length={length}")
             # Assign bytes remaining
             self._bytes_remaining[self._stack] = int.from_bytes(length, "little")
             self._block_length[self._stack] = int.from_bytes(length, "little")
@@ -281,7 +284,7 @@ class Parser:
 
     def state_readField(self):
 
-        # print(f"DBG - [rF | fields({self._fields_remaining}), bytes({self._bytes_remaining})]")
+        cryodecoder_logger.log(logging.DEBUG, f"DBG - [rF | fields({self._fields_remaining}), bytes({self._bytes_remaining})]")
         
         # Calculate index of the field we're dealing with
         field_index = len(self._block[self._stack].fields) - self._fields_remaining[self._stack]
@@ -290,6 +293,7 @@ class Parser:
 
         # Check if we have a payload byte
         if isinstance(field, cryodecoder.blocks.Payload):
+            cryodecoder_logger.debug("Payload field!")
             # Decrease field count
             self._fields_remaining[self._stack] -= 1
             # Go to readIdentifier
@@ -301,7 +305,7 @@ class Parser:
             # stay in this state
             return
         else:
-            # print(f"DBG - Assinging {field.field_name} as {self._buffer[0:field.byte_width]}")
+            cryodecoder_logger.log(logging.DEBUG, f"DBG - Assinging {field.field_name} as {self._buffer[0:field.byte_width]}")
             # We have enough bytes
             field.raw = self._buffer[0:field.byte_width]
             # Decrease the field count
@@ -314,8 +318,8 @@ class Parser:
         # Now we have determined the field, we need to check whether we are
         # in an MBus block with a CI_FIELD = 0xAA as this will indicate that
         # the packet format is the original one rather than 
-        if isinstance(self._block[self._stack], cryodecoder.blocks.Block_M_MBusPacket) and field.field_name == "ci_field" and field.raw == b'\xAA': # Legacy packet
-            pass # debug legacy field
+        if isinstance(self._block[self._stack], cryodecoder.blocks.Block_M_MBusPacket) and field.field_name == "ci_field" and (field.raw == b'\xAA' or field.raw == b'\xAC'): # Legacy packet
+            cryodecoder_logger.debug("Legacy MBus Packet")
             for legacy_class in (
                 cryodecoder.blocks.Block_M_MBusPacketCryoegg2023,
                 cryodecoder.blocks.Block_M_MBusPacketCryowurst2023,
@@ -355,7 +359,7 @@ class Parser:
             
     def state_appendBlock(self):
 
-        # print(f"DBG - [aB | fields({self._fields_remaining}), bytes({self._bytes_remaining})]")
+        cryodecoder_logger.log(logging.DEBUG, f"DBG - [aB | fields({self._fields_remaining}), bytes({self._bytes_remaining})]")
             
         # Save the block
         block = self._block[self._stack]
@@ -369,7 +373,7 @@ class Parser:
             self._stack += 1
             # implicit guarantee that L2 and L3 blocks are of type BlockChildren - TODO: worth checking?
             self._block[self._stack].add_child(block)
-            # print(f"DBG - Assigned {block} to {self._block[self._stack]}")
+            cryodecoder_logger.log(logging.DEBUG, f"DBG - Assigned {block} to {self._block[self._stack]}")
 
             # fields == 0 -> no more fields, bytes == 0 -> no more blocks
             if self._fields_remaining[self._stack] == 0 and \
@@ -392,8 +396,8 @@ class Parser:
 
             # Append block to top level
             self._blocks.append((self._last_timestamp, block))
-            # print(f"DBG - Assigned {block} to parser stack")
-            # print(f"DBG - [{len(self._buffer)}] {self._buffer}")
+            cryodecoder_logger.log(logging.DEBUG, f"DBG - Assigned {block} to parser stack")
+            cryodecoder_logger.log(logging.DEBUG, f"DBG - [{len(self._buffer)}] {self._buffer}")
 
             # Reset variables
             self.reset_stack_variables()
@@ -670,7 +674,13 @@ class CHILConductivityFormatter(L1MBusDataFormatter):
 class CHILTemperatureFormatter(L1MBusDataFormatter):
     L1_class = cryodecoder.blocks.Block_C_CHIL
     def getDataValuePre2026(self, block):
-        return f"{block.temperature_pt1000.value}"
+        if isinstance(block, cryodecoder.blocks.Block_M_MBusPacketCryoegg2023):
+            return f"{block.temperature_pt1000.value}"
+        elif isinstance(block, \
+                        cryodecoder.blocks.Block_M_MBusPacketCryowurst2023):
+            return f"{block.temperature_tmp117.convertedValue}"
+        else:
+            return ""
     def getDataValue(self, block):
         return f"{block.temperature_tmp117.convertedValue:.7f}"
     def getDataValueReceiver2023(self, block):
@@ -684,6 +694,12 @@ class LSM303DataFormatter(L1MBusDataFormatter):
     def __init__(self, column_name, field_name):
         super().__init__(column_name)
         self.field_name = field_name
+    def getDataValuePre2026(self, block):
+        if isinstance(block, \
+                        cryodecoder.blocks.Block_M_MBusPacketCryowurst2023):
+            return f"{getattr(block, self.field_name).value}"
+        else:
+            return ""
     def getDataValue(self, block):
         if hasattr(block, self.field_name):
             return f"{getattr(block, self.field_name).value:d}"
@@ -700,6 +716,12 @@ class CTiTilt05AccDataFormatter(L1MBusDataFormatter):
     def __init__(self, column_name, field_name):
         super().__init__(column_name)
         self.field_name = field_name
+    def getDataValuePre2026(self, block):
+        if isinstance(block, \
+                        cryodecoder.blocks.Block_M_MBusPacketCryowurst2023):
+            return f"{getattr(block, self.field_name).value}"
+        else:
+            return ""
     def getDataValue(self, block):
         if hasattr(block, self.field_name):
             return f"{getattr(block, self.field_name).value:d}"
@@ -717,6 +739,12 @@ class CTiTilt05AngleDataFormatter(L1MBusDataFormatter):
     def __init__(self, column_name, field_name):
         super().__init__(column_name)
         self.field_name = field_name
+    def getDataValuePre2026(self, block):
+        if isinstance(block, \
+                        cryodecoder.blocks.Block_M_MBusPacketCryowurst2023):
+            return f"{getattr(block, self.field_name).value/10:.1f}"
+        else:
+            return ""
     def getDataValue(self, block):
         if hasattr(block, self.field_name):
             return f"{getattr(block, self.field_name).value/10:.1f}"
@@ -732,6 +760,14 @@ class CTiTilt05AngleDataFormatter(L1MBusDataFormatter):
         
 class KellerPressureFormatter(L1MBusDataFormatter):
     L1_class = cryodecoder.blocks.Block_K_Keller
+    def getDataValuePre2026(self, block):
+        if isinstance(block, (
+            cryodecoder.blocks.Block_M_MBusPacketCryowurst2023,
+            cryodecoder.blocks.Block_M_MBusPacketCryoegg2023,
+        )):
+            return f"{block.pressure.value}"
+        else:
+            return ""
     def getDataValue(self, block):
         return f"{block.pressure.convertedValue:.4f}"
     def getDataValueReceiver2023(self, block):
@@ -739,6 +775,14 @@ class KellerPressureFormatter(L1MBusDataFormatter):
         
 class KellerTemperatureFormatter(L1MBusDataFormatter):
     L1_class = cryodecoder.blocks.Block_K_Keller
+    def getDataValuePre2026(self, block):
+        if isinstance(block, (
+            cryodecoder.blocks.Block_M_MBusPacketCryowurst2023,
+            cryodecoder.blocks.Block_M_MBusPacketCryoegg2023,
+        )):
+            return f"{block.temperature_keller.value}"
+        else:
+            return ""
     def getDataValue(self, block):
         return f"{block.temperature.convertedValue:.4f}"
     def getDataValueReceiver2023(self, block):
@@ -890,8 +934,14 @@ class CSVLogger(LoggerBase):
         self._csv_logger.log(logging.INFO, ",".join(headers))
 
     def logCSV(self, time: datetime.datetime, block: cryodecoder.blocks.Block):
+        # Logging block
+        cryodecoder_logger.debug(f"Logging block [{type(block)}]")
         # Write columns to CSV
-        values = [column.getFormattedValue(block) for column in self.csv_columns]
+        values = []
+        for column in self.csv_columns:
+            val = column.getFormattedValue(block)
+            cryodecoder_logger.debug(f"Col {type(column)}={val}") 
+            values.append(val)
         values.insert(0, f"{time.strftime("%Y-%m-%d %H:%M:%S")}")
         self._csv_logger.log(logging.INFO, ",".join(values))
 
@@ -1067,7 +1117,7 @@ class SerialDecoder(CSVLogger):
                             
                             self.output_logger.log(logging.INFO, decode_message)
                         else:
-                            # print(f"DBG - {byte.hex()} -> {byte.decode("ascii") if byte[0] < 128 and byte[0] > 32 else f"({byte[0]})"}")
+                            cryodecoder_logger.log(logging.DEBUG, f"DBG - {byte.hex()} -> {byte.decode("ascii") if byte[0] < 128 and byte[0] > 32 else f"({byte[0]})"}")
                             self._parser.push(byte)
                             self._parser.update()
 
@@ -1329,8 +1379,12 @@ def parser_main():
     # Input and output files
     parser.add_argument("-i", "--input", type=str, required=False, default="")
     parser.add_argument("-o", "--output", type=str, required=False, default="")
+    parser.add_argument("-d", "--debug", action="store_true", default=False)
 
     args = parser.parse_args()
+
+    if args.debug:
+        cryodecoder_logger.setLevel(logging.DEBUG)
 
     if args.type == "serial":
 
