@@ -175,8 +175,7 @@ class Parser:
                 self._state = Parser.state_readField
                 return
             # Otherwise, it's simply and invalid identifier
-            else:
-                
+            else:    
                 self.pop()
                 return
             
@@ -247,7 +246,7 @@ class Parser:
         # that would have a length identifier of '0' or '1'.
         if self._block[self._stack].identifier == b'C':
             if length in (b'0', b'1'):
-                print(f"Mutating 'C' block to legacy format.")
+                # print(f"Mutating 'C' block to legacy format.")
                 self._block[self._stack] = cryodecoder.blocks.Block_C_Cryoegg()
                 self._fields_remaining[self._stack] = len(self._block[self._stack].fields)
 
@@ -943,6 +942,10 @@ class CSVLogger(LoggerBase):
             cryodecoder_logger.debug(f"Col {type(column)}={val}") 
             values.append(val)
         values.insert(0, f"{time.strftime("%Y-%m-%d %H:%M:%S")}")
+        for idx, value in enumerate(values):
+            # Backup to avoid crashes
+            if value is None:
+                values[idx] = ""
         self._csv_logger.log(logging.INFO, ",".join(values))
 
 class SerialDecoder(CSVLogger):
