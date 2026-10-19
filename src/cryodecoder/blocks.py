@@ -1344,6 +1344,6 @@ blocks : dict[bytes,type[Block]] = {
         Block_T_Tilt,
         Block_V_Voltage,
         # Legacy
-        # Block_W_Wurst
+        Block_W_Wurst
     ]
 }
