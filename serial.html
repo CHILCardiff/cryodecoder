@@ -1,0 +1,624 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Serial decoding (USB) &#8212; cryodecoder 0.2 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=4418a689" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+
+    <script src="_static/documentation_options.js?v=f6d3da1f"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'serial';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="CSV format" href="csv/logfile.html" />
+    <link rel="prev" title="Installation" href="setup.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo.png" class="logo__image only-light" alt="cryodecoder 0.2 documentation - Home"/>
+    <img src="_static/logo.png" class="logo__image only-dark pst-js-only" alt="cryodecoder 0.2 documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Installation</a></li>
+<li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">Serial decoding (USB)</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="csv/logfile.html">CSV format</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="file.html">Decoding *.log files</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="blocks/blocks.html">Instrument data protocol</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="blocks/level3.html">Level 3 blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blocks/level2.html">Level 2 blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blocks/level1.html">Level 1 blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blocks/legacy.html">Legacy blocks</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="reference/index.html">API (cryodecoder)</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference/blocks.html">cryodecoder.blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/cloudloop.html">cryodecoder.cloudloop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/parser.html">cryodecoder.parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/exceptions.html">cryodecoder.exceptions</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/serial.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Serial decoding (USB)</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#instructions">Instructions</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#connect-to-the-datalogger">Connect to the datalogger</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#starting-cryodecoder">Starting cryodecoder</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-display">Using the display</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#output-files">Output files</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#log-file">Log file</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#raw-file">Raw file</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#csv-file">CSV file</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="serial-decoding-usb">
+<h1>Serial decoding (USB)<a class="headerlink" href="#serial-decoding-usb" title="Link to this heading">#</a></h1>
+<p>The cryodecoder library decodes and logs packets from CHIL dataloggers connected to a computer via a serial (USB) connection. It runs in a terminal (command line) window and performs the following tasks:</p>
+<ul class="simple">
+<li><p>Display <strong>real-time updates</strong> from the on-board datalogger sensors.</p></li>
+<li><p><strong>Save raw data</strong> from received packets.</p></li>
+<li><p>Process and save <strong>decoded packets</strong> from Cryowurst and Cryoegg instruments.</p></li>
+<li><p><strong>Log status and debugging data</strong> from the receiver to a local file.</p></li>
+</ul>
+<p>The rest of this page describes the steps to run the serial decoder and interpet output the command line.</p>
+<section id="instructions">
+<h2>Instructions<a class="headerlink" href="#instructions" title="Link to this heading">#</a></h2>
+<section id="connect-to-the-datalogger">
+<h3>Connect to the datalogger<a class="headerlink" href="#connect-to-the-datalogger" title="Link to this heading">#</a></h3>
+<p>Connect your PC to a CHIL datalogger using a USB to USB Micro cable (see <a class="reference internal" href="#fig-adalogger-receiver"><span class="std std-numref">Figure 1</span></a>).</p>
+<figure class="align-default" id="id1">
+<span id="fig-adalogger-receiver"></span><img alt="_images/adalogger_in_receiver.png" src="_images/adalogger_in_receiver.png" />
+<figcaption>
+<p><span class="caption-number">Fig. 1 </span><span class="caption-text">Adafruit Feather M0 Adalogger USB connection and SD card on CHIL Datalogger PCB.</span><a class="headerlink" href="#id1" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p>On a Windows PC, load the Device Manager (<cite>Windows Key + R</cite> then enter <cite>devmgmt.msc</cite>) and identify the <em>Ports (COM &amp; LPT)</em> section (<a class="reference internal" href="#fig-device-manager"><span class="std std-numref">Figure 2</span></a>). If no other serial devices are connected to your PC, then the datalogger port will be the only one shown in the list. You can check that the COM port address is correct by removing the USB cable and verifying that the entry disappears from the device manager list. Reconnect the USB cable when finished.</p>
+<figure class="align-default" id="id2">
+<span id="fig-device-manager"></span><img alt="_images/device_manager.png" src="_images/device_manager.png" />
+<figcaption>
+<p><span class="caption-number">Fig. 2 </span><span class="caption-text">Windows Device Manager to identify COM port address (<em>COM5</em> in this example).</span><a class="headerlink" href="#id2" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="starting-cryodecoder">
+<h3>Starting cryodecoder<a class="headerlink" href="#starting-cryodecoder" title="Link to this heading">#</a></h3>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>These instructions assume you have followed the <a class="reference external" href="setup">setup instructions</a> If you installed cryodecoder to a <a class="reference external" href="https://docs.python.org/3/library/venv.html">virtual environment</a> then make sure it is activated before continuing.</p>
+</div>
+<p>To launch cryodecoder, open a new terminal (command prompt) window. If necessary, locate and activate the virtual environment where you have installed cryodecoder.</p>
+<p>Cryodecoder saves data to the a folder named <code class="docutils literal notranslate"><span class="pre">data</span></code> within the current working directory in the command prompt window. To navigate to a location where you wish to save data, use the <code class="docutils literal notranslate"><span class="pre">cd</span></code> command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>/path/to/my/data
+</pre></div>
+</div>
+<p>When started, cryodecoder will make a new folder with the current PC timestamp within the <code class="docutils literal notranslate"><span class="pre">data</span></code> folder. This means that you can use the same <code class="docutils literal notranslate"><span class="pre">data</span></code> folder for multiple sessions using cryodecoder.</p>
+<p>To start the cryodecoder software, enter the following command in the terminal window, replacing <code class="docutils literal notranslate"><span class="pre">COM5</span></code> with the name of the COM port you identified earlier. This runs cryodecoder in <code class="docutils literal notranslate"><span class="pre">serial</span></code> mode and sets <code class="docutils literal notranslate"><span class="pre">COM5</span></code> as the port we wish to connect to.</p>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>If you are using one of the Radiocrafts <a class="reference external" href="https://radiocrafts.com/products/development-kits/buy-a-development-kit-from-radiocrafts/">development kit boards</a>, it is possible to decode MBus packets without using a CHIL datalogger by selecting the <cite>-m mbus</cite> option when starting cryodecoder.</p>
+</div>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>cryodecoder<span class="w"> </span>-p<span class="w"> </span>COM5<span class="w"> </span>serial
+</pre></div>
+</div>
+<p>Also shown in <a class="reference internal" href="#fig-serial-cli-launch"><span class="std std-numref">Figure 3</span></a> is the output from cryodecoder help message which explains the various options that can be provide to the receiver.</p>
+<figure class="align-default" id="id3">
+<span id="fig-serial-cli-launch"></span><img alt="_images/serial_cli_launch.png" src="_images/serial_cli_launch.png" />
+<figcaption>
+<p><span class="caption-number">Fig. 3 </span><span class="caption-text">cryodecoder help menu and command to launch in <em>serial</em> mode.</span><a class="headerlink" href="#id3" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="using-the-display">
+<h3>Using the display<a class="headerlink" href="#using-the-display" title="Link to this heading">#</a></h3>
+<p>If you have connected successfully to the datalogger, you will periodically see messages from the receiver which provide updates on the status of the various on-board sensors (<a class="reference internal" href="#fig-serial-cli-receiver-sensors"><span class="std std-numref">Figure 4</span></a>). Additionally, information is also provided on whether there are still packets in the buffer which remain to be transmitted over the satellite connection or saved to the SD card. A countdown is also provided until the next time at which the receiver time will be updated using the satellite connection.</p>
+<figure class="align-default" id="id4">
+<span id="fig-serial-cli-receiver-sensors"></span><img alt="_images/cli_receiver_sensors.png" src="_images/cli_receiver_sensors.png" />
+<figcaption>
+<p><span class="caption-number">Fig. 4 </span><span class="caption-text">Example output from cryodecoder displaying the datalogger environmental sensor values.</span><a class="headerlink" href="#id4" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p>When a packet is received from a CHIL instrument, multiple sources of information are sent to the command line (<a class="reference internal" href="#fig-serial-received-packet"><span class="std std-numref">Figure 5</span></a>). Some of this originates from the serial debugging output from the datalogger, which is interspersed with the logging output from cryodecoder indicating that a packet has been received.</p>
+<figure class="align-default" id="id5">
+<span id="fig-serial-received-packet"></span><img alt="_images/received_packet_annotated.png" src="_images/received_packet_annotated.png" />
+<figcaption>
+<p><span class="caption-number">Fig. 5 </span><span class="caption-text">cryodecoder command line output when received a packet from Cryowurst.</span><a class="headerlink" href="#id5" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p>Additional output may also appear from the receiver while it is performing operations using the Iridium modem, such as transmitting a packet over the sallite connection (<a class="reference internal" href="#fig-serial-transmitting-packet"><span class="std std-numref">Figure 6</span></a>).</p>
+<figure class="align-default" id="id6">
+<span id="fig-serial-transmitting-packet"></span><img alt="_images/cli_transmitting_packet.png" src="_images/cli_transmitting_packet.png" />
+<figcaption>
+<p><span class="caption-number">Fig. 6 </span><span class="caption-text">cryodecoder command line output showing debugging information related to the Iridium modem.</span><a class="headerlink" href="#id6" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+<section id="output-files">
+<h2>Output files<a class="headerlink" href="#output-files" title="Link to this heading">#</a></h2>
+<p>While the logger is running, it writes to three files in the timestamped directory it created within the <code class="docutils literal notranslate"><span class="pre">data</span></code> folder. The files serve different purposes and contain the content described below:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">logger_YYYYmmdd_HHMMSS.log</span></code>: logger and messages from the receiver and cryodecoder.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">raw_YYYYmmdd_HHMMSS.log</span></code>: raw data transmitted over the serial link as a hexadecimal stream.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data_YYYYmmdd_HHMMSS.csv</span></code>: parsed packet data into a CSV format for quick analysis.</p></li>
+</ul>
+<section id="log-file">
+<h3>Log file<a class="headerlink" href="#log-file" title="Link to this heading">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">logger_\*.log</span></code> file contains output from the datalogger that is prefixed with <em>#</em> (the log or comment symbol). Each line is prefixed with a logging level and timestamp which corresponds to the time on the host PC adjusted to UTC.</p>
+<div class="highlight-log notranslate"><div class="highlight"><pre><span></span>[INFO] 2026-10-14 12:01:05,971:  ---------------- Receiver sensors ----------------
+[INFO] 2026-10-14 12:01:06,005:  Time: 2026-10-14 11:01:05, Display update: 10 s
+[INFO] 2026-10-14 12:01:06,011:  --------------------------------------------------
+[INFO] 2026-10-14 12:01:06,018:  SHT30   Temp.: N/A, Relative Humidity: N/A
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">logger_\*.log</span></code> file provides a record of the receiver messages during the cryodecoder session and can be useful for debugging issues with Iridium connectivity or a quick reference to received packets.</p>
+</section>
+<section id="raw-file">
+<h3>Raw file<a class="headerlink" href="#raw-file" title="Link to this heading">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">raw_\*.log</span></code> file contains a hexadecimal stream of the raw data transmitted by the serial connection during the cryodecoder session. This is different from the <code class="docutils literal notranslate"><span class="pre">*.log</span></code> file that is stored on the SD card in that is also captures the logging messages sent by the receiver in addition to data packets.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Work is in progress on a utility function in the cryodecoder API to convert <code class="docutils literal notranslate"><span class="pre">raw_\*.log</span></code> files to the same format as the <code class="docutils literal notranslate"><span class="pre">*.log</span></code> files stored on the SD card.</p>
+</div>
+</section>
+<section id="csv-file">
+<h3>CSV file<a class="headerlink" href="#csv-file" title="Link to this heading">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">data_\*.csv</span></code> file contains decoded packet data and raw hexadecimal strings for packets sent over the serial connection. It is described in detail in the next section.</p>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="setup.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Installation</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="csv/logfile.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">CSV format</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#instructions">Instructions</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#connect-to-the-datalogger">Connect to the datalogger</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#starting-cryodecoder">Starting cryodecoder</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-display">Using the display</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#output-files">Output files</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#log-file">Log file</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#raw-file">Raw file</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#csv-file">CSV file</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By J. D. Hawkins, L. Craw, M. R. Prior-Jones, P. Biggs
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, CHIL (Cryospheric and Hydrological Instrumentation Laboratory), Cardiff University.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
