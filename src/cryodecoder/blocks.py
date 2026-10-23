@@ -1327,7 +1327,112 @@ class Block_W_Wurst(Block):
     battery_voltage     = UnsignedIntField(field_order=27, byte_width=2)
     sequence_number     = UnsignedIntField(field_order=28, byte_width=1)
     # legacy payload end -----------------------------------------------
-    rssi                = UnsignedIntField(field_order=29, byte_width=1)            
+    rssi                = UnsignedIntField(field_order=29, byte_width=1)
+
+class Block_W1_Wurst(Block):
+    """
+    Represents a Cryowurst packet transmitted by a 2023 version of the CHIL datalogger in the W1 format.
+
+    The :py:class:`Block_W1_Wurst` combines properties which are distributed across Level 1, 2 and 3 blocks in the new format. It contains measured values from the environmental sensors in the receiver in addition to the reported Cyrowurst data. 2023 version Cyrowurst instruments do not have accelerometers installed so this information is not available.
+
+    The primary difference from :py:class:`Block_W_Wurst` is that most fields are in big-endian notation.
+
+    .. note::
+
+        See :py:class:`Block_M_MBusPacket` for hints on interpreting the MBus parameters:
+        
+        * ``c_field``, ``m_field``, ``uid``, ``version``, ``device``, ``ci_field`` and ``rssi``.
+
+        See :py:class:`Block_M_MBusPacketCryowurst2023` for hints on interpreting the 2023 Cyrowurst parameters:
+        
+        * ``mag_``, ``acc_``, ``acc_tilt_``, ``pitch_tenth_deg``, ``roll_tenth_deg``, ``conductivity``, ``pressure``, ``temperature_keller``, ``battery_voltage`` and ``sequence_number``.
+    
+    :example: convert ``logger_voltage`` to a value in Volts
+
+        .. code-block:: python
+
+            # Load a Block_C_Cryoegg
+            block = Block_C_Cryoegg(...)
+
+            # Convert the raw logger voltage using a first-order polynomial
+            # V = m * raw + c
+            m = 0.0187
+            c = - 27.713 
+            battery_voltage_V = m * block.logger_voltage.value + c
+    
+    :param UnsignedIntField timestamp: time at which the packet was received as a Unix timestamp (seconds since 1970-01-01 00:00:00).
+    :param IEEE754Float logger_pressure: Surface air pressure recorded by the datalogger in bar.
+    :param IEEE754Float logger_temperature: Internal air temperature of the datalogger in degrees celsius.
+    :param UnsignedIntField logger_voltage: Raw value representing the battery voltage at the receiver.
+    :param UnsignedIntField channel_number: The radio channel number (1 or 2) on which the packet was received.
+    :param UnsignedIntField length: The length of the MBus packet that follows this byte.
+    :param UnsignedIntField c_field: control field in the MBus packet header.
+    :param UnsignedIntField m_field: manufacturer field in MBus packet header.
+    :param UnsignedIntField uid: unique identifier, used to identify CHIL instruments, i.e. `CE240001` or `CF230010`.
+    :param UnsignedIntField version: version field in the MBus packet header.
+    :param UnsignedIntField device: device field in the MBus packet header.
+    :param UnsignedIntField ci_field: control information field in the MBus packet header, used to discriminate between 2023 and 2026 packet formats.
+    :param UnsignedIntField conductivity: Uncalibrated conductivity sensor measurement in millivolts (mV). 
+    :param SignedIntField temperature_pt1000: Unused value from the PT1000 temperature sensor (deprecated).
+    :param PressureKellerField pressure: measured pressure value.
+    :param TemperatureKellerField temperature_keller: measured temperature value.
+    :param UnsignedIntField voltage_battery: Battery voltage of the instrument in millivolts (mV).
+    :param UnsignedIntField sequence_number: Sequence number of the transmitted packet increments by one after each transmission from 0 to 255 and then resets.
+    :param TemperatureTMP117Field temperature_tmp117: Raw temperature value from the TMP117 temperature sensor.
+    :param SignedIntField mag_x: x-axis component of the magnetometer sensor.
+    :param SignedIntField mag_y: y-axis component of the magnetometer sensor.
+    :param SignedIntField mag_z: z-axis component of the magnetometer sensor.
+    :param SignedIntField acc_x: x-axis component of the accelerometer sensor.
+    :param SignedIntField acc_y: y-axis component of the accelerometer sensor.
+    :param SignedIntField acc_z: z-axis component of the accelerometer sensor.
+    :param SignedIntField acc_tilt_x: x-axis component of the TILT-05 accelerometer sensor.
+    :param SignedIntField acc_tilt_y: y-axis component of the TILT-05 accelerometer sensor.
+    :param SignedIntField acc_tilt_z: z-axis component of the TILT-05 accelerometer sensor.
+    :param SignedIntField pitch_tenth_deg: pitch (angle) along x-axis of the TILT-05 sensor in tenths of a degree.
+    :param SignedIntField roll_tenth_deg: roll (angle) along y-axis of the TILT-05 sensor in tenths of a degree.
+    :param UnsignedIntField conductivity: Uncalibrated conductivity sensor measurement in millivolts (mV).
+    :param PressureKellerField pressure: measured pressure value.
+    :param TemperatureKellerField temperature_keller: measured temperature value.
+    :param UnsignedIntField voltage_battery: Battery voltage of the instrument in millivolts (mV).
+    :param UnsignedIntField sequence_number: Sequence number of the transmitted packet increments by one after each transmission from 0 to 255 and then resets.
+    :param UnsignedIntField rssi: encoded received signal strength.
+    """
+    
+    identifier = b'W'
+    level = BlockLevel.L1
+    header_class = BlockHeaderLegacy
+    """:meta private:"""
+    # -----------------------------------------------------------------
+    # Fields:
+    # -----------------------------------------------------------------
+    timestamp           = UnsignedIntField(field_order=0, byte_width=4)
+    logger_temperature  = IEEE754Float(field_order=1)
+    logger_pressure     = IEEE754Float(field_order=2)
+    logger_voltage      = UnsignedIntField(field_order=3, byte_width=2)
+    channel_number      = UnsignedIntField(field_order=4, byte_width=1)
+    length              = UnsignedIntField(field_order=5, byte_width=1)
+    c_field             = UnsignedIntField(field_order=6, byte_width=1)
+    m_field             = UnsignedIntField(field_order=7, byte_width=2, byte_order="big")
+    uid                 = UnsignedIntField(field_order=8, byte_width=4, byte_order="big")
+    version             = UnsignedIntField(field_order=9, byte_width=1)
+    device              = UnsignedIntField(field_order=10, byte_width=1)
+    ci_field            = UnsignedIntField(field_order=11, byte_width=1)
+    # legacy payload start ---------------------------------------------
+    temperature_tmp117  = SignedIntField(field_order=12, byte_width=2, byte_order="big")
+    mag_x      = SignedIntField(field_order=13, byte_width=2, byte_order="big")
+    mag_y      = SignedIntField(field_order=14, byte_width=2, byte_order="big")
+    mag_z      = SignedIntField(field_order=15, byte_width=2, byte_order="big")
+    acc_x     = SignedIntField(field_order=16, byte_width=2, byte_order="big")
+    acc_y     = SignedIntField(field_order=17, byte_width=2, byte_order="big")
+    acc_z     = SignedIntField(field_order=18, byte_width=2, byte_order="big")
+    pitch_tenth_deg     = SignedIntField(field_order=22, byte_width=2, byte_order="big")
+    roll_tenth_deg      = SignedIntField(field_order=23, byte_width=2, byte_order="big")
+    conductivity        = UnsignedIntField(field_order=24, byte_width=2, byte_order="big")
+    pressure            = UnsignedIntField(field_order=25, byte_width=2, byte_order="big")
+    battery_voltage     = UnsignedIntField(field_order=27, byte_width=2, byte_order="big")
+    sequence_number     = UnsignedIntField(field_order=28, byte_width=1)
+    # legacy payload end -----------------------------------------------
+    rssi                = UnsignedIntField(field_order=29, byte_width=1)               
 
 # Define acceptable list of blocks
 blocks : dict[bytes,type[Block]] = {

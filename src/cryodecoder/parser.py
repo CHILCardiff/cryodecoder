@@ -249,6 +249,17 @@ class Parser:
                 # print(f"Mutating 'C' block to legacy format.")
                 self._block[self._stack] = cryodecoder.blocks.Block_C_Cryoegg()
                 self._fields_remaining[self._stack] = len(self._block[self._stack].fields)
+        elif self._block[self._stack].identifier == b'W':
+                # print(f"Mutating 'W' block to legacy format.")
+            if length == b'1':
+                self._block[self._stack] = cryodecoder.blocks.Block_W1_Wurst()
+                self._fields_remaining[self._stack] = len(self._block[self._stack].fields)
+            elif length == b'2':
+                self._block[self._stack] = cryodecoder.blocks.Block_W_Wurst()
+                self._fields_remaining[self._stack] = len(self._block[self._stack].fields)
+            else:
+                raise cryodecoder.exceptions.CryodecoderException("Invalid W format packet.")
+
 
         if isinstance(self._block[self._stack].header, cryodecoder.blocks.BlockHeaderLegacy):
             # Get the legacy field length
