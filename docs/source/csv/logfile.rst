@@ -1,3 +1,5 @@
+.. _csvfile:
+
 CSV format
 ==========
 

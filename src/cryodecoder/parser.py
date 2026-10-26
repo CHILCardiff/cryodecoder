@@ -1364,13 +1364,28 @@ class FileDecoder(CSVLogger):
                 self._parser.push(byte)
                 self._parser.update()
                 byte = fh.read(1)
-            
+
+        # Track number of blocks parsed
+        valid_blocks = 0
+        block_types = dict()
+
         while self._parser.available():
             # Log block to CSV
             parser_out = self._parser.read()
             if parser_out is not None:
                 time, block = parser_out
                 self.logCSV(time, block)
+
+                valid_blocks += 1
+                if not type(block) in block_types:
+                    block_types[type(block)] = 1
+                else:
+                    block_types[type(block)] += 1
+
+        print(f"Finished parsing {valid_blocks} blocks from {self.input_file}.")
+        print(f"Summary:")
+        for block_type in block_types:
+            print(f"    [{block_types[block_type]}] {block_type.__name__}")
 
 
 def parser_main():
