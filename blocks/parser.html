@@ -1,0 +1,596 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Parser logic &#8212; cryodecoder 0.2 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=4418a689" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+
+    <script src="../_static/documentation_options.js?v=f6d3da1f"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'blocks/parser';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API: cryodecoder" href="../reference/index.html" />
+    <link rel="prev" title="Legacy blocks" href="legacy.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo.png" class="logo__image only-light" alt="cryodecoder 0.2 documentation - Home"/>
+    <img src="../_static/logo.png" class="logo__image only-dark pst-js-only" alt="cryodecoder 0.2 documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../setup.html">Installation</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../serial.html">Serial decoding (USB)</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../csv/logfile.html">CSV format</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../file.html">Decoding *.log files</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="blocks.html">Instrument data protocol</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="level3.html">Level 3 blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="level2.html">Level 2 blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="level1.html">Level 1 blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="legacy.html">Legacy blocks</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Parser logic</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../reference/index.html">API (cryodecoder)</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/blocks.html">cryodecoder.blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/cloudloop.html">cryodecoder.cloudloop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/parser.html">cryodecoder.parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/exceptions.html">cryodecoder.exceptions</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/blocks/parser.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Parser logic</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#state-machine">State machine</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#state-readidentifier">State: readIdentifier</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#state-readlength">State: readLength</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#state-readfield">State: readField</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#state-appendblock">State: appendBlock</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stack-variables">Stack variables</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="parser-logic">
+<h1>Parser logic<a class="headerlink" href="#parser-logic" title="Link to this heading">#</a></h1>
+<p>This scetion of the documentation describes the logic of the <a class="reference internal" href="../reference/parser.html#cryodecoder.parser.Parser" title="cryodecoder.parser.Parser"><code class="xref py py-class docutils literal notranslate"><span class="pre">cryodecoder.parser.Parser</span></code></a> object. The parser is designed for the latest version of CHIL instrument protocol, and to be backwards compatible with previous packet formats.</p>
+<p>The parser has an internal first-in first-out (FIFO) buffer which accepts bytes to parse as CHIL blocks. Bytes are assigned to the parser with the <a href="#id1"><span class="problematic" id="id2">:py:classmethod:`push &lt;cryodecoder.parser.Parser.push&gt;`</span></a> method.</p>
+<section id="state-machine">
+<h2>State machine<a class="headerlink" href="#state-machine" title="Link to this heading">#</a></h2>
+<p>The parsing logic is implemented in a state machine which consists of four primary states: <em>readIdentifier</em>, <em>readLength</em>, <em>readField</em> and <em>appendBlock</em>. Here, the states are listed in the logical order of occurence:</p>
+<ol class="arabic simple">
+<li><p><strong>readIdentifier</strong>: The parser checks for a valid block identifier.</p></li>
+<li><p><strong>readLength</strong>: It then reads the length of the number of bytes to follow. If these are both valid, then a new instance of the block is created.</p></li>
+<li><p><strong>readField</strong>: Each field within the block is read and stored in the block instance..</p></li>
+<li><p><strong>appendBlock</strong>: The finished block is stored in a buffer.</p></li>
+</ol>
+<p>When a block is finished, the state machine returns to <em>readIdentifier</em>, which starts the process of reading the next block.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The current implementation of the parser does not automatically update the state machine after a byte has been added.</p>
+<p>To progress the parser and update the state machine, the user should call the <a href="#id3"><span class="problematic" id="id4">:py:classmethod:`update &lt;cryodecoder.parser.Parser.update&gt;`</span></a> method for each byte in the buffer.</p>
+</div>
+<section id="state-readidentifier">
+<h3>State: readIdentifier<a class="headerlink" href="#state-readidentifier" title="Link to this heading">#</a></h3>
+<p>This section describes the steps involved in the <em>readIdentifier</em> state.</p>
+<ol class="arabic">
+<li><p>The parser checks whether the current block is identifier is valid by comparing against the identifiers stored in <code class="xref py py-data docutils literal notranslate"><span class="pre">cryodecoder.blocks.blocks</span></code>.</p></li>
+<li><p>If the identifier is not valid, it is possible that we may have returned to <em>readIdentifier</em> from a lower level block and we still have fields remaining at the current level. We keep track of how many fields we expect at the current level, so if we do not not have any bytes remaining or we don’t expect to read another field</p></li>
+<li><p>If the <strong>identifier is valid</strong>, then we find the class associated with the ASCII identifier (i.e. <code class="docutils literal notranslate"><span class="pre">A</span></code>, <code class="docutils literal notranslate"><span class="pre">M</span></code>, etc.).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Older versions of the Cryoegg packets begin with a <code class="docutils literal notranslate"><span class="pre">C</span></code>, which is the same as <a class="reference internal" href="level1.html#block-c-chil"><span class="std std-ref">CHIL blocks</span></a>. The difference between these is the length, which is handled in the <strong>readLength</strong> step.</p>
+</div>
+</li>
+<li><p>Before continuing, we also check that the current block is valid based on its level as we do not permit higher level blocks to be nested within lower ones.</p></li>
+<li><p>Now that we are sure the identifier is valid, we initialise the stack variables at the level of the current block and continue to <strong>readLength</strong>.</p></li>
+</ol>
+</section>
+<section id="state-readlength">
+<h3>State: readLength<a class="headerlink" href="#state-readlength" title="Link to this heading">#</a></h3>
+<p>This state generally follows <strong>readIdentifier</strong> state and checks the length of the upcoming block. This allows the parser to handle cases where the same block identifier (i.e. <code class="docutils literal notranslate"><span class="pre">C</span></code>) can be associated with different content based on its length.</p>
+<ol class="arabic simple">
+<li><p>If there are fewer bytes in the current buffer than the length byte, the parser stays in the same state to keep waiting until we have received that many bytes.</p></li>
+<li><p>The parser checks if the current block identifier is <code class="docutils literal notranslate"><span class="pre">C</span></code> or <code class="docutils literal notranslate"><span class="pre">W</span></code>. If so, the parser checks whether the identifier and length bytes together are:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">C1</span></code>: packet from the second iteration of the Cryoegg receiver (<a class="reference internal" href="../reference/blocks.html#cryodecoder.blocks.Block_C_Cryoegg" title="cryodecoder.blocks.Block_C_Cryoegg"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_C_Cryoegg</span></code></a>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">W1</span></code>: packet from the first iteration of the Cryowurst receiver (<a class="reference internal" href="../reference/blocks.html#cryodecoder.blocks.Block_W1_Wurst" title="cryodecoder.blocks.Block_W1_Wurst"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_W1_Wurst</span></code></a>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">W2</span></code>: packet from the second iteration of the Cryowurst receiver (<a class="reference internal" href="../reference/blocks.html#cryodecoder.blocks.Block_W_Wurst" title="cryodecoder.blocks.Block_W_Wurst"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_W_Wurst</span></code></a>).</p></li>
+</ul>
+</li>
+<li><p>For newer block types, the current byte is used as the block length. If a legacy block type has been detected (see previous step), the parser determines the expected block length using the block definition.</p></li>
+<li><p>Finally, the parser checks whether the current block has fields or bytes remaining. If so, the next state is <strong>readField</strong>. Otherwise, the parser moves to <strong>appendBlock</strong>.</p></li>
+</ol>
+</section>
+<section id="state-readfield">
+<h3>State: readField<a class="headerlink" href="#state-readfield" title="Link to this heading">#</a></h3>
+<p>In this state, the parser waits for the correct number of bytes and then populates the relevant field within the current block.</p>
+<ol class="arabic">
+<li><p>The first step is to determine which field is being used. This is achieved by converting the number of fields remaining to an offset which maps to the <code class="docutils literal notranslate"><span class="pre">field_order</span></code> property of the <a class="reference internal" href="../reference/blocks.html#cryodecoder.blocks.Field" title="cryodecoder.blocks.Field"><code class="xref py py-class docutils literal notranslate"><span class="pre">Field</span></code></a> class.</p></li>
+<li><p>Before processing the current byte, the parser checks whether it is dealing with a <a class="reference internal" href="../reference/blocks.html#cryodecoder.blocks.Payload" title="cryodecoder.blocks.Payload"><code class="xref py py-class docutils literal notranslate"><span class="pre">Payload</span></code></a> field. This is a special type of field which allows for blocks to be embedded <em>within</em> the current block - such as the <a class="reference internal" href="../reference/blocks.html#cryodecoder.blocks.Block_M_MBusPacket" title="cryodecoder.blocks.Block_M_MBusPacket"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_M_MBusPacket</span></code></a> block. If so, we decrease the number of fields by 1 and return to <strong>readIdentifer</strong>.</p></li>
+<li><p>With the correct number of bytes available, the raw value of the field is assigned to the bytes in the buffer and the number of fields at the current level is decreased by one. To ensure the stack remains value, the number of bytes remaining is decreased for each level above the current one. Finally, the bytes are removed from the buffer.</p></li>
+<li><p>To process a field, the parser needs the correct number of bytes available (determined by the <code class="docutils literal notranslate"><span class="pre">byte_width</span></code> parameter in <a class="reference internal" href="../reference/blocks.html#cryodecoder.blocks.Field" title="cryodecoder.blocks.Field"><code class="xref py py-class docutils literal notranslate"><span class="pre">Field</span></code></a>). The parser remains in the current state until the correct number of bytes are available.</p></li>
+<li><p>To handle the case where a legacy (2023) instrument is received by a newer datalogger, if the current block is <a class="reference internal" href="../reference/blocks.html#cryodecoder.blocks.Block_M_MBusPacket" title="cryodecoder.blocks.Block_M_MBusPacket"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_M_MBusPacket</span></code></a> the parser checks whether the <code class="docutils literal notranslate"><span class="pre">ci_field</span></code> parameter is equal to <code class="docutils literal notranslate"><span class="pre">AA</span></code> or <code class="docutils literal notranslate"><span class="pre">AC</span></code>.</p>
+<p>The parser then checks against <a class="reference internal" href="../reference/blocks.html#cryodecoder.blocks.Block_M_MBusPacketCryoegg2023" title="cryodecoder.blocks.Block_M_MBusPacketCryoegg2023"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_M_MBusPacketCryoegg2023</span></code></a> and <a class="reference internal" href="../reference/blocks.html#cryodecoder.blocks.Block_M_MBusPacketCryowurst2023" title="cryodecoder.blocks.Block_M_MBusPacketCryowurst2023"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block_M_MBusPacketCryowurst2023</span></code></a> to see which type the parser is dealing with based on the number of fields remaining (which are unique for these types).</p>
+</li>
+<li><p>If there are no more fields remaining, then the parser checks whether there are bytes remaining:</p>
+<ol class="loweralpha simple">
+<li><p>If the are no bytes remaining, change state to <strong>appendBlock</strong>.</p></li>
+<li><p>If there are bytes remaining, revert to <strong>readIdentifier</strong>.</p></li>
+</ol>
+<p>Otherwise, there are still more fields to be read at the current level so the state remains as <strong>readField</strong>.</p>
+</li>
+</ol>
+</section>
+<section id="state-appendblock">
+<h3>State: appendBlock<a class="headerlink" href="#state-appendblock" title="Link to this heading">#</a></h3>
+<p>In this state, the parser assumes that it has a complete block and is ready to make it available to the user.</p>
+<ol class="arabic simple">
+<li><p>Before anything else, the parser saves a copy of the block in the current level of the stack.</p></li>
+<li><p>Then, the parser checks that the current level (stored in <code class="docutils literal notranslate"><span class="pre">_stack</span></code>) is less than the level at which the parser was initialised.</p>
+<ol class="loweralpha simple">
+<li><p>If the parser is not at the top level of the stack, then the current block is added to the block above as a <em>child block</em>. If there are no more fields remaining and no more bytes remaining, the next block is appended by calling <code class="docutils literal notranslate"><span class="pre">update()</span></code>. If there are bytes remaining, then we expect another one at the same level so change state to <strong>readIdentifier</strong>.</p></li>
+<li><p>If the parser is at the top level of the stack, then the current block is added to the parser’s buffer with the current timestamp. The stack variables are then reset and the state is changed to <strong>readIdentifier</strong>.</p></li>
+</ol>
+</li>
+</ol>
+</section>
+</section>
+<section id="stack-variables">
+<h2>Stack variables<a class="headerlink" href="#stack-variables" title="Link to this heading">#</a></h2>
+<p>The <a class="reference internal" href="../reference/parser.html#cryodecoder.parser.Parser" title="cryodecoder.parser.Parser"><code class="xref py py-class docutils literal notranslate"><span class="pre">Parser</span></code></a> object maintains a stack which keeps track of parameters for the different block levels within the data protocol. The <code class="docutils literal notranslate"><span class="pre">_stack</span></code> variable stores the current block level and is used to index the remaining stack parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">_block_length</span></code>: stores the expected length of the current block.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_bytes_remaining</span></code>: stores the number of bytes remaining at the current layer of the stack.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_fields_remaining</span></code>: stores the number of fields remaining at the current layer of the stack.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_block</span></code>: stores the <a class="reference internal" href="../reference/blocks.html#cryodecoder.blocks.Block" title="cryodecoder.blocks.Block"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block</span></code></a> subclass associated with the current block.</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="legacy.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Legacy blocks</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../reference/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">API: cryodecoder</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#state-machine">State machine</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#state-readidentifier">State: readIdentifier</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#state-readlength">State: readLength</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#state-readfield">State: readField</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#state-appendblock">State: appendBlock</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stack-variables">Stack variables</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By J. D. Hawkins, L. Craw, M. R. Prior-Jones, P. Biggs
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, CHIL (Cryospheric and Hydrological Instrumentation Laboratory), Cardiff University.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
