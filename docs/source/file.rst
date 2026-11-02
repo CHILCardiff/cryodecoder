@@ -21,7 +21,7 @@ Instructions
 
     .. code-block:: shell
 
-        cryodecoder file -i childata.log -i childata.csv
+        cryodecoder file -i childata.log -o childata.csv
 
     The ``-i`` and ``-o`` flags are used to pass the input filename and output filename respectively.
 

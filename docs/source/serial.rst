@@ -35,7 +35,7 @@ Starting cryodecoder
 .. important:: 
     These instructions assume you have followed the `setup instructions <setup>`__ If you installed cryodecoder to a `virtual environment <https://docs.python.org/3/library/venv.html>`__ then make sure it is activated before continuing.
 
-To launch cryodecoder, open a new terminal (command prompt) window. If necessary, locate and activate the virtual environment where you have installed cryodecoder. 
+To launch cryodecoder, open a new terminal (command prompt) window. Locate and activate the virtual environment where you have installed cryodecoder. 
 
 Cryodecoder saves data to the a folder named ``data`` within the current working directory in the command prompt window. To navigate to a location where you wish to save data, use the ``cd`` command:
 
