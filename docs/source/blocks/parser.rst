@@ -1,3 +1,5 @@
+.. _parser:
+
 Parser logic
 ============
 This scetion of the documentation describes the logic of the :py:class:`cryodecoder.parser.Parser` object. The parser is designed for the latest version of CHIL instrument protocol, and to be backwards compatible with previous packet formats.

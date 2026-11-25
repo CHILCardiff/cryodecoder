@@ -29,8 +29,7 @@ class Parser:
 
     The :py:class:`Parser` object is used by :py:class:`FileDecoder` and :py:class:`SerialDecoder` to read packets logged to CHIL dataloggers and transmitted over USB serial links. Parsing logic is separated into four main 'states' which are ``readIdentifier``, ``readLength``, ``readField`` and ``appendBlock``.
 
-    .. note::
-        TODO: Add separate documentation page describing the parser logic and state diagram.
+    The logic behind the parser is described on :ref:`this page <parser>`.
 
     **Example usage** to parse bytes into :py:class:`cryodecoder.block.Block` objects.
 
@@ -866,16 +865,43 @@ class HexFormatter(DataFormatter):
 
 class LoggerBase:
     """
-    Interface class for defining logger classes
+    Interface class for defining logger classes.
     """
     
     def __init__(self):
+        """
+        By default, initialises the class and the timestamp when the logger was started.
+        """
         super(LoggerBase, self).__init__()
 
         # Setup start time of the logger from local timestamp
         self._init_time = datetime.datetime.now(datetime.UTC)
 
 class CSVLogger(LoggerBase):
+    """
+    The `CSVLogger` class accepts cryodecoder blocks through its :py:meth:`logCSV <cryodecoder.parser.CSVLogger.logCSV>` method and writes these in a comma-separated value format to a local file.
+
+    The default columns of the CSVLogger class are described :ref:`here <csvfile>`, but can be modified by updating the `csv_columns` attribute of any :py:class`CSVLogger` object.
+
+    The example below shows how multiple blocks can be read and stored in a CSV file using the :py:class:`CSVLogger` class.
+
+    .. code-block:: Python
+
+        # Example writing CHIL blocks to a CSV file
+        import cryodecoder, datetime
+        
+        # Create CSVLogger object
+        my_logger = cryodecoder.parser.CSVLogger(
+            "/path/to/stored_data.csv"
+        )
+
+        # Deal with blocks and store them
+        blocks = cryodecoder.parse_hex("....")
+
+        for block in blocks:
+            my_logger.logCSV(datetime.datetime.now(), block)
+
+    """
 
     def __init__(self, filename : Optional[PathLike]):
 
@@ -944,6 +970,10 @@ class CSVLogger(LoggerBase):
         self._csv_logger.log(logging.INFO, ",".join(headers))
 
     def logCSV(self, time: datetime.datetime, block: cryodecoder.blocks.Block):
+        """
+        Writes the provided block (and subcontents) to the CSV file with the specified timestamp.
+        """
+
         # Logging block
         cryodecoder_logger.debug(f"Logging block [{type(block)}]")
         # Write columns to CSV
