@@ -66,23 +66,27 @@ def download_and_parse_cloudloop(
     """
 
     # Setup CSVLogger
-    csv_logger = CSVLogger(data_path)
+    with CSVLogger(data_path) as csv_logger:
 
-    # Define a local hook for downloading
-    def csv_log_hook(record):
-        timestamp = datetime.datetime.fromisoformat(record["at"]) 
-        blocks = parse_hex(record["message"])
-        for block in blocks:
-            csv_logger.logCSV(timestamp, block)
-    
-    # Download dataframe
-    download_records_from_cloudloop(
-        raw_path,
-        start_date=start_date,
-        end_date=end_date,
-        request_params=request_params,
-        api_key=api_key,
-        api_root=api_root,
-        disable_progress_bar=disable_progress_bar,
-        record_hook=csv_log_hook
-    )
+        # Define a local hook for downloading
+        def csv_log_hook(record):
+            timestamp = datetime.datetime.fromisoformat(record["at"]) 
+            try:
+                blocks = parse_hex(record["message"])
+            except:
+                print(f"Error decoding message @ {timestamp}: {record["message"]}")
+                exit() # return
+            for block in blocks:
+                csv_logger.logCSV(timestamp, block)
+        
+        # Download dataframe
+        download_records_from_cloudloop(
+            raw_path,
+            start_date=start_date,
+            end_date=end_date,
+            request_params=request_params,
+            api_key=api_key,
+            api_root=api_root,
+            disable_progress_bar=disable_progress_bar,
+            record_hook=csv_log_hook
+        )

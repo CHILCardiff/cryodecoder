@@ -891,15 +891,15 @@ class CSVLogger(LoggerBase):
         import cryodecoder, datetime
         
         # Create CSVLogger object
-        my_logger = cryodecoder.parser.CSVLogger(
+        with cryodecoder.parser.CSVLogger(
             "/path/to/stored_data.csv"
-        )
+        ) as my_logger:
 
-        # Deal with blocks and store them
-        blocks = cryodecoder.parse_hex("....")
-
-        for block in blocks:
-            my_logger.logCSV(datetime.datetime.now(), block)
+            # Load blocks from somewhere
+            blocks = cryodecoder.parse_hex("....")
+            # Deal with blocks and store them
+            for block in blocks:
+                my_logger.logCSV(datetime.datetime.now(), block)
 
     """
 
@@ -951,6 +951,20 @@ class CSVLogger(LoggerBase):
             HexFormatter("hex")
         ]
 
+    def __enter__(self):
+
+        # Initialise the logger
+        self.init_csv_logger()
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+
+        # Close all handlers on exit
+        for handler in self._csv_logger.handlers:
+            if isinstance(handler, logging.FileHandler):
+                handler.close()
+
+        # Initialise the logger
         self.init_csv_logger()
 
     def init_csv_logger(self, level=logging.INFO):
@@ -1115,11 +1129,9 @@ class SerialDecoder(CSVLogger):
         self.output_console = cmd_logger
         self.output_raw = raw
 
-    def __enter__(self):
-        pass
-
-    def __exit__(self):
+    def __exit__(self, exc_type, exc_value, exc_traceback):
         self.output_raw.close()
+        CSVLogger.__exit__(self, exc_type, exc_value, exc_traceback)
 
     def runReceiver(self):
         """
@@ -1449,8 +1461,8 @@ def parser_main():
 
         print(f"Starting serial decoder with port {args.port}")
 
-        serialDecoder = SerialDecoder(port=args.port, baud_rate=args.baud, mode=args.mode)
-        serialDecoder.run()
+        with SerialDecoder(port=args.port, baud_rate=args.baud, mode=args.mode) as decoder:
+            decoder.run()
 
     elif args.type == "file":
 
@@ -1460,8 +1472,8 @@ def parser_main():
                 "--input required when using cryodecoder in 'file' mode.")
         else:
 
-            fileDecoder = FileDecoder(args.input, args.output)
-            fileDecoder.parse()
+            with FileDecoder(args.input, args.output) as decoder:
+                decoder.parse()
         
     else:
 
