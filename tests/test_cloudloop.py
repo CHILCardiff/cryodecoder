@@ -11,25 +11,30 @@ def test_download_from_cloudloop():
         tmp.close()
         n_records = cryodecoder.cloudloop.download_records_from_cloudloop(
             output_path = tmp.name,
-            start_date = "2026-10-04 00:00:00"
+            start_date = "2026-10-04 00:00:00",
+            end_date = "2026-10-04 04:00:00"
         )
         df = pandas.read_csv(tmp.name)
         assert len(df) == n_records
 
 def test_download_and_parse_from_cloudloop():
 
-    with tempfile.NamedTemporaryFile(mode="w+") as tmp1:
-        with tempfile.NamedTemporaryFile(mode="w+") as tmp2:
-            tmp1.close(); tmp2.close()
+    with \
+        tempfile.NamedTemporaryFile(mode="w+") as tmp1, \
+        tempfile.NamedTemporaryFile(mode="w+") as tmp2:
 
-            n_records = cryodecoder.download_and_parse_cloudloop(
-                raw_path = tmp1.name,
-                data_path = tmp2.name,
-                start_date = "2026-10-04 00:00:00"
-            )
-            df = pandas.read_csv(tmp2.name)
-            pass
-            
+        # Close files so they can be written to
+        tmp1.close(); tmp2.close()
+        # Download records from cloudloop
+        n_records = cryodecoder.download_and_parse_cloudloop(
+            raw_path = tmp1.name,
+            data_path = tmp2.name,
+            start_date = "2026-10-04 00:00:00",
+            end_date = "2026-10-04 04:00:00"
+        )
+        df = pandas.read_csv(tmp2.name)
+        pass
+        
 # import cryodecoder
 # import pandas as pd
 

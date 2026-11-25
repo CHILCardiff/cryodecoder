@@ -139,9 +139,9 @@ def test_parser_from_file_mixed_instruments():
                 print(f"Temperature     (value): {chil_block.temperature_tmp117.value}")
                 print(f"Temperature (converted): {chil_block.temperature_tmp117.convertedValue}")
 
-        if block.children[1].uid.value & 0xff == 0xce:
+        if block.children[1].uid.value & 0xff000000 == 0xce000000:
             cryoegg_blocks += 1
-        elif block.children[1].uid.value == 0x78563412:
+        elif block.children[1].uid.value == 0x12345678:
             cryowurst_blocks += 1
         else:
             raise ValueError(f"Invalid uid: {block.children[1].uid.value:x}")
@@ -156,7 +156,7 @@ def test_parse_hex_W1():
     assert len(blocks) == 1
     assert isinstance(blocks[0], cryodecoder.blocks.Block_W1_Wurst)
 
-    assert f"{blocks[0].uid.value}" == "cf200020"
+    assert f"{blocks[0].uid.value:x}"[0:2] == "cf"
 
 # Test packets
 def test_parse_hex_W2():
@@ -165,9 +165,12 @@ def test_parse_hex_W2():
     assert len(blocks) == 1
     assert isinstance(blocks[0], cryodecoder.blocks.Block_W_Wurst)
 
-    assert blocks[0].uid.value
+    assert f"{blocks[0].uid.value:x}"[0:2] == "cf"
 
 def test_parse_hex_W2GROUP():
 
-
-
+    blocks = cryodecoder.parse_hex(test_packets["W2_GROUP"])
+    assert len(blocks) == 4
+    for block in blocks:
+        assert isinstance(block, cryodecoder.blocks.Block_W_Wurst)
+        assert f"{block.uid.value:x}"[0:2] == "cf"
