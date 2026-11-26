@@ -4,6 +4,150 @@ import cryodecoder
 import cryodecoder.blocks
 import cryodecoder.exceptions
 
+###############################################################################
+# Test fields
+###############################################################################
+def test_invalid_field():
+
+    class GenericField(cryodecoder.blocks.Field):
+        def to_bytes(self):
+            pass
+        def from_bytes(self):
+            pass
+
+    generic_field = GenericField(0, 1)
+    with pytest.raises(TypeError): 
+        generic_field.raw = 0 # Assign a value that is not of type bytes
+    with pytest.raises(ValueError):
+        generic_field.raw = b'\x00\x00' # Assign bytes longer than the field
+
+###############################################################################
+# Test Payload field 
+###############################################################################
+def test_payload_access():
+
+    payload = cryodecoder.blocks.Payload(0)
+    # Test conversion of Paylaod is prevented
+    with pytest.raises(cryodecoder.exceptions.PayloadAccessError):
+        payload.to_bytes(b'')
+    with pytest.raises(cryodecoder.exceptions.PayloadAccessError):
+        payload.from_bytes(b'')
+    # Test assignment to Payload is prevented
+    with pytest.raises(cryodecoder.exceptions.PayloadAccessError):
+        payload.value = b''
+    with pytest.raises(cryodecoder.exceptions.PayloadAccessError):
+        payload.raw = b''
+
+def test_field_byte_order():
+
+    # Valid values
+    for value in ("little", "big"):
+        ui = cryodecoder.blocks.UnsignedIntField(0, 2, byte_order=value)
+        assert ui.byte_order == value
+        
+    # Try invalid values
+    with pytest.raises(ValueError):
+        ui = cryodecoder.blocks.UnsignedIntField(0, 2, byte_order="invalid")
+
+    # Invalid field order
+    with pytest.raises(ValueError):
+        ui = cryodecoder.blocks.UnsignedIntField(field_order=-1, byte_width=1)
+    
+    # Invalid byte width
+    with pytest.raises(ValueError):
+        ui = cryodecoder.blocks.UnsignedIntField(field_order=0, byte_width=-1)
+
+def test_field_IEEE754float():
+
+    # Create a reasonable float (conditioned for IEEE 754)
+    float_value = 1.1295252
+    error = 1e-7
+    binary_value = b'\x48\x94\x90\x3f'
+
+    ieee754float = cryodecoder.blocks.IEEE754Float(field_order=0)
+    ieee754float.value = float_value
+
+    # Check forward/backward conversion
+    assert ieee754float.to_bytes(ieee754float.value) == binary_value
+    assert abs(ieee754float.from_bytes(binary_value) - float_value) < error
+
+def test_field_TemperatureTMP117Field():
+
+    field = cryodecoder.blocks.TemperatureTMP117Field(field_order=0)
+    value = -10
+    temperature = value * 0.0078125
+
+    field.value = value
+    assert field.convertedValue == temperature
+    field.convertedValue = 0.0078125 * -20
+    assert field.value == -20
+
+def test_field_TemperatureSHT30Field():
+
+    field = cryodecoder.blocks.TemperatureSHT30Field(field_order=0)
+    value = 1234
+    convertedValue = -45 + 175 * value / (2**16 - 1)
+
+    field.value = value
+    assert field.convertedValue == convertedValue
+
+    field.convertedValue = -33.4615091
+    value = 4321
+    assert field.value == value
+
+def test_field_RelativeHumiditySHT30Field():
+
+    field = cryodecoder.blocks.RelativeHumiditySHT30Field(field_order=0)
+    value = 1234
+    convertedValue = 100 * value / (2**16 - 1)
+
+    field.value = value
+    assert field.convertedValue == convertedValue
+
+    value = 4321
+    field.convertedValue = 100 * value / (2**16 - 1)
+    assert field.value == value
+
+def test_field_TemperatureKellerField():
+
+    field = cryodecoder.blocks.TemperatureKellerField(field_order=0)
+
+    value = 1234
+    convertedValue = ((value / 16) - 24) * 0.05 - 50.0
+    field.value = value
+    assert field.convertedValue == convertedValue
+
+    value = 4321
+    convertedValue = ((value / 16) - 24) * 0.05 - 50.0
+    field.convertedValue = convertedValue
+    assert field.value == value
+
+def test_field_PressureKellerField():
+
+    field = cryodecoder.blocks.PressureKellerField(field_order=0)
+    value = 20000
+
+    convert_pressure = lambda value, p_min, p_max : (value - 16384) / 32768 * (p_max - p_min) + 1 
+
+    with pytest.raises(cryodecoder.exceptions.MissingPressureBounds):
+        field.value = 10
+        assert field.convertedValue == convert_pressure(value, 0, 0)
+
+    # Create a new field
+    field = cryodecoder.blocks.PressureKellerField(field_order=0, pressure_min=0, pressure_max=30.0)
+    field.value = value
+    assert field.convertedValue == convert_pressure(value, 0, 30.0)
+
+    # Assign the converted value
+    value = 30000
+    converted_value = convert_pressure(value, 0, 30.0)
+    field.convertedValue = converted_value
+    assert field.value == value
+
+###############################################################################
+# Test block
+###############################################################################
+
 def test_block_instance_variables():
 
     class TestBlock(cryodecoder.blocks.Block):

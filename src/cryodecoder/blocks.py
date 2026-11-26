@@ -36,20 +36,36 @@ class Field(ABC, Generic[ValueType]):
     between byte and interpreted values (i.e. byte to float, byte to int).
     """
 
-    def __init__(self, field_order, byte_width = 0, value_default = None):
+    def __init__(self, field_order : int, byte_width : int = 0, value_default = None):
         """
         :param field_order: order in which the field appears in a block (zero-index)
         :param byte_width: width of the field in bytes
         :param value_default: default value of the field when initialised
         """
+        self._field_name = "Field"
+        
+        # Assign field order
+        if not isinstance(field_order, int) or \
+            (isinstance(field_order, int) and field_order < 0):
+            raise ValueError("field_order should be a positive integer (>= 0).")
         self.field_order = field_order
+
+        # Assign byte width
+        if not isinstance(byte_width, int) or \
+            isinstance(byte_width, int) and byte_width < 0:
+            raise ValueError("byte_width should be a positive inteer (>= 0).")
         self.byte_width = byte_width
+
         self._raw : bytes = b'\x00' * byte_width
         self._value : Optional[ValueType] = value_default
         self._parent = None
 
     def __set_name__(self, owner, name):
-        self.field_name = name
+        self._field_name = name
+
+    @property
+    def field_name(self):
+        return self._field_name
 
     @abstractmethod
     def from_bytes(self, bytes):
@@ -112,9 +128,9 @@ class Payload(Field):
 
     # Make no conversion between bytes - this is the only form of valid payload
     def from_bytes(self, value):
-        return value
+        raise cryodecoder.exceptions.PayloadAccessError
     def to_bytes (self, value):
-        return value
+        raise cryodecoder.exceptions.PayloadAccessError
     
     # Override the original raw method to disable access
     @Field.raw.setter
@@ -123,6 +139,12 @@ class Payload(Field):
         :raises cryodecoder.exceptions.PayloadAccessError: if the raw value of the payload is attempted the be set, since the payload is only a placeholder field.
         """
         raise cryodecoder.exceptions.PayloadAccessError
+    # @Field.raw.getter
+    # def raw(self):
+    #     """
+    #     :raises cryodecoder.exceptions.PayloadAccessError: if the raw value of the payload is attempted the be set, since the payload is only a placeholder field.
+    #     """
+    #     raise cryodecoder.exceptions.PayloadAccessError
 
     # Override the original value method to disable access
     @Field.value.setter
@@ -131,6 +153,12 @@ class Payload(Field):
         :raises cryodecoder.exceptions.PayloadAccessError: if the value of the payload is attempted the be set, since the payload is only a placeholder field.
         """
         raise cryodecoder.exceptions.PayloadAccessError
+    # @Field.value.getter
+    # def value(self):
+    #     """
+    #     :raises cryodecoder.exceptions.PayloadAccessError: if the value of the payload is attempted the be set, since the payload is only a placeholder field.
+    #     """
+    #     raise cryodecoder.exceptions.PayloadAccessError
 
 class UnsignedIntField(Field[int]):
     """
@@ -209,6 +237,7 @@ class IEEE754Float(Field[float]):
         """
         converts a floating point number to its IEEE 754 floating point representation
         """
+        # TODO: add coverage test
         return struct.pack("<f", value)
     
     def from_bytes(self, value) -> float:
@@ -227,6 +256,8 @@ class TemperatureTMP117Field(SignedIntField):
 
     .. _TMP117: https://www.ti.com/lit/ds/symlink/tmp117.pdf?
     """
+    def __init__(self, field_order):
+        super().__init__(field_order, byte_width=2, byte_order="little")
 
     @property
     def convertedValue(self):
@@ -245,6 +276,8 @@ class TemperatureSHT30Field(UnsignedIntField):
     """
     Reported temperature from an `SHT30`_ temperature and humidity probe.
     """
+    def __init__(self, field_order):
+        super().__init__(field_order, byte_width=2)
 
     @property
     def convertedValue(self):
@@ -256,14 +289,17 @@ class TemperatureSHT30Field(UnsignedIntField):
     
     @convertedValue.setter
     def convertedValue(self, temperatureValue : float):
+        # TODO: add coverage test
         rawValue = (temperatureValue + 45) * (2**16 - 1) / 175
-        self._value = rawValue
+        self._value = int(rawValue)
         self._raw = self.to_bytes(self._value)
 
 class RelativeHumiditySHT30Field(UnsignedIntField):
     """
     Reported relative humidity from an `SHT30`_ temperature and humidity probe.
     """
+    def __init__(self, field_order):
+        super().__init__(field_order, byte_width=2)
 
     @property
     def convertedValue(self):
@@ -274,9 +310,9 @@ class RelativeHumiditySHT30Field(UnsignedIntField):
         return 100 * (self._value)/(2**16-1)
     
     @convertedValue.setter
-    def convertedValue(self, temperatureValue : float):
-        rawValue = temperatureValue * (2**16 - 1) / 100
-        self._value = rawValue
+    def convertedValue(self, rhValue : float):
+        rawValue = rhValue * (2**16 - 1) / 100
+        self._value = int(rawValue)
         self._raw = self.to_bytes(self._value)
 
 class TemperatureKellerField(UnsignedIntField):
@@ -285,6 +321,8 @@ class TemperatureKellerField(UnsignedIntField):
     
     .. _Keller 7L(HP)D: https://keller-pressure.com/en/products/pressure-transmitters/oem-pressure-transmitters/series-7ld
     """
+    def __init__(self, field_order):
+        super().__init__(field_order, byte_width=2)
 
     @property
     def convertedValue(self):
@@ -296,7 +334,10 @@ class TemperatureKellerField(UnsignedIntField):
     
     @convertedValue.setter
     def convertedValue(self, temperatureValue : float):
-        raise NotImplementedError
+        # raise NotImplementedError
+        value = ((temperatureValue + 50.0) / 0.05 + 24) * 16
+        self._value = int(value)
+        self._raw = self.to_bytes(self._value)
 
 class PressureKellerField(UnsignedIntField):
     """
@@ -304,6 +345,40 @@ class PressureKellerField(UnsignedIntField):
     
     .. _Keller 7L(HP)D: https://keller-pressure.com/en/products/pressure-transmitters/oem-pressure-transmitters/series-7ld
     """
+    def __init__(self, 
+        field_order, 
+        pressure_min : Optional[float] = None, 
+        pressure_max : Optional[float] = None
+    ):
+        super().__init__(field_order, byte_width=2)
+
+        # Assign pressure min/max for fielsd without parents
+        self.pressure_min = pressure_min
+        self.pressure_max = pressure_max
+
+    def __get_pmin_pmax(self):
+        # Setup default pressure values
+        p_min = None
+        p_max = None
+
+        # Check whether we can get these from the parent
+        if self._parent is not None \
+            and hasattr(self._parent, "pressure_min") \
+            and hasattr(self._parent, "pressure_min"):
+            p_min = self._parent.pressure_min.value
+            p_amx = self._parent.pressure_max.value
+        # otherwise, check if the field values are set
+        elif self.pressure_min is not None and self.pressure_max is not None:
+            p_min = self.pressure_min
+            p_max = self.pressure_max
+
+        # If the default values are still None, then check whether the 
+        # current field object has them
+        if p_min is None and p_max is None:
+            raise cryodecoder.exceptions.MissingPressureBounds("No minimum or maximum pressure value.")
+
+        # Minimum and maximum pressure
+        return p_min, p_max
 
     @property
     def convertedValue(self):
@@ -311,11 +386,16 @@ class PressureKellerField(UnsignedIntField):
         :return: the reported pressure value in bar.
         :rtype: float
         """
-        return (self.value - 16384) / 32768 * (self._parent.pressure_max.value - self._parent.pressure_min.value) + 1 # Invalid for now, adjust using date code
+        p_min, p_max = self.__get_pmin_pmax()
+        
+        return (self.value - 16384) / 32768 * (p_max - p_min) + 1 # Invalid for now, adjust using date code
     
     @convertedValue.setter
-    def convertedValue(self, temperatureValue : float):
-        raise NotImplementedError
+    def convertedValue(self, pressureValue : float):
+        p_min, p_max = self.__get_pmin_pmax()
+
+        self._value = int((pressureValue - 1.0) / (p_max - p_min) * 32768 + 16384)
+        self._raw = self.to_bytes(self._value)
 
 ##############################################################################
 # Blocks
@@ -685,7 +765,7 @@ class Block_C_CHIL(Block):
     sequence_number    = UnsignedIntField(field_order=0, byte_width=1)
     voltage_battery    = UnsignedIntField(field_order=1, byte_width=2)
     conductivity       = UnsignedIntField(field_order=2, byte_width=2)
-    temperature_tmp117 = TemperatureTMP117Field(field_order=3, byte_width=2)
+    temperature_tmp117 = TemperatureTMP117Field(field_order=3)
 
 class Block_E_Environmental(Block):
     """
@@ -738,8 +818,8 @@ class Block_E_Environmental(Block):
     """:meta private:"""
     pressure_ms5607    = IEEE754Float(field_order=0)
     temperature_ms5607 = IEEE754Float(field_order=1)
-    temperature_sht30  = TemperatureSHT30Field(field_order=2, byte_width=2)
-    humidity_sht30     = RelativeHumiditySHT30Field(field_order=3, byte_width=2)
+    temperature_sht30  = TemperatureSHT30Field(field_order=2)
+    humidity_sht30     = RelativeHumiditySHT30Field(field_order=3)
 
 class Block_K_Keller(Block):
     """
@@ -790,8 +870,8 @@ class Block_K_Keller(Block):
     identifier = b'K'
     header_class = BlockHeader
     """:meta private:"""
-    pressure = PressureKellerField(field_order=0, byte_width=2)
-    temperature = TemperatureKellerField(field_order=1, byte_width=2)
+    pressure = PressureKellerField(field_order=0)
+    temperature = TemperatureKellerField(field_order=1)
     date_code = UnsignedIntField(field_order=2, byte_width=1)
     pressure_min = IEEE754Float(field_order=3)
     pressure_max = IEEE754Float(field_order=4)
@@ -1047,7 +1127,7 @@ class Block_M_MBusPacketCryowurst2023(BlockChildren):
     device   = UnsignedIntField(field_order=5, byte_width=1)
     ci_field = UnsignedIntField(field_order=6, byte_width=1)
     # legacy payload start
-    temperature_tmp117 = TemperatureTMP117Field(field_order=7, byte_width=2)
+    temperature_tmp117 = TemperatureTMP117Field(field_order=7)
     mag_x = SignedIntField(field_order=8, byte_width=2)
     mag_y = SignedIntField(field_order=9, byte_width=2)
     mag_z = SignedIntField(field_order=10, byte_width=2)

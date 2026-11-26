@@ -19,3 +19,8 @@ class PayloadAccessError(CryodecoderException):
 class InvalidPacketError(CryodecoderException):
     """raised when packet being read in by a parser is invalid
     """
+
+class MissingPressureBounds(CryodecoderException):
+    """raised when trying to get the convertedValue from a :py:class:`cryodecoder.blocks.PressureKellerField` instance and no minimum pressure or maximum pressure value are available.
+    """
+    pass
