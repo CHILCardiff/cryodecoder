@@ -14,15 +14,6 @@ import cryodecoder.exceptions
 
 cryodecoder_logger = logging.getLogger(__name__)
 
-# Define a decorator for the parser stack
-def _parserstackfunction(method):
-    def stackmethod(self, index=None):
-        if index is None:
-            return method(self, self._stack)
-        else:
-            return method(self, index)
-    return stackmethod
-
 class Parser:
     """
     The :py:class:`Parser` object implements the logic to decode CHIL instrument packets and previous versions.
@@ -122,7 +113,20 @@ class Parser:
         if self._async:
             return False
         else:
+
+            # Check stack variables
+            any_bytes_remaining = any([
+                (br is not None) and (br >= 0) for br in self._bytes_remaining
+            ])
+
+            any_fields_remaining = any([
+                (br is not None) and (br >= 0) for br in self._fields_remaining
+            ])
+
+            # We need to check that there are no bytes left in the buffer
             if len(self._buffer) == 0 and \
+                not any_bytes_remaining and \
+                not any_fields_remaining and \
                 self._state != Parser.state_appendBlock:
                 # Reset the stack
                 self.reset_stack_variables()

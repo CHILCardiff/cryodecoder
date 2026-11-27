@@ -355,3 +355,14 @@ def test_l3_multi_payload():
         mbus_block.count_field_bytes() +
         l1_block.header.length() + 
         l1_block.count_field_bytes())
+
+@pytest.mark.parametrize("header,num_bytes", (
+    ((b"W1", 52), (b"W2", 58), (b"C0", 23), (b"C1", 38))
+))
+def test_BlockHeaderLegacy_valid(header, num_bytes):
+
+    block_header = cryodecoder.blocks.BlockHeaderLegacy()
+    # Annoying Python functionality here where a singular index (i.e. [0])
+    # casts the value to an int. Hence, array-like index with length 1
+    # (i.e. [0:1]) keeps the type as bytes.
+    assert block_header.get_bytes_remaining(header[0:1], header[1:2]) == num_bytes

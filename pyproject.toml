@@ -20,7 +20,8 @@ dependencies = [
     "pyserial",
     "pytest",
     "requests", 
-    "tqdm"
+    "tqdm",
+    "pyvritualserialports"
 ]
 
 [project.scripts]

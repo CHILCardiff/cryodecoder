@@ -1,7 +1,8 @@
 import pytest
 
-import cryodecoder, cryodecoder.cloudloop
+import cryodecoder, cryodecoder.cloudloop, cryodecoder.parser
 import pandas 
+import pathlib
 import logging
 import tempfile
 
@@ -32,8 +33,29 @@ def test_download_and_parse_from_cloudloop():
             start_date = "2026-10-04 00:00:00",
             end_date = "2026-10-04 04:00:00"
         )
-        df = pandas.read_csv(tmp2.name)
-        pass
+        df = pandas.read_csv(tmp1.name)
+        # Check that the number of records written to the log match
+        # the number downloaded.
+        assert len(df) == n_records
+
+def test_csv_log_hook(caplog):
+
+    with tempfile.NamedTemporaryFile(mode="w+") as tmp1:
+        # Close file to allow for access with CSVLogger
+        tmp1.close()
+        with cryodecoder.parser.CSVLogger(tmp1.name) as csv_logger:
+
+            # Create fake test dataframe
+            df_fake = pandas.DataFrame(
+                data = {
+                    "at" : ["2026-10-04 04:00:00",],
+                    "message" : ["Invalid block!",]
+                }
+            )
+
+            cryodecoder.__csv_log_hook(csv_logger, df_fake.iloc[0])
+
+            assert "Error decoding message" in caplog.text
         
 # import cryodecoder
 # import pandas as pd

@@ -366,7 +366,7 @@ class PressureKellerField(UnsignedIntField):
             and hasattr(self._parent, "pressure_min") \
             and hasattr(self._parent, "pressure_min"):
             p_min = self._parent.pressure_min.value
-            p_amx = self._parent.pressure_max.value
+            p_max = self._parent.pressure_max.value
         # otherwise, check if the field values are set
         elif self.pressure_min is not None and self.pressure_max is not None:
             p_min = self.pressure_min
@@ -376,6 +376,14 @@ class PressureKellerField(UnsignedIntField):
         # current field object has them
         if p_min is None and p_max is None:
             raise cryodecoder.exceptions.MissingPressureBounds("No minimum or maximum pressure value.")
+
+        any_valid = False
+        for valid_pressure in (3.0, 10.0, 30.0, 100.0, 250.0):
+            if abs(p_max - p_min - valid_pressure) < 1e-3:
+                any_vaid = True
+        if not any_valid:
+            # Warn if pressure values are unusual
+            cryodecoder.logger.warning(f"Pressure bounds are unusual, check converted values and raw data before using pressure.")
 
         # Minimum and maximum pressure
         return p_min, p_max
@@ -443,15 +451,13 @@ class BlockHeaderLegacy(BlockHeader):
                 return 52
             elif classifier == b'2':
                 return 58
-            else:
-                raise ValueError(f"Invalid legacy packet classifier {identifier}_{classifier}_.")
         elif identifier == b'C':
             if classifier == b'0':
                 return 23
             if classifier == b'1':
                 return 38
-            else:
-                raise ValueError(f"Invalid legacy packet classifier {identifier}_{classifier}_.")
+        # Otherwise raise an exception
+        raise ValueError(f"Invalid legacy packet classifier {identifier}_{classifier}_.")
 
 
 # class BlockHeaderL2():

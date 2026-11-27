@@ -32,6 +32,19 @@ def parse_hex(hex_input : str):
     #   reformating...
     return [block for timestamp, block in parser._blocks]
 
+# Define a local hook for downloading
+def __csv_log_hook(csv_logger, record):
+    timestamp = datetime.datetime.fromisoformat(record["at"]) 
+    try:
+        blocks = parse_hex(record["message"])
+    except:
+        # Report error decoding using cryodecoder logger
+        logger.error(f"Error decoding message @ {timestamp}: {record["message"]}")
+        return
+    # Iterate over blocks and store them
+    for block in blocks:
+        csv_logger.logCSV(timestamp, block)
+
 def download_and_parse_cloudloop(
     raw_path : str | PathLike,
     data_path : str | PathLike,
@@ -67,20 +80,9 @@ def download_and_parse_cloudloop(
 
     # Setup CSVLogger
     with CSVLogger(data_path) as csv_logger:
-
-        # Define a local hook for downloading
-        def csv_log_hook(record):
-            timestamp = datetime.datetime.fromisoformat(record["at"]) 
-            try:
-                blocks = parse_hex(record["message"])
-            except:
-                print(f"Error decoding message @ {timestamp}: {record["message"]}")
-                exit() # return
-            for block in blocks:
-                csv_logger.logCSV(timestamp, block)
         
         # Download dataframe
-        download_records_from_cloudloop(
+        return download_records_from_cloudloop(
             raw_path,
             start_date=start_date,
             end_date=end_date,
@@ -88,5 +90,6 @@ def download_and_parse_cloudloop(
             api_key=api_key,
             api_root=api_root,
             disable_progress_bar=disable_progress_bar,
-            record_hook=csv_log_hook
+            # Use a lambda function to keep the same csv_logger record
+            record_hook=lambda record : __csv_log_hook(csv_logger, record)
         )
