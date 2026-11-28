@@ -4,11 +4,7 @@ import cryodecoder
 import cryodecoder.blocks
 import cryodecoder.parser
 
-import io, logging, pandas as pd, serial, sys, tempfile
-
-# Import virtualserialports if the platform is not Windows based
-if not sys.platform.startswith("win"):
-    import virtualserialports
+import io, logging, pandas as pd, serial, sys, tempfile, threading, time
 
 ###############################################################################
 # Definitions of test packets
@@ -338,29 +334,58 @@ def test_parser_block_mutation_fail():
 # Test decoders
 ##############################################################################
 
-@pytest.mark.skipif(sys.platform.startswith("win"), reason="PyVirtualPSerialPorts only available on UNIX platform.")
-def test_serial_decoder():
+def test_serial_decoder(caplog):
 
     # Setup a virtual serial port
-    with virtualserialports.VirtualSerialPorts(2) as (port_out, port_in), \
-         tempfile.TemporaryDirectory() as tmp_file:
+    with tempfile.TemporaryDirectory() as tmp_file:
 
         csv_filename = None
         raw_filename = None
 
         # Load a packet and convert to bytes
         packet_out = bytes.fromhex(test_packets["CHIL_CE"])
+        # Test comment ("# A test comment\n")
+        packet_out += bytes.fromhex("232041207465737420636F6D6D656E740A")
+
+        cryodecoder.logger.setLevel(logging.DEBUG)
+
+        # Create loopback port
+        loopback = serial.serial_for_url("loop://", baudrate=19200, timeout=0.1)
 
         # Create a serial decoder object
         with cryodecoder.parser.SerialDecoder(
-            port_in, file_root=str(tmp_file)
+            file_root=str(tmp_file), serial_obj=loopback
         ) as decoder:
 
+            # TODO: this is bad news at the moment because .run() is an
+            # infinite loop depending on KeyboardInterrupt to break out.
+            # Ideally needs a rewrite of the SerialDecoder functionality first
+            # before we can test this properly, at the miminum moving the 
+            # SerialDecoder logic to a thread.
+            
+            # Create a separate thread to disable the logger after 1s
+            def wait_then_stop():
+                decoder.run()
+
+            thread = threading.Thread(target = wait_then_stop)
+            thread.start()
+            
+            # Wait for a bit
+            time.sleep(0.3)
+
             # Create a serial port ot write the packet to 
-            serial_out = serial.Serial(port_out, baudrate=19200)
-            #
             # then write it to the serial line
-            serial_out.write(packet_out)
+            print("Written packet")
+            loopback.write(packet_out)
+            # wait a bit more
+            time.sleep(0.3)
+
+            # Disable decoder
+            decoder.stop()
+            print("Decoder disabled")
+            # Start the decoder
+            # we should then reach this point after 1 second
+            thread.join()
 
             csv_filename = decoder.getCSVFilename()
             raw_filename = decoder.getRawFilename()
@@ -369,6 +394,9 @@ def test_serial_decoder():
         # one packet
         df = pd.read_csv(csv_filename)
         assert len(df) == 1
+
+        # Check for comment in log
+        assert "A test comment" in caplog.text
 
         # And validate the raw data is equal to the transmitted data
         with open(raw_filename, "rb") as fh:

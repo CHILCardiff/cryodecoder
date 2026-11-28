@@ -5,6 +5,7 @@ import logging
 import pathlib
 import serial
 
+from enum import Enum
 from os import PathLike
 from typing import Union, Literal, Optional
 
@@ -163,6 +164,9 @@ class Parser:
         self._state(self)
 
     def state_readIdentifier(self):
+
+        if len(self._buffer) == 0:
+            return
 
         cryodecoder_logger.log(logging.DEBUG, f"DBG - [rI | fields({self._fields_remaining}), bytes({self._bytes_remaining})]")
 
@@ -968,9 +972,6 @@ class CSVLogger(LoggerBase):
             if isinstance(handler, logging.FileHandler):
                 handler.close()
 
-        # Initialise the logger
-        self.init_csv_logger()
-
     def init_csv_logger(self, level=logging.INFO):
 
         # Setup datalogger output logger
@@ -1026,7 +1027,8 @@ class SerialDecoder(CSVLogger):
         port : str ="COM1" , 
         baud_rate : int = 19200, 
         file_root : Optional[PathLike] = None, 
-        mode : Literal["receiver", "mbus"] = "receiver"
+        mode : Literal["receiver", "mbus"] = "receiver",
+        serial_obj : Optional[serial.Serial] = None 
     ):
         """
         :param port: identifier of the COM port
@@ -1041,6 +1043,7 @@ class SerialDecoder(CSVLogger):
 
         # Initialises creation time
         LoggerBase.__init__(self)
+        self._running = False
 
         # Assign file root
         self.file_root = file_root
@@ -1055,7 +1058,11 @@ class SerialDecoder(CSVLogger):
         self.baud_rate = baud_rate
 
         self._mode = mode
-        self._serial = serial.Serial(port, baud_rate)
+        if serial_obj is not None:
+            cryodecoder.logger.warning(f"Serial instance provided to SerialDecoder, using that instead of Port[{self.port}@{self.baud_rate}]")
+            self._serial = serial_obj
+        else:
+            self._serial = serial.Serial(port, baud_rate)
         self._parser = Parser(async_input=True)
 
         # Setup logging
@@ -1135,80 +1142,89 @@ class SerialDecoder(CSVLogger):
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
         self.output_raw.close()
+        for handler in self.output_console.handlers:
+            handler.close()
+        for handler in self.output_logger.handlers:
+            handler.close()
         CSVLogger.__exit__(self, exc_type, exc_value, exc_traceback)
+
+    def running(self):
+        return self._running
+
+    def stop(self):
+        self._running = False
+
+    class __ReceiverState(Enum):
+        IDLE    = 0
+        COMMENT = 1
 
     def runReceiver(self):
         """
         :meta private:
         """
 
-        running = True
+        self._running = True
+        state = self.__ReceiverState.IDLE
+        comment = ""
 
-        while running:
+        while self.running():
+
             try:
+
+                # Read a byte in
                 byte = self._serial.read(1)
-                self.output_raw.write(f"{int.from_bytes(byte):02x}")
-                self.output_raw.flush()
 
-                while ((byte != b'') or not self._parser.complete()):
-                    try:
-                        # Bit of a hack here to deal with comments
-                        if (byte == b'#' and self._parser._state == Parser.state_readIdentifier):
-                            # Read until end of line
-                            decode_message = ""
-                            byte = self._serial.read(1)
-                            self.output_raw.write(f"{int.from_bytes(byte):02x}")
-                            self.output_raw.flush()
+                # Check whether we got one..
+                if len(byte) == 1:
+                    self.output_raw.write(f"{int.from_bytes(byte):02x}")
+                    self.output_raw.flush()
 
-                            while (byte != b'\n' and byte != b'\r'):
-                                try: 
-                                    decode_message += byte.decode("ascii")
-                                    byte = self._serial.read(1)
-                                    self.output_raw.write(f"{int.from_bytes(byte):02x}")
-                                    self.output_raw.flush()
-                                except KeyboardInterrupt:
-                                    print("CTRL+C pressed, quitting...")
-                                    running = False
+                # We have a byte to do something with
+                if state == self.__ReceiverState.IDLE and len(byte):
+                    # Check whether we are deailing with a comment
+                    if byte == b'#' and \
+                        self._parser._state == Parser.state_readIdentifier:
+                        # Move to comment
+                        state = self.__ReceiverState.COMMENT
+                        comment = ""
+                    else:
+                        # append byte to parser
+                        cryodecoder_logger.debug(f"DBG - {byte.hex()} -> {byte.decode("ascii") if byte[0] < 128 and byte[0] > 32 else f"({byte[0]})"}")
+                        self._parser.push(byte)
+                        self._parser.update()
 
-                            byte = self._serial.read(1)
-                            
-                            self.output_raw.write(f"{int.from_bytes(byte):02x}")
-                            self.output_raw.flush()
-                            
-                            self.output_logger.log(logging.INFO, decode_message)
-                        else:
-                            cryodecoder_logger.log(logging.DEBUG, f"DBG - {byte.hex()} -> {byte.decode("ascii") if byte[0] < 128 and byte[0] > 32 else f"({byte[0]})"}")
-                            self._parser.push(byte)
-                            self._parser.update()
+                elif state == self.__ReceiverState.COMMENT and len(byte):
+                    # Check whether we need to leave the comment mode
+                    if byte == b'\n' or byte == b'\r':
+                        self.output_logger.log(logging.INFO, comment)
+                        # Revert to IDLE state
+                        state = self.__ReceiverState.IDLE
+                    # otherwise store the message
+                    else:
+                        comment += byte.decode("ascii")
 
-                        if self._parser.available():
-                            break
-
-                    except KeyboardInterrupt:
-                        print("CTRL+C pressed, quitting...")
-                        running = False
-
-                    byte = self._serial.read(1)
+                self._parser.update()
 
                 if self._parser.available():
                     self.__processBlocks()
 
-            except UnicodeDecodeError:
-                continue
-
             except KeyboardInterrupt:
-                print("CTRL+C pressed, quitting...")
-                running = False
-                self._serial.close()
-                self.save()
-                return
+                self.stop()
+                break
+
+        # Cleanup
+        self._serial.close()
+        self.save()
+        return
             
     def runMBus(self):
         """
         :meta private:
         """
 
-        while True:
+        self._running = True
+
+        while self.running():
             try:
                 length = self._serial.read(1)
                 packet = self._serial.read(length[0])
@@ -1231,6 +1247,7 @@ class SerialDecoder(CSVLogger):
                 continue
 
             except KeyboardInterrupt:
+                self._running = False
                 self._serial.close()
                 self.save()
                 return
